@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SAaP (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "SAaP (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
