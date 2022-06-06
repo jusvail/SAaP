@@ -1,9 +1,7 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SAaP.Constant;
 using SAaP.Contracts.Services;
-using SAaP.Extensions;
 using SAaP.Services;
 using SAaP.Views;
 
@@ -30,7 +28,7 @@ namespace SAaP
             return _host.Services.GetService<T>();
         }
 
-        public static Window MainWindow { get; set; } = new() {Title = PjConstant.AppTitle.GetLocalized() };
+        public static Window MainWindow { get; set; } = new();
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code

@@ -7,7 +7,24 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Button x:Name="myButton" Click="myButton_Click">Click Me</Button>
-    </StackPanel>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32"></RowDefinition>
+            <RowDefinition Height="48"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <Grid x:Name="AppTitleBar" Grid.Row="0">
+            <Image Source="/Assets/StoreLogo.png" HorizontalAlignment="Left" Width="16" Height="16" Margin="8,0"/>
+            <TextBlock x:Name="AppTitleBarText" VerticalAlignment="Center" TextWrapping="NoWrap" Margin="32, 0, 0, 0"/>
+        </Grid>
+
+        <Grid Grid.Row="1">
+        </Grid>
+        <Grid  Grid.Row="2">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Button x:Name="myButton" Click="myButton_Click">Click Me</Button>
+            </StackPanel>
+        </Grid>
+    </Grid>
 </Page>
