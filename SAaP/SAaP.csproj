@@ -43,9 +43,6 @@
   <ItemGroup>
     <ProjectReference Include="..\SAaP.Core\SAaP.Core.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Views\" />
-  </ItemGroup>
 
   <!-- 
     Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution 

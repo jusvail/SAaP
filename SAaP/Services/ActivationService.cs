@@ -18,7 +18,7 @@ namespace SAaP.Services
             // Set the MainWindow Content.
             if (App.MainWindow.Content == null)
             {
-                _main = App.GetService<MainWindow>();
+                _main = App.GetService<MainFrame>();
                 App.MainWindow.Content = _main ?? new Frame();
             }
 

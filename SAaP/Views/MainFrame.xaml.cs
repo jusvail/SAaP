@@ -6,9 +6,9 @@ namespace SAaP.Views
     /// <summary>
     /// 
     /// </summary>
-    public sealed partial class MainWindow : Page
+    public sealed partial class MainFrame : Page
     {
-        public MainWindow()
+        public MainFrame()
         {
             InitializeComponent();
         }
