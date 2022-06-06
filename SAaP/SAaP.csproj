@@ -10,6 +10,7 @@
     <PublishProfile>win10-$(Platform).pubxml</PublishProfile>
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
+    <DefaultLanguage>zh-CN</DefaultLanguage>
   </PropertyGroup>
 
   <ItemGroup>
@@ -41,6 +42,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SAaP.Core\SAaP.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Views\" />
   </ItemGroup>
 
   <!-- 
