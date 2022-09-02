@@ -10,16 +10,16 @@ if len(sys.argv) < 2:
     sys.exit()
 elif len(sys.argv) == 3:
     tdx_path = sys.argv[1]
-    print('tdx path: '+tdx_path)
+    print('tdx path: ' + tdx_path)
     out_path = sys.argv[2]
-    print('out path: '+out_path)
+    print('out path: ' + out_path)
 elif len(sys.argv) == 4:
     tdx_path = sys.argv[1]
-    print('tdx path: '+tdx_path)
+    print('tdx path: ' + tdx_path)
     out_path = sys.argv[2]
-    print('out path: '+out_path)
+    print('out path: ' + out_path)
     quest_code = sys.argv[3]
-    print('query codes: '+quest_code)
+    print('query codes: ' + quest_code)
 else:
     print('args too much')
     sys.exit()
@@ -55,8 +55,14 @@ def stock_csv(filepath, name):
 
             date_format = datetime.datetime.strptime(
                 str(stock_date[0]), '%Y%M%d')  # 格式化日期
-            list = date_format.strftime('%Y-%M-%d')+","+str(stock_open[0]/100)+","+str(stock_high[0]/100.0)+","+str(
-                stock_low[0]/100.0)+","+str(stock_close[0]/100.0)+","+str(stock_vol[0])+"\n"
+
+            list = date_format.strftime('%Y-%M-%d') + ","
+            + str(stock_open[0]/100) + ","
+            + str(stock_high[0]/100.0) + ","
+            + str(stock_low[0]/100.0) + ","
+            + str(stock_close[0]/100.0) + ","
+            + str(stock_vol[0]) + "\n"
+
             file_object.writelines(list)
         file_object.close()
 
