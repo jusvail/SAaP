@@ -71,6 +71,7 @@ data_sh = tdx_path + '/vipdoc/sh/lday/'
 data_sz = tdx_path + '/vipdoc/sz/lday/'
 
 if 'quest_code' in globals():
+    # exec specific code
     for i in quest_code.split(','):
         if len(i) != 6:
             break
@@ -88,6 +89,7 @@ if 'quest_code' in globals():
         print('neither shanghai or shenzhen')
         sys.exit()
 else:
+    # exec all code
     file_sh = os.listdir(data_sh)
     for i in file_sh:
         stock_csv(data_sh + i, i[:-4])
