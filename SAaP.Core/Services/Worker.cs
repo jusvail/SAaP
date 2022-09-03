@@ -14,18 +14,18 @@ namespace SAaP.Core.Services
     {
         private static readonly string LocalApplicationData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
-        public static readonly string dbName = "saap.db";
-        public static readonly string workFolder = "saap";
-        public static readonly string workFolderSubDbContainer = "db";
-        public static readonly string workFolderSubPyData = "pydata";
+        public const string DbName = "saap.db";
+        public const string WorkFolder = "saap";
+        public const string WorkFolderSubDbContainer = "db";
+        public const string WorkFolderSubPyData = "pydata";
 
-        public static string WorkSpacePath => Path.Combine(LocalApplicationData, workFolder);
+        public static string WorkSpacePath => Path.Combine(LocalApplicationData, WorkFolder);
 
-        public static string DbPath => Path.Combine(WorkSpacePath, workFolderSubDbContainer);
-        public static string DbFilePath => Path.Combine(DbPath, dbName);
+        public static string DbPath => Path.Combine(WorkSpacePath, WorkFolderSubDbContainer);
+        public static string DbFilePath => Path.Combine(DbPath, DbName);
         public static string DbConnectionString => "Data Source=" + DbFilePath + ";Version=3;";
 
-        public static string PyDataPath => Path.Combine(WorkSpacePath, workFolderSubPyData);
+        public static string PyDataPath => Path.Combine(WorkSpacePath, WorkFolderSubPyData);
 
         private static async Task<StorageFolder> LocalAppDataFolder()
         {
@@ -34,7 +34,7 @@ namespace SAaP.Core.Services
 
         public static async Task<StorageFolder> WorkSpace()
         {
-            return await StorageFolder.GetFolderFromPathAsync(Path.Combine(LocalApplicationData, workFolder));
+            return await StorageFolder.GetFolderFromPathAsync(Path.Combine(LocalApplicationData, WorkFolder));
         }
 
         public static async Task<StorageFolder> EnsureFolderExist(StorageFolder top, string name)
@@ -51,7 +51,7 @@ namespace SAaP.Core.Services
             return file ?? await top.CreateFileAsync(name);
         }
 
-        private static async Task EnsureDBFileExist(StorageFolder top, string name)
+        private static async Task EnsureDbFileExist(StorageFolder top, string name)
         {
             var file = await top.TryGetItemAsync(name) as StorageFile;
 
@@ -67,13 +67,13 @@ namespace SAaP.Core.Services
         {
             var localAppDataFolder = await LocalAppDataFolder();
 
-            var workSpace = await EnsureFolderExist(localAppDataFolder, workFolder);
+            var workSpace = await EnsureFolderExist(localAppDataFolder, WorkFolder);
 
-            await EnsureFolderExist(workSpace, workFolderSubPyData);
+            await EnsureFolderExist(workSpace, WorkFolderSubPyData);
 
-            var dbFolder = await EnsureFolderExist(workSpace, workFolderSubDbContainer);
+            var dbFolder = await EnsureFolderExist(workSpace, WorkFolderSubDbContainer);
 
-            await EnsureDBFileExist(dbFolder, dbName);
+            await EnsureDbFileExist(dbFolder, DbName);
         }
     }
 }

@@ -30,6 +30,8 @@ namespace SAaP.Services
         {
             // folder tree creation
             await Worker.EnsureWorkSpaceFolderTreeIntegrityAsync();
+
+            Pyer.RunPythonScript(Pyer.TdxReader, "C:/devEnv/Tools/TDX", Worker.PyDataPath, "600657");
         }
     }
 }

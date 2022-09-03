@@ -6,33 +6,6 @@
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <UseWinUI>true</UseWinUI>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="Tasks\**" />
-    <Content Remove="Tasks\**" />
-    <EmbeddedResource Remove="Tasks\**" />
-    <None Remove="Tasks\**" />
-    <Page Remove="Tasks\**" />
-    <PRIResource Remove="Tasks\**" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="C:\Users\yuki\.nuget\packages\linq2db.sqlite\4.2.0\contentFiles\any\any\LinqToDB.Templates\CopyMe.SQLite.tt.txt" />
-    <None Remove="C:\Users\yuki\.nuget\packages\linq2db.sqlite\4.2.0\contentFiles\any\any\LinqToDB.Templates\DataAnnotations.ttinclude" />
-    <None Remove="C:\Users\yuki\.nuget\packages\linq2db.sqlite\4.2.0\contentFiles\any\any\LinqToDB.Templates\DataModel.ttinclude" />
-    <None Remove="C:\Users\yuki\.nuget\packages\linq2db.sqlite\4.2.0\contentFiles\any\any\LinqToDB.Templates\EditableObject.ttinclude" />
-    <None Remove="C:\Users\yuki\.nuget\packages\linq2db.sqlite\4.2.0\contentFiles\any\any\LinqToDB.Templates\Equatable.ttinclude" />
-    <None Remove="C:\Users\yuki\.nuget\packages\linq2db.sqlite\4.2.0\contentFiles\any\any\LinqToDB.Templates\Humanizer.ttinclude" />
-    <None Remove="C:\Users\yuki\.nuget\packages\linq2db.sqlite\4.2.0\contentFiles\any\any\LinqToDB.Templates\LinqToDB.SQLite.Tools.ttinclude" />
-    <None Remove="C:\Users\yuki\.nuget\packages\linq2db.sqlite\4.2.0\contentFiles\any\any\LinqToDB.Templates\LinqToDB.SQLite.ttinclude" />
-    <None Remove="C:\Users\yuki\.nuget\packages\linq2db.sqlite\4.2.0\contentFiles\any\any\LinqToDB.Templates\LinqToDB.Tools.ttinclude" />
-    <None Remove="C:\Users\yuki\.nuget\packages\linq2db.sqlite\4.2.0\contentFiles\any\any\LinqToDB.Templates\LinqToDB.ttinclude" />
-    <None Remove="C:\Users\yuki\.nuget\packages\linq2db.sqlite\4.2.0\contentFiles\any\any\LinqToDB.Templates\MultipleFiles.ttinclude" />
-    <None Remove="C:\Users\yuki\.nuget\packages\linq2db.sqlite\4.2.0\contentFiles\any\any\LinqToDB.Templates\NotifyDataErrorInfo.ttinclude" />
-    <None Remove="C:\Users\yuki\.nuget\packages\linq2db.sqlite\4.2.0\contentFiles\any\any\LinqToDB.Templates\NotifyPropertyChanged.ttinclude" />
-    <None Remove="C:\Users\yuki\.nuget\packages\linq2db.sqlite\4.2.0\contentFiles\any\any\LinqToDB.Templates\ObsoleteAttributes.ttinclude" />
-    <None Remove="C:\Users\yuki\.nuget\packages\linq2db.sqlite\4.2.0\contentFiles\any\any\LinqToDB.Templates\PluralizationService.ttinclude" />
-    <None Remove="C:\Users\yuki\.nuget\packages\linq2db.sqlite\4.2.0\contentFiles\any\any\LinqToDB.Templates\T4Model.ttinclude" />
-    <None Remove="C:\Users\yuki\.nuget\packages\linq2db.sqlite\4.2.0\contentFiles\any\any\LinqToDB.Templates\Validation.ttinclude" />
-  </ItemGroup>
 
   <ItemGroup>
       <PackageReference Include="linq2db.SQLite" Version="4.2.0" />
@@ -43,5 +16,14 @@
 
   <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Py\tdx_reader.py">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Py\tushare_reader.py">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>
