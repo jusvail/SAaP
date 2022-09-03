@@ -8,9 +8,9 @@ namespace SAaP.Views
     /// <summary>
     /// 
     /// </summary>
-    public sealed partial class MainFrame : Page
+    public sealed partial class ShellPage : Page
     {
-        public MainFrame()
+        public ShellPage()
         {
             InitializeComponent();
 
@@ -18,11 +18,13 @@ namespace SAaP.Views
             App.MainWindow.SetTitleBar(AppTitleBar);
             AppTitleBarText.Text = PjConstant.AppTitle.GetLocalized();
         }
-
-        private void myButton_Click(object sender, RoutedEventArgs e)
+        private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            myButton.Content = "Clicked";
+            NavigationFrame.Navigate(typeof(MainPage));
         }
 
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+        }
     }
 }

@@ -4,6 +4,9 @@ using Microsoft.Extensions.Hosting;
 using SAaP.Contracts.Services;
 using SAaP.Services;
 using SAaP.Views;
+using System;
+using SAaP.ViewModels;
+using SAaP.Core.Services;
 
 namespace SAaP
 {
@@ -12,20 +15,20 @@ namespace SAaP
     /// </summary>
     public partial class App
     {
-
-        private static readonly IHost _host = Host.CreateDefaultBuilder().ConfigureServices(
-            (context, services) =>
-            {
-                services.AddSingleton<IActivationService, ActivationService>();
-
-                services.AddTransient<MainFrame>();
-            }
-        ).Build();
+        public IHost Host
+        {
+            get;
+        }
 
         public static T GetService<T>()
             where T : class
         {
-            return _host.Services.GetService<T>();
+            if ((App.Current as App)!.Host.Services.GetService(typeof(T)) is not T service)
+            {
+                throw new ArgumentException($"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.");
+            }
+
+            return service;
         }
 
         public static Window MainWindow { get; set; } = new();
@@ -37,6 +40,19 @@ namespace SAaP
         public App()
         {
             InitializeComponent();
+            Host = Microsoft.Extensions.Hosting.Host
+                .CreateDefaultBuilder()
+                .UseContentRoot(AppContext.BaseDirectory)
+                .ConfigureServices((context, services) =>
+                    {
+                        services.AddSingleton<IActivationService, ActivationService>();
+
+                        services.AddTransient<ShellPage>();
+                        services.AddTransient<ShellViewModel>();
+                        services.AddTransient<MainPage>();
+                        services.AddTransient<MainViewModel>();
+                    }
+                ).Build();
         }
 
         /// <summary>
@@ -44,12 +60,11 @@ namespace SAaP
         /// will be used such as when the application is launched to open a specific file.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
-        protected override void OnLaunched(LaunchActivatedEventArgs args)
+        protected async override void OnLaunched(LaunchActivatedEventArgs args)
         {
             base.OnLaunched(args);
 
-            var activationService = GetService<IActivationService>();
-            activationService.ActivateAsync(args);
+            await App.GetService<IActivationService>().ActivateAsync(args);
         }
 
     }

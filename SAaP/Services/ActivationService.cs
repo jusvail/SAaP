@@ -2,6 +2,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using SAaP.Contracts.Services;
+using SAaP.Core.Services;
 using SAaP.Views;
 
 namespace SAaP.Services
@@ -18,7 +19,7 @@ namespace SAaP.Services
             // Set the MainWindow Content.
             if (App.MainWindow.Content == null)
             {
-                _main = App.GetService<MainFrame>();
+                _main = App.GetService<ShellPage>();
                 App.MainWindow.Content = _main ?? new Frame();
             }
 
@@ -27,8 +28,8 @@ namespace SAaP.Services
 
         private async Task InitializeAsync()
         {
-            // TODO do something
-            await Task.CompletedTask;
+            // folder tree creation
+            await Worker.EnsureWorkSpaceFolderTreeIntegrityAsync();
         }
     }
 }
