@@ -5,8 +5,8 @@ import sys
 import struct
 import datetime
 
-if len(sys.argv) < 2:
-    print('no path!')
+if len(sys.argv) < 3:
+    print('no enough args!')
     sys.exit()
 elif len(sys.argv) == 3:
     tdx_path = sys.argv[1]
@@ -26,7 +26,6 @@ else:
 
 
 def stock_csv(filepath, name):
-    data = []
     with open(filepath, 'rb') as f:
         file_object_path = out_path + '/' + name + '.csv'
         file_object = open(file_object_path, 'w+')

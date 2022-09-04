@@ -5,9 +5,13 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
-    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
+    xmlns:helpers="using:SAaP.Helper"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <helpers:ReverseBooleanConverter x:Key="ReverseBooleanConverter" />
+    </Page.Resources>
 
     <Grid Padding="5">
         <Grid.ColumnDefinitions>
@@ -17,8 +21,10 @@
         </Grid.ColumnDefinitions>
 
         <StackPanel Grid.Column="0" Background="Azure" CornerRadius="5" BorderThickness="0.8" BorderBrush="LightGray">
+            <RichTextBlock Margin="3" HorizontalAlignment="Left" VerticalAlignment="Top">
+                <Paragraph Foreground="CadetBlue">自选列表</Paragraph>
+            </RichTextBlock>
             <ListView/>
-            <Button Margin="10" Content="添加自选股" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
         </StackPanel>
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
@@ -48,9 +54,15 @@
                          TextWrapping="Wrap" AcceptsReturn="True" IsSpellCheckEnabled="True"
                          Text="{x:Bind ViewModel.CodeInput,Mode=TwoWay}"
                          SelectionHighlightColor="Green" MinHeight="150"
+                         AllowFocusOnInteraction="True"
+                         LostFocus="{x:Bind ViewModel.OnCodeInputLostFocusEventHandler}"
                          PlaceholderText="多个代码请用空格或逗号分隔"/>
                         <StackPanel Orientation="Horizontal">
-                            <Button Style="{StaticResource AccentButtonStyle}" Command="{x:Bind ViewModel.AnalysisPressedCommand}" Content="执行分析" Margin="2"/>
+                            <Button Content="加入自选" Margin="2"/>
+                            <Button Style="{StaticResource AccentButtonStyle}" 
+                                    IsEnabled="{x:Bind ViewModel.AnalysisPressedCommand.IsRunning, Converter={StaticResource ReverseBooleanConverter}, Mode=OneWay}"
+                                    Command="{x:Bind ViewModel.AnalysisPressedCommand}" 
+                                    Content="执行分析" Margin="2"/>
                             <ProgressRing
                                 HorizontalAlignment="Left"
                                 IsActive="{x:Bind ViewModel.AnalysisPressedCommand.IsRunning, Mode=OneWay}" Margin="2"/>
@@ -67,7 +79,7 @@
 
                     <TextBlock Grid.Row="0"
                                x:Uid="DataGrid_Title"
-                               Margin="1"
+                               Margin="6 1"
                                Text="近二十交易日分析结果"/>
                     <controls:DataGrid Grid.Row="1"
                                        AutoGenerateColumns="False"
@@ -81,7 +93,7 @@
                         <controls:DataGrid.Columns>
                             <controls:DataGridTextColumn Binding="{Binding CodeName}" Header="代码"/>
                             <controls:DataGridTextColumn Binding="{Binding CompanyName}" Header="名称" />
-                            <controls:DataGridTextColumn Binding="{Binding OverPricedPercentOverPricedPercent}" Header="op率" />
+                            <controls:DataGridTextColumn Binding="{Binding OverPricedPercent}" Header="op率" />
                             <controls:DataGridTextColumn Binding="{Binding OverPricedDays}" Header="op天数" />
                             <controls:DataGridTextColumn Binding="{Binding OverPricedPercentHigherThan1P}" Header="1%+op率" />
                             <controls:DataGridTextColumn Binding="{Binding OverPricedDaysHigherThan1P}" Header="1%+op天数" />

@@ -40,6 +40,9 @@ public class CsvToDbTransferService : ICsvToDbTransferService
 
     private static async Task InsertToDbIfRecordNotExist(IStorageFile file, DbSaap db, string codeName, int loc)
     {
+        // TODO table [STOCK] not update yet
+        Console.WriteLine(loc);
+
         // read per line
         foreach (var line in await FileIO.ReadLinesAsync(file))
         {

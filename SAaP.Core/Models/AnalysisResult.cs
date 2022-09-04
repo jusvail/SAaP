@@ -12,15 +12,17 @@ namespace SAaP.Core.Models
 
         public string CompanyName { get; set; }
 
+        public int Duration { get; set; }
+
         public double OverPricedPercent { get; set; }
 
-        public double OverPricedDays { get; set; }
+        public int OverPricedDays { get; set; }
 
         public double OverPricedPercentHigherThan1P { get; set; }
 
-        public double OverPricedDaysHigherThan1P { get; set; }
+        public int OverPricedDaysHigherThan1P { get; set; }
 
-        public double MaxContinueOverPricedDay { get; set; }
+        public int MaxContinueOverPricedDay { get; set; }
 
         public double MaxContinueMinusOverPricedDay { get; set; }
 
