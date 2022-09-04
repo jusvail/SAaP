@@ -56,7 +56,7 @@ def stock_csv(filepath, name):
             date_format = datetime.datetime.strptime(
                 str(stock_date[0]), '%Y%M%d')  # 格式化日期
 
-            list = date_format.strftime('%Y-%M-%d') + "," + str(stock_open[0]/100) + "," + str(stock_high[0]/100.0) + "," + str(
+            list = date_format.strftime('%Y/%M/%d') + "," + str(stock_open[0]/100) + "," + str(stock_high[0]/100.0) + "," + str(
                 stock_low[0]/100.0) + "," + str(stock_close[0]/100.0) + "," + str(stock_vol[0]) + "\n"
 
             file_object.writelines(list)

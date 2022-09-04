@@ -15,11 +15,11 @@ public class MainViewModel : ObservableRecipient
 {
     private string _codeInput;
 
-    private ICsvToDbTransferService _csvToDbTransferService;
+    private readonly ICsvToDbTransferService _csvToDbTransferService;
 
     public ObservableCollection<AnalysisResult> AnalyzedResults { get; } = new();
 
-    public ICommand AnalysisPressedCommand { get; }
+    public IAsyncRelayCommand AnalysisPressedCommand { get; }
 
     public string CodeInput
     {
@@ -32,10 +32,10 @@ public class MainViewModel : ObservableRecipient
     public MainViewModel(ICsvToDbTransferService csvToDbTransferService)
     {
         _csvToDbTransferService = csvToDbTransferService;
-        AnalysisPressedCommand = new RelayCommand(OnAnalysisPressed);
+        AnalysisPressedCommand = new AsyncRelayCommand(OnAnalysisPressed);
     }
 
-    private async void OnAnalysisPressed()
+    private async Task OnAnalysisPressed()
     {
         // format input
         var codes = StringHelper.FormattingWithComma(CodeInput);
@@ -52,11 +52,10 @@ public class MainViewModel : ObservableRecipient
         await PythonService.RunPythonScript(PythonService.TdxReader, "C:/devEnv/Tools/TDX", StartupService.PyDataPath, pyArg);
 
         // TODO remove this after release
-        await Launcher.LaunchFolderAsync(await StorageFolder.GetFolderFromPathAsync(StartupService.PyDataPath));
+        // await Launcher.LaunchFolderAsync(await StorageFolder.GetFolderFromPathAsync(StartupService.PyDataPath));
 
         // write to sqlite database
-        _csvToDbTransferService.Transfer(accuracyCodes);
-
+        await _csvToDbTransferService.Transfer(accuracyCodes);
 
         // TODO analyze data
 

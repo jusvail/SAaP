@@ -23,4 +23,14 @@ public static class DbService
             throw;
         }
     }
+
+    public static double TryParseStringToDouble(string input)
+    {
+        return double.TryParse(input, out var result) ? result : 0;
+    }
+
+    public static int TryParseStringToInt(string input)
+    {
+        return int.TryParse(input, out var result) ? result : 0;
+    }
 }

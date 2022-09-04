@@ -10,7 +10,7 @@ namespace SAaP.Core.Models.DB
         [PrimaryKey]
         public string CodeName { get; set; }
 
-        [Column]
+        [PrimaryKey]
         public string Day { get; set; }
 
         [Column]

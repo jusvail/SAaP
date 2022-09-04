@@ -9,6 +9,6 @@ namespace SAaP.Contracts.Services
 {
     public interface ICsvToDbTransferService
     {
-        void Transfer(IEnumerable<string> codeNames);
+        Task Transfer(IEnumerable<string> codeNames);
     }
 }

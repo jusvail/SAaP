@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -48,11 +49,11 @@
                          Text="{x:Bind ViewModel.CodeInput,Mode=TwoWay}"
                          SelectionHighlightColor="Green" MinHeight="150"
                          PlaceholderText="多个代码请用空格或逗号分隔"/>
-                        <StackPanel Orientation="Horizontal" >
+                        <StackPanel Orientation="Horizontal">
                             <Button Style="{StaticResource AccentButtonStyle}" Command="{x:Bind ViewModel.AnalysisPressedCommand}" Content="执行分析" Margin="2"/>
-                            <Button IsEnabled="False" Style="{StaticResource AccentButtonStyle}" Content="查看结果" Margin="2" />
-                            <TextBlock Text="(1/6)" VerticalAlignment="Center" Margin="2"/>
-                            <TextBlock Text="正在分析..." VerticalAlignment="Center" Margin="2"/>
+                            <ProgressRing
+                                HorizontalAlignment="Left"
+                                IsActive="{x:Bind ViewModel.AnalysisPressedCommand.IsRunning, Mode=OneWay}" Margin="2"/>
                         </StackPanel>
                     </StackPanel>
                 </Grid>
