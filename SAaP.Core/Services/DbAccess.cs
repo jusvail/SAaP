@@ -10,7 +10,7 @@ public static class DbAccess
 {
     public static async Task InitializeDatabase()
     {
-        await using var db = new DbSaap(Worker.DbConnectionString);
+        await using var db = new DbSaap(LocalService.DbConnectionString);
         try
         {
             await db.CreateTableAsync<Stock>();

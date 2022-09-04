@@ -11,16 +11,16 @@ using Windows.Web.AtomPub;
 
 namespace SAaP.Core.Services
 {
-    public class Worker
+    public static class LocalService
     {
         private static readonly string LocalApplicationData = ApplicationData.Current.LocalFolder.Path;
 
-        public const string DbName = "saap.db";
-        public const string WorkFolder = "saap";
-        public const string WorkFolderSubDbContainer = "db";
-        public const string WorkFolderSubPyData = "pydata";
+        private const string DbName = "saap.db";
+        private const string WorkFolder = "saap";
+        private const string WorkFolderSubDbContainer = "db";
+        private const string WorkFolderSubPyData = "pydata";
 
-        public static string WorkSpacePath => Path.Combine(LocalApplicationData, WorkFolder);
+        private static string WorkSpacePath => Path.Combine(LocalApplicationData, WorkFolder);
 
         public static string DbPath => Path.Combine(WorkSpacePath, WorkFolderSubDbContainer);
         public static string DbFilePath => Path.Combine(DbPath, DbName);
@@ -28,15 +28,10 @@ namespace SAaP.Core.Services
 
         public static string PyDataPath => Path.Combine(WorkSpacePath, WorkFolderSubPyData);
 
-        public static async Task<StorageFolder> WorkSpace()
-        {
-            return await StorageFolder.GetFolderFromPathAsync(Path.Combine(LocalApplicationData, WorkFolder));
-        }
-
-        public static async Task<StorageFolder> EnsureFolderExist(StorageFolder top, string name)
+        private static async Task<StorageFolder> EnsureFolderExist(StorageFolder top, string name)
         {
             var folder = await top.TryGetItemAsync(name) as StorageFolder;
-            
+
             return folder ?? await top.CreateFolderAsync(name);
         }
 

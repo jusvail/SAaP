@@ -29,9 +29,7 @@ namespace SAaP.Services
         private async Task InitializeAsync()
         {
             // folder tree creation
-            await Worker.EnsureWorkSpaceFolderTreeIntegrityAsync();
-            // python script execution
-            //await Pyer.RunPythonScript(Pyer.TdxReader, "C:/devEnv/Tools/TDX", Worker.PyDataPath, "600657");
+            await LocalService.EnsureWorkSpaceFolderTreeIntegrityAsync();
         }
     }
 }

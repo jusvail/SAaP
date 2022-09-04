@@ -25,7 +25,7 @@
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-          
+
             <StackPanel Grid.Row="0" Padding="5 0 5 0">
                 <InfoBar
                     IsOpen="True"
@@ -33,7 +33,7 @@
                     Title="免责声明"
                     IsClosable="False"
                     Message="本程序仅限学习交流使用。本程序仅进行数据分析，并且不构成任何买卖建议。擅自根据本程序进行交易所造成的后果自负。" />
-                
+
             </StackPanel>
             <Grid Grid.Row="1" Padding="5">
                 <Grid>
@@ -45,10 +45,11 @@
                     <StackPanel Grid.Column="1">
                         <TextBox x:Name="CodeInput" AutomationProperties.Name="multi-line TextBox"
                          TextWrapping="Wrap" AcceptsReturn="True" IsSpellCheckEnabled="True"
+                         Text="{x:Bind ViewModel.CodeInput,Mode=TwoWay}"
                          SelectionHighlightColor="Green" MinHeight="150"
                          PlaceholderText="多个代码请用空格或逗号分隔"/>
                         <StackPanel Orientation="Horizontal" >
-                            <Button Style="{StaticResource AccentButtonStyle}" Content="执行分析" Margin="2"/>
+                            <Button Style="{StaticResource AccentButtonStyle}" Command="{x:Bind ViewModel.AnalysisPressedCommand}" Content="执行分析" Margin="2"/>
                             <Button IsEnabled="False" Style="{StaticResource AccentButtonStyle}" Content="查看结果" Margin="2" />
                             <TextBlock Text="(1/6)" VerticalAlignment="Center" Margin="2"/>
                             <TextBlock Text="正在分析..." VerticalAlignment="Center" Margin="2"/>
@@ -72,26 +73,25 @@
                                        GridLinesVisibility="Horizontal"
                                        CanUserResizeColumns="True"
                                        CanUserSortColumns="True"
-                                       ItemsSource="{x:Bind ViewModel.Source, Mode=OneWay}">
+                                       ItemsSource="{x:Bind ViewModel.AnalyzedResults, Mode=OneWay}">
                         <controls:DataGrid.Resources>
                             <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor" Color="Transparent" />
                         </controls:DataGrid.Resources>
                         <controls:DataGrid.Columns>
-                            <!-- TODO: Replace column definitions to match real data. Consider adding Header values to Resources.resw. -->
-                            <controls:DataGridTextColumn Binding="{Binding OrderID}" Header="代码"/>
-                            <controls:DataGridTextColumn Binding="{Binding OrderDate}" Header="名称" />
-                            <controls:DataGridTextColumn Binding="{Binding Company}" Header="op率" />
-                            <controls:DataGridTextColumn Binding="{Binding OrderTotal}" Header="op天数" />
-                            <controls:DataGridTextColumn Binding="{Binding ShipTo}" Header="1%+op率" />
-                            <controls:DataGridTextColumn Binding="{Binding Status}" Header="1%+op天数" />
-                            <controls:DataGridTextColumn Binding="{Binding Statusaa}" Header="mc+op天数" />
-                            <controls:DataGridTextColumn Binding="{Binding Statusa}" Header="mc-op天数" />
-                            <controls:DataGridTextColumn Binding="{Binding Statuscc}" Header="+avop率" />
-                            <controls:DataGridTextColumn Binding="{Binding Statuscc}" Header="1%+avop率" />
+                            <controls:DataGridTextColumn Binding="{Binding CodeName}" Header="代码"/>
+                            <controls:DataGridTextColumn Binding="{Binding CompanyName}" Header="名称" />
+                            <controls:DataGridTextColumn Binding="{Binding OverPricedPercentOverPricedPercent}" Header="op率" />
+                            <controls:DataGridTextColumn Binding="{Binding OverPricedDays}" Header="op天数" />
+                            <controls:DataGridTextColumn Binding="{Binding OverPricedPercentHigherThan1P}" Header="1%+op率" />
+                            <controls:DataGridTextColumn Binding="{Binding OverPricedDaysHigherThan1P}" Header="1%+op天数" />
+                            <controls:DataGridTextColumn Binding="{Binding MaxContinueOverPricedDay}" Header="mc+op天数" />
+                            <controls:DataGridTextColumn Binding="{Binding MaxContinueMinusOverPricedDay}" Header="mc-op天数" />
+                            <controls:DataGridTextColumn Binding="{Binding AverageOverPricedPercent}" Header="+avop率" />
+                            <controls:DataGridTextColumn Binding="{Binding AverageOverPricedPercentHigherThan1P}" Header="1%+avop率" />
                             <controls:DataGridTemplateColumn Header="评价">
                                 <controls:DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <HyperlinkButton Content="Details" />
+                                        <HyperlinkButton Content="{Binding Evaluate}" />
                                     </DataTemplate>
                                 </controls:DataGridTemplateColumn.CellTemplate>
                             </controls:DataGridTemplateColumn>
@@ -99,7 +99,7 @@
                     </controls:DataGrid>
                 </Grid>
             </StackPanel>
-            
+
         </Grid>
         <Grid Grid.Column="2"  Background="LightCoral" CornerRadius="5" BorderThickness="0.8" BorderBrush="LightGray">
 
