@@ -9,7 +9,7 @@ namespace SAaP.Services
 {
     public class ActivationService : IActivationService
     {
-        private UIElement _main = null;
+        private UIElement _main;
 
         public async Task ActivateAsync(object activationArgs)
         {
@@ -30,8 +30,8 @@ namespace SAaP.Services
         {
             // folder tree creation
             await Worker.EnsureWorkSpaceFolderTreeIntegrityAsync();
-
-            Pyer.RunPythonScript(Pyer.TdxReader, "C:/devEnv/Tools/TDX", Worker.PyDataPath, "600657");
+            // python script execution
+            //await Pyer.RunPythonScript(Pyer.TdxReader, "C:/devEnv/Tools/TDX", Worker.PyDataPath, "600657");
         }
     }
 }

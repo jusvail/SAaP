@@ -1,31 +1,20 @@
-﻿using System;
-
-using LinqToDB;
-using LinqToDB.Configuration;
-using LinqToDB.Mapping;
+﻿using LinqToDB;
 using SAaP.Core.Models.DB;
 
-namespace DataModels
+namespace SAaP.Core.DataModels;
+
+/// <summary>
+/// Database       : saap
+/// Data Source    : saap
+/// Server Version : 3.24.0
+/// </summary>
+public class DbSaap : LinqToDB.Data.DataConnection
 {
-    /// <summary>
-    /// Database       : saap
-    /// Data Source    : saap
-    /// Server Version : 3.24.0
-    /// </summary>
-    public partial class DbSaap : LinqToDB.Data.DataConnection
-    {
 
-        public ITable<Stock> Stock => this.GetTable<Stock>();
+    public ITable<Stock> Stock => this.GetTable<Stock>();
 
-        public ITable<OriginalData> OriginalData => this.GetTable<OriginalData>();
+    public ITable<OriginalData> OriginalData => this.GetTable<OriginalData>();
 
-        public DbSaap(string dbPath) : base(LinqToDB.ProviderName.SQLite, dbPath)
-        {
-            InitDataContext();
-            InitMappingSchema();
-        }
-
-        partial void InitDataContext();
-        partial void InitMappingSchema();
-    }
+    public DbSaap(string dbPath) : base(LinqToDB.ProviderName.SQLite, dbPath)
+    {}
 }

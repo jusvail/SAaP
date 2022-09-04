@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -10,19 +11,20 @@ namespace SAaP.Core.Services
 {
     public class Pyer
     {
-        private static readonly string PyFolder = "py/";
+        private const string PyFolder = "py/";
         public const string TdxReader = "tdx_reader.py";
 
         public void run_cmd(string cmd, string args)
         {
-            ProcessStartInfo start = new ProcessStartInfo();
+            var start = new ProcessStartInfo
+            {
+                FileName = "C:/devEnv/Python/Python310/python.exe",
+                Arguments = $"{cmd} {args}",
+                UseShellExecute = false,
+                RedirectStandardOutput = true
+            };
 
-            start.FileName = "C:/devEnv/Python/Python310/python.exe";
-            start.Arguments = $"{cmd} {args}";
-            start.UseShellExecute = false;
-            start.RedirectStandardOutput = true;
-
-            using Process process = Process.Start(start);
+            using var process = Process.Start(start);
             if (process != null)
             {
                 using StreamReader reader = process.StandardOutput;
@@ -31,27 +33,37 @@ namespace SAaP.Core.Services
             }
         }
 
-        public static void RunPythonScript(string pyScriptName, params string[] args)
+        public static Task RunPythonScript(string pyScriptName, params string[] args)
         {
-            var p = new Process();
             var path = System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase + PyFolder + pyScriptName;
             
             var sb = new StringBuilder(path);
             foreach (var arg in args)
                 sb.Append(" ").Append(arg);
 
-            p.StartInfo.FileName = "C:/devEnv/Python/Python310/python.exe";
-            p.StartInfo.Arguments = sb.ToString();
-            p.StartInfo.UseShellExecute = false;
-            p.StartInfo.RedirectStandardOutput = true;
-            p.StartInfo.RedirectStandardInput = true;
-            p.StartInfo.RedirectStandardError = true;
-            p.StartInfo.CreateNoWindow = false;
-            p.Start();   
-            p.BeginOutputReadLine();
-            Console.ReadLine();
-            p.WaitForExit();
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "C:/devEnv/Python/Python310/python.exe", // TODO custom py env location await
+                Arguments = sb.ToString(),
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardInput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = false
+            };
+
+           return Task.Run(() =>{
+
+                    using var process = Process.Start(startInfo);
+
+                    if (process == null) return;
+
+                    using var reader = process.StandardOutput;
+                    var result = reader.ReadToEnd();
+
+                    //TODO error catch await
+                    Console.Write(result);
+                });
         }
-        public delegate void AppendTextCallback(string text);
     }
 }

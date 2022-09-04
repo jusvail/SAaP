@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.UI.Xaml.Controls;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace SAaP.Core.Services
 {
     public class Worker
     {
-        private static readonly string LocalApplicationData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        private static readonly string LocalApplicationData = ApplicationData.Current.LocalFolder.Path;
 
         public const string DbName = "saap.db";
         public const string WorkFolder = "saap";
@@ -27,11 +28,6 @@ namespace SAaP.Core.Services
 
         public static string PyDataPath => Path.Combine(WorkSpacePath, WorkFolderSubPyData);
 
-        private static async Task<StorageFolder> LocalAppDataFolder()
-        {
-            return await StorageFolder.GetFolderFromPathAsync(LocalApplicationData);
-        }
-
         public static async Task<StorageFolder> WorkSpace()
         {
             return await StorageFolder.GetFolderFromPathAsync(Path.Combine(LocalApplicationData, WorkFolder));
@@ -40,7 +36,7 @@ namespace SAaP.Core.Services
         public static async Task<StorageFolder> EnsureFolderExist(StorageFolder top, string name)
         {
             var folder = await top.TryGetItemAsync(name) as StorageFolder;
-
+            
             return folder ?? await top.CreateFolderAsync(name);
         }
 
@@ -59,13 +55,13 @@ namespace SAaP.Core.Services
             {
                 await top.CreateFileAsync(name);
                 // Initialize Database
-                await DataAccess.InitializeDatabase();
+                await DbAccess.InitializeDatabase();
             }
         }
 
         public static async Task EnsureWorkSpaceFolderTreeIntegrityAsync()
         {
-            var localAppDataFolder = await LocalAppDataFolder();
+            var localAppDataFolder = await StorageFolder.GetFolderFromPathAsync(LocalApplicationData);
 
             var workSpace = await EnsureFolderExist(localAppDataFolder, WorkFolder);
 

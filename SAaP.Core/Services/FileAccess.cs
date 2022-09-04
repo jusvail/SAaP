@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAaP.Core.Models
+namespace SAaP.Core.Services
 {
-    public class AnalysisResultDetail 
+    public class FileAccess
     {
+
     }
 }
