@@ -6,11 +6,11 @@ using SAaP.Core.DataModels;
 
 namespace SAaP.Core.Services;
 
-public static class DbAccess
+public static class DbService
 {
     public static async Task InitializeDatabase()
     {
-        await using var db = new DbSaap(LocalService.DbConnectionString);
+        await using var db = new DbSaap(StartupService.DbConnectionString);
         try
         {
             await db.CreateTableAsync<Stock>();

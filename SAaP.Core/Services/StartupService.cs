@@ -1,17 +1,11 @@
-﻿using Microsoft.UI.Xaml.Controls;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Appointments;
 using Windows.Storage;
-using Windows.Web.AtomPub;
 
 namespace SAaP.Core.Services
 {
-    public static class LocalService
+    public static class StartupService
     {
         private static readonly string LocalApplicationData = ApplicationData.Current.LocalFolder.Path;
 
@@ -35,13 +29,6 @@ namespace SAaP.Core.Services
             return folder ?? await top.CreateFolderAsync(name);
         }
 
-        public static async Task<StorageFile> EnsureFileExist(StorageFolder top, string name)
-        {
-            var file = await top.TryGetItemAsync(name) as StorageFile;
-
-            return file ?? await top.CreateFileAsync(name);
-        }
-
         private static async Task EnsureDbFileExist(StorageFolder top, string name)
         {
             var file = await top.TryGetItemAsync(name) as StorageFile;
@@ -50,7 +37,7 @@ namespace SAaP.Core.Services
             {
                 await top.CreateFileAsync(name);
                 // Initialize Database
-                await DbAccess.InitializeDatabase();
+                await DbService.InitializeDatabase();
             }
         }
 

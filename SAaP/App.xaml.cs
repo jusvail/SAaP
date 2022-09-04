@@ -46,6 +46,7 @@ namespace SAaP
                 .ConfigureServices((context, services) =>
                     {
                         services.AddSingleton<IActivationService, ActivationService>();
+                        services.AddSingleton<ICsvToDbTransferService, CsvToDbTransferService>();
 
                         services.AddTransient<ShellPage>();
                         services.AddTransient<ShellViewModel>();

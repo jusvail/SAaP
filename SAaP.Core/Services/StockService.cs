@@ -8,6 +8,15 @@ namespace SAaP.Core.Services
         private const int StandardCodeLength = 6;
         private const int TdxCodeLength = 7;
 
+        private const string ShCsvName = @"sh{0}.csv";
+        private const string SzCsvName = @"sz{0}.csv";
+
+        public const string Sh = "sh";
+        public const string Sz = "sz";
+
+        public static string GetOutputNameSh(string codeName) => string.Format(ShCsvName, codeName);
+        public static string GetOutputNameSz(string codeName) => string.Format(SzCsvName, codeName);
+
         public static IEnumerable<string> CheckStockCodeAccuracy(IEnumerable<string> inputs)
         {
             foreach (var input in inputs)
@@ -30,7 +39,7 @@ namespace SAaP.Core.Services
 
             foreach (var arg in args)
             {
-                sb.Append(arg).Append(",");
+                sb.Append(arg).Append(',');
             }
 
             return sb.Remove(sb.Length - 1, 1).ToString();

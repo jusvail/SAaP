@@ -2,64 +2,64 @@
 using CommunityToolkit.Mvvm.Input;
 using SAaP.Core.Helpers;
 using SAaP.Core.Models;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using Windows.Storage;
 using Windows.System;
+using SAaP.Contracts.Services;
 using SAaP.Core.Services;
 
-namespace SAaP.ViewModels
+namespace SAaP.ViewModels;
+
+public class MainViewModel : ObservableRecipient
 {
-    public class MainViewModel : ObservableRecipient
+    private string _codeInput;
+
+    private ICsvToDbTransferService _csvToDbTransferService;
+
+    public ObservableCollection<AnalysisResult> AnalyzedResults { get; } = new();
+
+    public ICommand AnalysisPressedCommand { get; }
+
+    public string CodeInput
     {
-        private string _codeInput;
+        get => _codeInput;
+        set => SetProperty(ref _codeInput, value);
+    }
 
-        public ObservableCollection<AnalysisResult> AnalyzedResults { get; } = new();
+    public MainViewModel() { }
 
-        public ICommand AnalysisPressedCommand { get; }
+    public MainViewModel(ICsvToDbTransferService csvToDbTransferService)
+    {
+        _csvToDbTransferService = csvToDbTransferService;
+        AnalysisPressedCommand = new RelayCommand(OnAnalysisPressed);
+    }
 
-        public string CodeInput
-        {
-            get => _codeInput;
-            set => SetProperty(ref _codeInput, value);
-        }
+    private async void OnAnalysisPressed()
+    {
+        // format input
+        var codes = StringHelper.FormattingWithComma(CodeInput);
 
-        public MainViewModel()
-        {
-            AnalysisPressedCommand = new RelayCommand(OnAnalysisPressed);
-        }
+        // check code accuracy
+        var accuracyCodes = StockService.CheckStockCodeAccuracy(codes).ToList();
+        // add comma
+        var pyArg = StockService.FormatPyArgument(accuracyCodes);
 
-        private async void OnAnalysisPressed()
-        {
-            // format input
-            var codes = StringHelper.FormattingWithComma(CodeInput);
+        // formatted code resetting
+        CodeInput = pyArg;
 
-            // check code accuracy
-            var accuracyCodes = StockService.CheckStockCodeAccuracy(codes);
-            // add comma
-            var pyArg = StockService.FormatPyArgument(accuracyCodes);
+        // python script execution
+        await PythonService.RunPythonScript(PythonService.TdxReader, "C:/devEnv/Tools/TDX", StartupService.PyDataPath, pyArg);
 
-            // formatted code resetting
-            CodeInput = pyArg;
+        // TODO remove this after release
+        await Launcher.LaunchFolderAsync(await StorageFolder.GetFolderFromPathAsync(StartupService.PyDataPath));
 
-            // python script execution
-            await PythonService.RunPythonScript(PythonService.TdxReader, "C:/devEnv/Tools/TDX", LocalService.PyDataPath, pyArg);
+        // write to sqlite database
+        _csvToDbTransferService.Transfer(accuracyCodes);
 
-            // TODO remove this after release
-            await Launcher.LaunchFolderAsync(await StorageFolder.GetFolderFromPathAsync(LocalService.PyDataPath));
 
-            // TODO read pydata
+        // TODO analyze data
 
-            // TODO write to sqlite database
-
-            // TODO analyze data
-
-            // TODO show to UI data gram
-        }
+        // TODO show to UI data gram
     }
 }

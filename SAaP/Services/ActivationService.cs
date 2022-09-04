@@ -26,10 +26,10 @@ namespace SAaP.Services
             App.MainWindow.Activate();
         }
 
-        private async Task InitializeAsync()
+        private static async Task InitializeAsync()
         {
             // folder tree creation
-            await LocalService.EnsureWorkSpaceFolderTreeIntegrityAsync();
+            await StartupService.EnsureWorkSpaceFolderTreeIntegrityAsync();
         }
     }
 }
