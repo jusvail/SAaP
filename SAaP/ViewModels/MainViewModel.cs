@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Controls;
 using SAaP.Contracts.Services;
 using SAaP.Core.Services;
 using SAaP.Core.Models.DB;
+using CommunityToolkit.WinUI.UI.Controls;
 
 namespace SAaP.ViewModels;
 
@@ -57,7 +58,7 @@ public class MainViewModel : ObservableRecipient
         await PythonService.RunPythonScript(PythonService.TdxReader, "C:/devEnv/Tools/TDX", StartupService.PyDataPath, pyArg);
 
         // TODO remove this after release
-        await Launcher.LaunchFolderAsync(await StorageFolder.GetFolderFromPathAsync(StartupService.PyDataPath));
+        // await Launcher.LaunchFolderAsync(await StorageFolder.GetFolderFromPathAsync(StartupService.PyDataPath));
 
         // write to sqlite database
         await _csvToDbTransferService.Transfer(accuracyCodes);

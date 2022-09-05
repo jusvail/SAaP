@@ -11,7 +11,7 @@ namespace SAaP.Services
     /// <summary>
     /// Simple stock analyze service
     /// </summary>
-    internal class StockAnalyzeService : IStockAnalyzeService
+    public class StockAnalyzeService : IStockAnalyzeService
     {
         /// <summary>
         /// main analyze method

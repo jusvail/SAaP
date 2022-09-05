@@ -1,6 +1,7 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using SAaP.Constant;
+using SAaP.Contracts.Services;
 using SAaP.Extensions;
 
 namespace SAaP.Views
@@ -18,6 +19,7 @@ namespace SAaP.Views
             App.MainWindow.SetTitleBar(AppTitleBar);
             AppTitleBarText.Text = PjConstant.AppTitle.GetLocalized();
         }
+
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             NavigationFrame.Navigate(typeof(MainPage));

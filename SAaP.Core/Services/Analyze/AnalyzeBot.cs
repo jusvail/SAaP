@@ -107,12 +107,12 @@ namespace SAaP.Core.Services.Analyze
 
         public double CalcAverageOverPricedPercent()
         {
-           return _overpricedList.Where(overprice => overprice > 0).ToList().Average();
+           return CalculationService.Round2(_overpricedList.Where(overprice => overprice > 0).ToList().Average());
         }
 
         public double CalcAverageOverPricedPercentHigherThan1P()
         {
-            return _overpricedList.Where(overprice => overprice > 1).ToList().Average();
+            return CalculationService.Round2(_overpricedList.Where(overprice => overprice > 1).ToList().Average());
         }
 
         public string CalcEvaluate()

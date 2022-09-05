@@ -1,21 +1,12 @@
-﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
+﻿using Microsoft.UI.Xaml.Controls;
 using SAaP.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using System.Collections.ObjectModel;
+using CommunityToolkit.WinUI.UI.Controls;
+using SAaP.Core.Models;
+using System.Linq.Dynamic.Core;
+using Microsoft.UI.Xaml.Navigation;
+using SAaP.Contracts.Services;
+using SAaP.Services;
 
 namespace SAaP.Views
 {
@@ -24,16 +15,55 @@ namespace SAaP.Views
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        public MainViewModel ViewModel
-        {
-            get;
-        }
+        public MainViewModel ViewModel { get; }
 
         public MainPage()
         {
             ViewModel = App.GetService<MainViewModel>();
-            this.InitializeComponent();
+
+            InitializeComponent();
         }
+
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+
+            // get service
+            var restoreSettingsService = App.GetService<IRestoreSettingsService>();
+            // restore query history to db
+            ViewModel.CodeInput = await restoreSettingsService.RestoreLastQueryStringFromDb();
+        }
+
+        private void DataGrid_OnSorting(object sender, DataGridColumnEventArgs e)
+        {
+            if (e.Column.Tag == null) return;
+
+            // args for linq dynamic sorting
+            string args;
+
+            foreach (var column in DataGrid.Columns)
+            {
+                // self
+                if (e.Column == column) continue;
+                // clear sort direction
+                column.SortDirection = null;
+            }
+
+            // direction decide
+            if (e.Column.SortDirection is null or DataGridSortDirection.Descending)
+            {
+                e.Column.SortDirection = DataGridSortDirection.Ascending;
+                args = $"{e.Column.Tag} desc";
+            }
+            else
+            {
+                e.Column.SortDirection = DataGridSortDirection.Descending;
+                args = $"{e.Column.Tag} asc";
+            }
+
+            // sort using linq dynamic && update item source
+            DataGrid.ItemsSource = ViewModel.AnalyzedResults.AsQueryable().OrderBy(args);
+        }
+
     }
 }
-    

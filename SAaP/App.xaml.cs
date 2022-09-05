@@ -45,9 +45,10 @@ namespace SAaP
                 .UseContentRoot(AppContext.BaseDirectory)
                 .ConfigureServices((context, services) =>
                     {
-                        services.AddSingleton<IActivationService, ActivationService>(); 
+                        services.AddSingleton<IActivationService, ActivationService>();
                         services.AddSingleton<ICsvToDbTransferService, CsvToDbTransferService>();
                         services.AddSingleton<IStockAnalyzeService, StockAnalyzeService>();
+                        services.AddSingleton<IRestoreSettingsService, RestoreSettingsService>();
 
                         services.AddTransient<ShellPage>();
                         services.AddTransient<ShellViewModel>();

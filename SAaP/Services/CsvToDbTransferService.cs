@@ -17,15 +17,22 @@ public class CsvToDbTransferService : ICsvToDbTransferService
         // db connection
         await using var db = new DbSaap(StartupService.DbConnectionString);
 
+        // delete last queried history
+        await db.Stock.DeleteAsync();
+
         // loop file via code name
         foreach (var codeName in codeNames)
         {
             // sh stock data
             var issh = await FileService.TryGetItemAsync(pyDataFolder, StockService.GetOutputNameSh(codeName));
 
+            // last query codes store into db
+            var stock = new Stock { CodeName = codeName };
+
             if (issh != null)
             {
-                await InsertToDbIfRecordNotExist(issh, db, codeName, 1);
+                await InsertToDbIfRecordNotExist(issh, db, codeName);
+                stock.BelongTo = 1; // sh flag
             }
 
             // sz stock data
@@ -33,45 +40,46 @@ public class CsvToDbTransferService : ICsvToDbTransferService
 
             if (issz != null)
             {
-                await InsertToDbIfRecordNotExist(issz, db, codeName, 0);
+                await InsertToDbIfRecordNotExist(issz, db, codeName);
+                stock.BelongTo = 0; //sz flag
             }
+
+            // query history store into db
+            await db.InsertAsync(stock);
         }
     }
 
-    private static async Task InsertToDbIfRecordNotExist(IStorageFile file, DbSaap db, string codeName, int loc)
+    private static async Task InsertToDbIfRecordNotExist(IStorageFile file, DbSaap db, string codeName)
     {
-        // TODO table [STOCK] not update yet
-        Console.WriteLine(loc);
-
         // read per line
         foreach (var line in await FileIO.ReadLinesAsync(file))
         {
-            var obj = line.Split(',');
+            var lineObj = line.Split(',');
 
-            if (obj.Length != 6) continue;
+            if (lineObj.Length != 6) continue;
 
             // query for exist
             var query = from o in db.OriginalData
-                        where o.CodeName == codeName && o.Day == obj[0] // day column
+                        where o.CodeName == codeName && o.Day == lineObj[0] // day column
                         select o;
 
             // when exist in db, continue
             if (query.Any()) continue;
 
-            var od = new OriginalData
+            // initialize field
+            var originalData = new OriginalData
             {
-                // initialize field
                 CodeName = codeName,
-                Day = obj[0],
-                Opening = DbService.TryParseStringToDouble(obj[1]),
-                High = DbService.TryParseStringToDouble(obj[2]),
-                Low = DbService.TryParseStringToDouble(obj[3]),
-                Ending = DbService.TryParseStringToDouble(obj[4]),
-                Volume = DbService.TryParseStringToInt(obj[5])
+                Day = lineObj[0],
+                Opening = DbService.TryParseStringToDouble(lineObj[1]),
+                High = DbService.TryParseStringToDouble(lineObj[2]),
+                Low = DbService.TryParseStringToDouble(lineObj[3]),
+                Ending = DbService.TryParseStringToDouble(lineObj[4]),
+                Volume = DbService.TryParseStringToInt(lineObj[5])
             };
 
             // insert new record
-            await db.InsertAsync(od);
+            await db.InsertAsync(originalData);
         }
     }
 }

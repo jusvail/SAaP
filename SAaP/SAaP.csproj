@@ -36,6 +36,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.4" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.1" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.20" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
