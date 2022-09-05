@@ -17,8 +17,8 @@ namespace SAaP.Core.Services
         /// <returns>result</returns>
         public static double Round2(double input) => Math.Round(input, 2);
 
-        public static double CalcOverprice(double yesterDaysEnding, double todaysHigh) =>
-            Round2(100 * (todaysHigh - yesterDaysEnding) / yesterDaysEnding);
+        public static double CalcTtm(double before, double after) =>
+            Round2(100 * (after - before) / before);
 
         /// <summary>
         /// don't reverse yesterday and today!!!
@@ -27,6 +27,7 @@ namespace SAaP.Core.Services
         /// <param name="today">OriginalData of today</param>
         /// <returns></returns>
         public static double CalcOverprice(OriginalData yesterday, OriginalData today)
-            => CalcOverprice(yesterday.Ending, today.High);
+            => CalcTtm(yesterday.Ending, today.High);
+
     }
 }

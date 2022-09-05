@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using SAaP.Contracts.Services;
+﻿using SAaP.Contracts.Services;
 using SAaP.Core.DataModels;
 using SAaP.Core.Models;
 using SAaP.Core.Services;
@@ -20,7 +18,7 @@ namespace SAaP.Services
         /// <param name="duration">duration(from last trading day)</param>
         /// <param name="callback">callback method</param>
         /// <returns></returns>
-        public async Task Analyze(string codeName, int duration, Action<AnalysisResult> callback)
+        public async Task Analyze(string codeName, int duration, Func<AnalysisResult, Task> callback)
         {
             // initial db connection
             await using var db = new DbSaap(StartupService.DbConnectionString);
@@ -37,11 +35,18 @@ namespace SAaP.Services
             // main analyze process
             var bot = new AnalyzeBot(originalData);
 
+            // best stop profit calculate
+            // up to 6%
+            var best = bot.CalcBestStopProfitPoint(6.0);
+
+            // select company Name
+            var companyName = await DbService.SelectCompanyNameByCode(codeName);
+
             // analyze result store into object
             var analyzeResult = new AnalysisResult
             {
                 CodeName = codeName,
-                CompanyName = "没接口！", // TODO add companyName acquire service
+                CompanyName = companyName,
                 OverPricedPercent = bot.CalcOverPricedPercent(),
                 OverPricedDays = bot.CalcOverPricedDays(),
                 OverPricedPercentHigherThan1P = bot.CalcOverPricedPercentHigherThan1P(),
@@ -50,6 +55,14 @@ namespace SAaP.Services
                 MaxContinueMinusOverPricedDay = bot.CalcMaxContinueMinusOverPricedDay(),
                 AverageOverPricedPercent = bot.CalcAverageOverPricedPercent(),
                 AverageOverPricedPercentHigherThan1P = bot.CalcAverageOverPricedPercentHigherThan1P(),
+                StopProfitWith1P = bot.CalcStopProfitCompoundInterest(1),
+                StopProfitWith2P = bot.CalcStopProfitCompoundInterest(2),
+                StopProfitWith3P = bot.CalcStopProfitCompoundInterest(3),
+                NoActionProfit = bot.CalcNoActionProfit(),
+                BestStopProfit = best[0],
+                BestEarnings = best[1],
+                FirstTradingDay = originalData[^2].Day,
+                LastTradingDay = originalData[0].Day,
                 Evaluate = bot.CalcEvaluate()
             };
 

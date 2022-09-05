@@ -18,6 +18,7 @@ namespace SAaP.ViewModels;
 public class MainViewModel : ObservableRecipient
 {
     private string _codeInput;
+    private string _lastingDays;
 
     // store csv output by py script to sqlite database
     private readonly ICsvToDbTransferService _csvToDbTransferService;
@@ -28,10 +29,18 @@ public class MainViewModel : ObservableRecipient
 
     public IAsyncRelayCommand AnalysisPressedCommand { get; }
 
+    private IList<string> LastQueriedCodes { get; set; }
+
     public string CodeInput
     {
         get => _codeInput;
         set => SetProperty(ref _codeInput, value);
+    }
+
+    public string LastingDays
+    {
+        get => _lastingDays;
+        set => SetProperty(ref _lastingDays, value);
     }
 
     public MainViewModel()
@@ -63,11 +72,29 @@ public class MainViewModel : ObservableRecipient
         // write to sqlite database
         await _csvToDbTransferService.Transfer(accuracyCodes);
 
+        //store last queried  codes
+        LastQueriedCodes = accuracyCodes;
+
+        // invoke analyze
+        await OnLastingDaysValueChanged();
+    }
+
+    public async Task OnLastingDaysValueChanged()
+    {
+        // if none int
+        if (!int.TryParse(LastingDays, out var duration)) return;
+
+        // ignore less than 5 days analyze
+        if (duration < 5) return;
+
+        // clear preview result
+        AnalyzedResults.Clear();
+
         // analyze start
-        foreach (var code in accuracyCodes)
+        foreach (var code in LastQueriedCodes)
         {
             // analyze data
-            await _stockAnalyzeService.Analyze(code, 20, OnStockAnalyzeFinishedCallBack);
+            await _stockAnalyzeService.Analyze(code, duration, OnStockAnalyzeFinishedCallBack);
         }
     }
 
@@ -75,9 +102,10 @@ public class MainViewModel : ObservableRecipient
     /// when analyze finished, pass result to ui
     /// </summary>
     /// <param name="data"></param>
-    private void OnStockAnalyzeFinishedCallBack(AnalysisResult data)
+    private Task OnStockAnalyzeFinishedCallBack(AnalysisResult data)
     {
         AnalyzedResults.Add(data);
+        return Task.CompletedTask;
     }
 
     private List<string> FormatInputCode(string codeInput)

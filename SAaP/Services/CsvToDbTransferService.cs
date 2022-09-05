@@ -9,6 +9,12 @@ namespace SAaP.Services;
 
 public class CsvToDbTransferService : ICsvToDbTransferService
 {
+
+    /// <summary>
+    /// transfer result from py script to sqlite db 
+    /// </summary>
+    /// <param name="codeNames">stock's code name</param>
+    /// <returns>awaiting task</returns>
     public async Task Transfer(IEnumerable<string> codeNames)
     {
         // pydata path
@@ -32,7 +38,7 @@ public class CsvToDbTransferService : ICsvToDbTransferService
             if (issh != null)
             {
                 await InsertToDbIfRecordNotExist(issh, db, codeName);
-                stock.BelongTo = 1; // sh flag
+                stock.BelongTo = StockService.ShFlag; // sh flag
             }
 
             // sz stock data
@@ -41,8 +47,12 @@ public class CsvToDbTransferService : ICsvToDbTransferService
             if (issz != null)
             {
                 await InsertToDbIfRecordNotExist(issz, db, codeName);
-                stock.BelongTo = 0; //sz flag
+                stock.BelongTo = StockService.SzFlag; //sz flag
             }
+
+            // get company name
+            var companyName = await StockService.FetchCompanyNameByCode(codeName, stock.BelongTo);
+            stock.CompanyName = companyName;
 
             // query history store into db
             await db.InsertAsync(stock);

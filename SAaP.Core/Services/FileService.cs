@@ -9,7 +9,7 @@ using StorageFolder = Windows.Storage.StorageFolder;
 
 namespace SAaP.Core.Services
 {
-    public class FileService
+    public static class FileService
     {
 
         public static async Task<StorageFile> TryGetItemAsync(StorageFolder top, string name)

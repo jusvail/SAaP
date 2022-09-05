@@ -15,7 +15,7 @@
 
     <Grid Padding="5">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="180" />
+            <ColumnDefinition MaxWidth="120"/>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
@@ -26,7 +26,6 @@
             <ListView/>
         </StackPanel>
         <Grid Grid.Column="1">
-
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto"/>
@@ -76,22 +75,24 @@
                     <Grid Grid.Column="1" Background="LightCoral" 
                           Margin="0 0 2 5"
                           CornerRadius="5" BorderThickness="0.8" BorderBrush="LightGray">
-
                     </Grid>
                 </Grid>
-
                 <Grid Grid.Row="1" Margin="5" CornerRadius="5" BorderThickness="0.8" BorderBrush="LightGray">
                     <Grid x:Name="ContentArea"
                           Padding="5">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="24" />
+                            <RowDefinition Height="auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-
-                        <TextBlock Grid.Row="0"
-                                   x:Uid="DataGrid_Title"
-                                   Margin="6 1"
-                                   Text="近二十交易日分析结果(初步分析)"/>
+                        <StackPanel Orientation="Horizontal" Grid.Row="0" 
+                                    Margin="1" Padding="5 0">
+                            <TextBlock Text="近" VerticalAlignment="Center" Margin="3 0"/>
+                            <ComboBox x:Name="LastingDays" IsEditable="True" 
+                                      ItemsSource="{x:Bind FontSizes}" SelectedIndex="2"
+                                      Text="{x:Bind ViewModel.LastingDays,Mode=TwoWay}"
+                                      TextSubmitted="LastingDays_OnTextSubmitted"/>
+                            <TextBlock Text="交易日分析结果" VerticalAlignment="Center" Margin="3 0"/>
+                        </StackPanel>
                         <controls:DataGrid x:Name="DataGrid" Grid.Row="1"
                                            VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                                            HorizontalScrollBarVisibility="Visible"
@@ -116,14 +117,22 @@
                             <controls:DataGrid.Columns>
                                 <controls:DataGridTextColumn Binding="{Binding CodeName}" Header="代码" Tag="CodeName" />
                                 <controls:DataGridTextColumn Binding="{Binding CompanyName}" Header="名称" Tag="CompanyName"/>
-                                <controls:DataGridTextColumn Binding="{Binding OverPricedPercent}" Header="op率"  Tag="OverPricedPercent"/>
-                                <controls:DataGridTextColumn Binding="{Binding OverPricedDays}" Header="op天数"  Tag="OverPricedDays"/>
-                                <controls:DataGridTextColumn Binding="{Binding OverPricedPercentHigherThan1P}" Header="1%+op率"  Tag="OverPricedPercentHigherThan1P"/>
-                                <controls:DataGridTextColumn Binding="{Binding OverPricedDaysHigherThan1P}" Header="1%+op天数"  Tag="OverPricedDaysHigherThan1P"/>
-                                <controls:DataGridTextColumn Binding="{Binding MaxContinueOverPricedDay}" Header="mc+op天数"  Tag="MaxContinueOverPricedDay"/>
-                                <controls:DataGridTextColumn Binding="{Binding MaxContinueMinusOverPricedDay}" Header="mc-op天数"  Tag="MaxContinueMinusOverPricedDay"/>
-                                <controls:DataGridTextColumn Binding="{Binding AverageOverPricedPercent}" Header="+avop率"  Tag="AverageOverPricedPercent"/>
-                                <controls:DataGridTextColumn Binding="{Binding AverageOverPricedPercentHigherThan1P}" Header="1%+avop率"  Tag="AverageOverPricedPercentHigherThan1P"/>
+                                <controls:DataGridTextColumn Binding="{Binding OverPricedPercent}" Header="op%" Tag="OverPricedPercent"/>
+                                <controls:DataGridTextColumn Binding="{Binding OverPricedDays}" Header="opD" Tag="OverPricedDays"/>
+                                <controls:DataGridTextColumn Binding="{Binding OverPricedPercentHigherThan1P}" Header="1%+op%" Tag="OverPricedPercentHigherThan1P"/>
+                                <controls:DataGridTextColumn Binding="{Binding OverPricedDaysHigherThan1P}" Header="1%+opD" Tag="OverPricedDaysHigherThan1P"/>
+                                <controls:DataGridTextColumn Binding="{Binding MaxContinueOverPricedDay}" Header="mc+opD" Tag="MaxContinueOverPricedDay"/>
+                                <controls:DataGridTextColumn Binding="{Binding MaxContinueMinusOverPricedDay}" Header="mc-opD" Tag="MaxContinueMinusOverPricedDay"/>
+                                <controls:DataGridTextColumn Binding="{Binding AverageOverPricedPercent}" Header="+avop%" Tag="AverageOverPricedPercent"/>
+                                <controls:DataGridTextColumn Binding="{Binding AverageOverPricedPercentHigherThan1P}" Header="1%+avop%" Tag="AverageOverPricedPercentHigherThan1P"/>
+                                <controls:DataGridTextColumn Binding="{Binding StopProfitWith1P}" Header="1%+sp获利" Tag="StopProfitWith1P"/>
+                                <controls:DataGridTextColumn Binding="{Binding StopProfitWith2P}" Header="2%+sp获利" Tag="StopProfitWith2P"/>
+                                <controls:DataGridTextColumn Binding="{Binding StopProfitWith3P}" Header="3%+sp获利" Tag="StopProfitWith3P"/>
+                                <controls:DataGridTextColumn Binding="{Binding NoActionProfit}" Header="躺平获利" Tag="NoActionProfit"/>
+                                <controls:DataGridTextColumn Binding="{Binding BestStopProfit}" Header="Bsp" Tag="BestStopProfit"/>
+                                <controls:DataGridTextColumn Binding="{Binding BestEarnings}" Header="Bsp获利" Tag="BestEarnings"/>
+                                <controls:DataGridTextColumn Binding="{Binding FirstTradingDay}" Header="ltd" Tag="FirstTradingDay"/>
+                                <controls:DataGridTextColumn Binding="{Binding LastTradingDay}" Header="ltd" Tag="LastTradingDay"/>
                                 <controls:DataGridTemplateColumn Header="评价">
                                     <controls:DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>

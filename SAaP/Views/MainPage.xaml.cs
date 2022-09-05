@@ -1,26 +1,27 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using SAaP.ViewModels;
-using System.Collections.ObjectModel;
 using CommunityToolkit.WinUI.UI.Controls;
-using SAaP.Core.Models;
 using System.Linq.Dynamic.Core;
 using Microsoft.UI.Xaml.Navigation;
 using SAaP.Contracts.Services;
-using SAaP.Services;
 
 namespace SAaP.Views
 {
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// main page
     /// </summary>
     public sealed partial class MainPage : Page
     {
         public MainViewModel ViewModel { get; }
 
+        public List<double> FontSizes { get; } = new()
+        {
+            5, 10, 20, 30, 50, 100, 120, 150, 200
+        };
+
         public MainPage()
         {
             ViewModel = App.GetService<MainViewModel>();
-
             InitializeComponent();
         }
 
@@ -36,6 +37,7 @@ namespace SAaP.Views
 
         private void DataGrid_OnSorting(object sender, DataGridColumnEventArgs e)
         {
+            // just for sure
             if (e.Column.Tag == null) return;
 
             // args for linq dynamic sorting
@@ -43,9 +45,9 @@ namespace SAaP.Views
 
             foreach (var column in DataGrid.Columns)
             {
-                // self
+                // self skip
                 if (e.Column == column) continue;
-                // clear sort direction
+                // clear others sort direction
                 column.SortDirection = null;
             }
 
@@ -65,5 +67,9 @@ namespace SAaP.Views
             DataGrid.ItemsSource = ViewModel.AnalyzedResults.AsQueryable().OrderBy(args);
         }
 
+        private async void LastingDays_OnTextSubmitted(ComboBox sender, ComboBoxTextSubmittedEventArgs args)
+        {
+            await ViewModel.OnLastingDaysValueChanged();
+        }
     }
 }

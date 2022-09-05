@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SAaP.Core.Models.DB;
 
 namespace SAaP.Core.Services.Analyze
@@ -16,6 +13,8 @@ namespace SAaP.Core.Services.Analyze
         private int _actualCount;
 
         private IList<double> _overpricedList;
+
+        private IList<double> _ttm;
 
         public AnalyzeBot(IList<OriginalData> originalData)
         {
@@ -36,12 +35,18 @@ namespace SAaP.Core.Services.Analyze
         {
             // overpriced list
             _overpricedList = new List<double>(_actualCount);
+            // ttm list
+            _ttm = new List<double>(_actualCount);
 
             for (var i = _count - 1; i > 0; i--)
             {
                 //calc overprice
                 var overprice = CalculationService.CalcOverprice(_originalData[i], _originalData[i - 1]);
                 _overpricedList.Add(overprice);
+
+                //calc ttm
+                var ttm = CalculationService.CalcTtm(_originalData[i].Ending, _originalData[i - 1].Ending);
+                _ttm.Add(ttm);
             }
         }
 
@@ -107,7 +112,7 @@ namespace SAaP.Core.Services.Analyze
 
         public double CalcAverageOverPricedPercent()
         {
-           return CalculationService.Round2(_overpricedList.Where(overprice => overprice > 0).ToList().Average());
+            return CalculationService.Round2(_overpricedList.Where(overprice => overprice > 0).ToList().Average());
         }
 
         public double CalcAverageOverPricedPercentHigherThan1P()
@@ -115,9 +120,86 @@ namespace SAaP.Core.Services.Analyze
             return CalculationService.Round2(_overpricedList.Where(overprice => overprice > 1).ToList().Average());
         }
 
+        /// <summary>
+        /// calculate how much can we earnings if we set a stop profit
+        /// </summary>
+        /// <param name="stopProfit">1,2,3...etc</param>
+        /// <returns>earnings</returns>
+        public double CalcStopProfitCompoundInterest(double stopProfit)
+        {
+            // start amount
+            var start = 100.0;
+
+            // loop overprice list
+            for (var i = 0; i < _overpricedList.Count; i++)
+            {
+                // if overprice higher than stop profit, add stop profit only
+                if (_overpricedList[i] > stopProfit)
+                {
+                    start *= (1 + stopProfit / 100);
+                }
+                // if minus overprice, a loss day :<
+                // or a earnings day but not as expected
+                else if (_overpricedList[i] < 0)
+                {
+                    start *= (1 + _ttm[i] / 100);
+                }
+            }
+
+            // how much can we earned....
+            return start;
+        }
+
+        public double CalcNoActionProfit()
+        {
+            var oldest = _originalData[^1].Opening;
+            var newest = _originalData[1].Ending;
+
+            return newest * 100 / oldest;
+        }
+
+        public double[] CalcBestStopProfitPoint(double upTo)
+        {
+            // base point
+            var stopProfit = 1.0;
+            // principal
+            var earnings = 100.0;
+
+            // [0]: stop profit
+            // [1]: earnings
+            var best = new double[2];
+
+            while (stopProfit <= upTo)
+            {
+                var thisEarning = CalcStopProfitCompoundInterest(stopProfit);
+
+                if (thisEarning > earnings)
+                {
+                    earnings = thisEarning;
+                    best[0] = stopProfit;
+                    best[1] = thisEarning;
+                }
+
+                // 0.1 each loop
+                stopProfit += 0.1;
+            }
+
+            return best;
+        }
+
         public string CalcEvaluate()
         {
-            return CalcOverPricedPercentHigherThan1P() > 90 ? "我小叮当觉得很牛" : "BOT我不造啊！";
+            return CalcNoActionProfit() switch
+            {
+                > 200 => "躺赚{p%100}倍",
+                > 150 => "躺赚50%+",
+                > 120 => "躺赚20%+",
+                > 110 => "躺赚10%+",
+                > 100 => "喝点鸡汤",
+                > 90 => "随时准备止损",
+                > 80 => "放手吧",
+                _ => "我小叮当觉得垃圾"
+            };
         }
     }
 }
