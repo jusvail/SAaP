@@ -3,15 +3,10 @@ using CommunityToolkit.Mvvm.Input;
 using SAaP.Core.Helpers;
 using SAaP.Core.Models;
 using System.Collections.ObjectModel;
-using Windows.Storage;
-using Windows.System;
-using Mapster;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using SAaP.Contracts.Services;
 using SAaP.Core.Services;
-using SAaP.Core.Models.DB;
-using CommunityToolkit.WinUI.UI.Controls;
 
 namespace SAaP.ViewModels;
 
@@ -43,6 +38,8 @@ public class MainViewModel : ObservableRecipient
         set => SetProperty(ref _lastingDays, value);
     }
 
+    public IRelayCommand ClearDataGrid { get; }
+
     public MainViewModel()
     { }
 
@@ -51,6 +48,12 @@ public class MainViewModel : ObservableRecipient
         _csvToDbTransferService = csvToDbTransferService;
         _stockAnalyzeService = stockAnalyzeService;
         AnalysisPressedCommand = new AsyncRelayCommand(OnAnalysisPressed);
+        ClearDataGrid = new RelayCommand(OnClearDataGrid);
+    }
+
+    private void OnClearDataGrid()
+    {
+        AnalyzedResults.Clear();
     }
 
     private async Task OnAnalysisPressed()
@@ -90,6 +93,8 @@ public class MainViewModel : ObservableRecipient
         // clear preview result
         AnalyzedResults.Clear();
 
+        if (LastQueriedCodes == null) return;
+
         // analyze start
         foreach (var code in LastQueriedCodes)
         {
@@ -102,10 +107,9 @@ public class MainViewModel : ObservableRecipient
     /// when analyze finished, pass result to ui
     /// </summary>
     /// <param name="data"></param>
-    private Task OnStockAnalyzeFinishedCallBack(AnalysisResult data)
+    private void OnStockAnalyzeFinishedCallBack(AnalysisResult data)
     {
         AnalyzedResults.Add(data);
-        return Task.CompletedTask;
     }
 
     private List<string> FormatInputCode(string codeInput)

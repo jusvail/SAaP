@@ -24,14 +24,22 @@ else:
     print('args too much')
     sys.exit()
 
+# 可转债的值变换与普通股有出入
+
+
+def zz_parse(zzc, original):
+
+    # print(zzc)
+    if zzc == "11" or zzc == "12":
+        return int(str(original)[0:6]) / 1000
+    else:
+        return original / 100
+
 
 def stock_csv(filepath, name):
+
     # 可转债判断
     zzc = name[2:4]
-    if zzc == "11" or zzc == "12":
-        divisor = 1000.0
-    else:
-        divisor = 100.0
 
     with open(filepath, 'rb') as f:
         file_object_path = out_path + '/' + name + '.csv'
@@ -62,8 +70,10 @@ def stock_csv(filepath, name):
             date_format = datetime.datetime.strptime(
                 str(stock_date[0]), '%Y%M%d')  # 格式化日期
 
-            list = date_format.strftime('%Y/%M/%d') + "," + str(stock_open[0]/divisor) + "," + str(stock_high[0]/divisor) + "," + str(
-                stock_low[0]/divisor) + "," + str(stock_close[0]/divisor) + "," + str(stock_vol[0]) + "\n"
+            # print(zz_parse(zzc, stock_high[0]))
+
+            list = date_format.strftime('%Y/%M/%d') + "," + str(zz_parse(zzc, stock_open[0])) + "," + str(zz_parse(zzc, stock_high[0])) + "," + str(
+                zz_parse(zzc, stock_low[0])) + "," + str(zz_parse(zzc, stock_close[0])) + "," + str(stock_vol[0]) + "\n"
 
             file_object.writelines(list)
         file_object.close()

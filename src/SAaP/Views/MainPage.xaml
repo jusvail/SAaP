@@ -97,8 +97,10 @@
                                       Text="{x:Bind ViewModel.LastingDays,Mode=TwoWay}"
                                       TextSubmitted="LastingDays_OnTextSubmitted"/>
                             <TextBlock Text="交易日分析结果" VerticalAlignment="Center" Margin="3 0"/>
+                            <HyperlinkButton Content="清空列表" Command="{x:Bind ViewModel.ClearDataGrid}" 
+                                             Click="ClearGrid_OnClick"/>
                         </StackPanel>
-                        <controls:DataGrid x:Name="DataGrid" Grid.Row="1"
+                        <controls:DataGrid x:Name="AnalyzeResultGrid" Grid.Row="1"
                                            Margin="0 5"
                                            VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                                            HorizontalScrollBarVisibility="Visible"

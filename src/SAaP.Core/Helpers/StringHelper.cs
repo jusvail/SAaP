@@ -9,7 +9,7 @@ public static class StringHelper
     {
         if (string.IsNullOrEmpty(input)) return null;
 
-        var trimmed = Regex.Replace(input.Trim(), "'|\"|\r|\r\n|\n|,", " ");
+        var trimmed = Regex.Replace(input.Trim(), "'|\"|\r|\r\n|\n|,|，|“|”|‘|’", " ");
 
         return Regex.Split(trimmed, @"\s+");
     }

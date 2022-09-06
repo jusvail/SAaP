@@ -2,6 +2,7 @@
 using SAaP.ViewModels;
 using CommunityToolkit.WinUI.UI.Controls;
 using System.Linq.Dynamic.Core;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Navigation;
 using SAaP.Contracts.Services;
 
@@ -16,7 +17,7 @@ namespace SAaP.Views
 
         public List<double> FontSizes { get; } = new()
         {
-            5, 10, 20, 30, 50, 100, 120, 150, 200
+            5, 10, 15, 20, 30, 50, 100, 120, 150, 200
         };
 
         public MainPage()
@@ -43,7 +44,7 @@ namespace SAaP.Views
             // args for linq dynamic sorting
             string args;
 
-            foreach (var column in DataGrid.Columns)
+            foreach (var column in AnalyzeResultGrid.Columns)
             {
                 // self skip
                 if (e.Column == column) continue;
@@ -64,12 +65,19 @@ namespace SAaP.Views
             }
 
             // sort using linq dynamic && update item source
-            DataGrid.ItemsSource = ViewModel.AnalyzedResults.AsQueryable().OrderBy(args);
+            AnalyzeResultGrid.ItemsSource = ViewModel.AnalyzedResults.AsQueryable().OrderBy(args);
         }
 
         private async void LastingDays_OnTextSubmitted(ComboBox sender, ComboBoxTextSubmittedEventArgs args)
         {
+            AnalyzeResultGrid.ItemsSource = null;
             await ViewModel.OnLastingDaysValueChanged();
+            AnalyzeResultGrid.ItemsSource = ViewModel.AnalyzedResults;
+        }
+
+        private void ClearGrid_OnClick(object sender, RoutedEventArgs e)
+        {
+            AnalyzeResultGrid.ItemsSource = null;
         }
     }
 }

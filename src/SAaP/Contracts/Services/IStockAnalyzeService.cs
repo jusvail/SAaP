@@ -4,5 +4,5 @@ namespace SAaP.Contracts.Services;
 
 public interface IStockAnalyzeService
 {
-    Task Analyze(string codeName, int duration, Func<AnalysisResult,Task> callback);
+    Task Analyze(string codeName, int duration, Action<AnalysisResult> callback);
 }

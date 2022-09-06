@@ -88,7 +88,7 @@ namespace SAaP.Core.Services.Analyze
                     days = 0;
                 }
             }
-            return maxDays;
+            return maxDays > days ? maxDays : days;
         }
 
         public double CalcMaxContinueMinusOverPricedDay()
@@ -107,17 +107,19 @@ namespace SAaP.Core.Services.Analyze
                     days = 0;
                 }
             }
-            return maxDays;
+            return maxDays > days ? maxDays : days;
         }
 
         public double CalcAverageOverPricedPercent()
         {
-            return CalculationService.Round2(_overpricedList.Where(overprice => overprice > 0).ToList().Average());
+            var sl = _overpricedList.Where(overprice => overprice > 0).ToList();
+            return sl.Any() ? CalculationService.Round2(sl.Average()) : 0.0;
         }
 
         public double CalcAverageOverPricedPercentHigherThan1P()
         {
-            return CalculationService.Round2(_overpricedList.Where(overprice => overprice > 1).ToList().Average());
+            var sl = _overpricedList.Where(overprice => overprice > 1).ToList();
+            return sl.Any() ? CalculationService.Round2(sl.Average()) : 0.0;
         }
 
         /// <summary>
