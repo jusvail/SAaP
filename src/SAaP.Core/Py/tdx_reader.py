@@ -26,6 +26,13 @@ else:
 
 
 def stock_csv(filepath, name):
+    # 可转债判断
+    zzc = name[2:4]
+    if zzc == "11" or zzc == "12":
+        divisor = 1000.0
+    else:
+        divisor = 100.0
+
     with open(filepath, 'rb') as f:
         file_object_path = out_path + '/' + name + '.csv'
         file_object = open(file_object_path, 'w+')
@@ -55,8 +62,8 @@ def stock_csv(filepath, name):
             date_format = datetime.datetime.strptime(
                 str(stock_date[0]), '%Y%M%d')  # 格式化日期
 
-            list = date_format.strftime('%Y/%M/%d') + "," + str(stock_open[0]/100) + "," + str(stock_high[0]/100.0) + "," + str(
-                stock_low[0]/100.0) + "," + str(stock_close[0]/100.0) + "," + str(stock_vol[0]) + "\n"
+            list = date_format.strftime('%Y/%M/%d') + "," + str(stock_open[0]/divisor) + "," + str(stock_high[0]/divisor) + "," + str(
+                stock_low[0]/divisor) + "," + str(stock_close[0]/divisor) + "," + str(stock_vol[0]) + "\n"
 
             file_object.writelines(list)
         file_object.close()
@@ -92,3 +99,5 @@ else:
     file_sz = os.listdir(data_sz)
     for i in file_sz:
         stock_csv(data_sz + i, i[:-4])
+
+print("finished")
