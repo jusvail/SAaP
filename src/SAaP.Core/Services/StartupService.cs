@@ -3,55 +3,54 @@ using System.IO;
 using System.Threading.Tasks;
 using Windows.Storage;
 
-namespace SAaP.Core.Services
+namespace SAaP.Core.Services;
+
+public static class StartupService
 {
-    public static class StartupService
+    private static readonly string LocalApplicationData = ApplicationData.Current.LocalFolder.Path;
+
+    private const string DbName = "saap.db";
+    private const string WorkFolder = "saap";
+    private const string WorkFolderSubDbContainer = "db";
+    private const string WorkFolderSubPyData = "pydata";
+
+    private static string WorkSpacePath => Path.Combine(LocalApplicationData, WorkFolder);
+
+    public static string DbPath => Path.Combine(WorkSpacePath, WorkFolderSubDbContainer);
+    public static string DbFilePath => Path.Combine(DbPath, DbName);
+    public static string DbConnectionString => "Data Source=" + DbFilePath + ";Version=3;";
+
+    public static string PyDataPath => Path.Combine(WorkSpacePath, WorkFolderSubPyData);
+
+    private static async Task<StorageFolder> EnsureFolderExist(StorageFolder top, string name)
     {
-        private static readonly string LocalApplicationData = ApplicationData.Current.LocalFolder.Path;
+        var folder = await top.TryGetItemAsync(name) as StorageFolder;
 
-        private const string DbName = "saap.db";
-        private const string WorkFolder = "saap";
-        private const string WorkFolderSubDbContainer = "db";
-        private const string WorkFolderSubPyData = "pydata";
+        return folder ?? await top.CreateFolderAsync(name);
+    }
 
-        private static string WorkSpacePath => Path.Combine(LocalApplicationData, WorkFolder);
+    private static async Task EnsureDbFileExist(StorageFolder top, string name)
+    {
+        var file = await top.TryGetItemAsync(name) as StorageFile;
 
-        public static string DbPath => Path.Combine(WorkSpacePath, WorkFolderSubDbContainer);
-        public static string DbFilePath => Path.Combine(DbPath, DbName);
-        public static string DbConnectionString => "Data Source=" + DbFilePath + ";Version=3;";
-
-        public static string PyDataPath => Path.Combine(WorkSpacePath, WorkFolderSubPyData);
-
-        private static async Task<StorageFolder> EnsureFolderExist(StorageFolder top, string name)
+        if (file == null)
         {
-            var folder = await top.TryGetItemAsync(name) as StorageFolder;
-
-            return folder ?? await top.CreateFolderAsync(name);
+            await top.CreateFileAsync(name);
+            // Initialize Database
+            await DbService.InitializeDatabase();
         }
+    }
 
-        private static async Task EnsureDbFileExist(StorageFolder top, string name)
-        {
-            var file = await top.TryGetItemAsync(name) as StorageFile;
+    public static async Task EnsureWorkSpaceFolderTreeIntegrityAsync()
+    {
+        var localAppDataFolder = await StorageFolder.GetFolderFromPathAsync(LocalApplicationData);
 
-            if (file == null)
-            {
-                await top.CreateFileAsync(name);
-                // Initialize Database
-                await DbService.InitializeDatabase();
-            }
-        }
+        var workSpace = await EnsureFolderExist(localAppDataFolder, WorkFolder);
 
-        public static async Task EnsureWorkSpaceFolderTreeIntegrityAsync()
-        {
-            var localAppDataFolder = await StorageFolder.GetFolderFromPathAsync(LocalApplicationData);
+        await EnsureFolderExist(workSpace, WorkFolderSubPyData);
 
-            var workSpace = await EnsureFolderExist(localAppDataFolder, WorkFolder);
+        var dbFolder = await EnsureFolderExist(workSpace, WorkFolderSubDbContainer);
 
-            await EnsureFolderExist(workSpace, WorkFolderSubPyData);
-
-            var dbFolder = await EnsureFolderExist(workSpace, WorkFolderSubDbContainer);
-
-            await EnsureDbFileExist(dbFolder, DbName);
-        }
+        await EnsureDbFileExist(dbFolder, DbName);
     }
 }

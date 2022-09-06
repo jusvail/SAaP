@@ -42,7 +42,7 @@ public static class StockService
                     yield return input;
                     break;
                 case TdxCodeLength:
-                    yield return input[1..];
+                    yield return input[1..]; // example: [1000024] cut first '1'
                     break;
             }
         }
@@ -56,17 +56,25 @@ public static class StockService
         {
             sb.Append(arg).Append(',');
         }
-
+        // remove last ','
         return sb.Remove(sb.Length - 1, 1).ToString();
     }
 
     public static async Task<string> FetchCompanyNameByCode(string codeName, int flag)
     {
+        // query from db first
+        var companyName = await DbService.SelectCompanyNameByCode(codeName);
+        //if exist return
+        if (companyName != null) return companyName;
+
+        // not exist in db so get from internet
+
         // tx api => full request string
-        var api = WebServiceApi.GenerateTxQueryString(StockService.GetLocByFlag(flag), codeName);
+        var api = WebServiceApi.GenerateTxQueryString(GetLocByFlag(flag), codeName);
         // get result through http
         var result = await Http.GetStringAsync(api);
 
+        // no way
         if (result == null) return null;
 
         // regex => get company name by grouping
@@ -76,6 +84,7 @@ public static class StockService
         // match by regex
         var matches = Regex.Matches(result, pattern);
 
+        // not gonna be happen
         if (matches.IsNullOrEmpty()) return null;
 
         var groups = matches[0].Groups;

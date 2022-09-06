@@ -14,7 +14,7 @@
         <helpers:ProfitColorConverter x:Key="ProfitColorConverter" />
         <helpers:ProfitPercentColorConverter x:Key="ProfitPercentColorConverter" />
         <helpers:OverpriceColorConverter x:Key="OverpriceColorConverter" />
-        <helpers:ProfitWeightConverter x:Key="ProfitWeightConverter" /> 
+        <helpers:ProfitWeightConverter x:Key="ProfitWeightConverter" />
         <helpers:ProfitPercentWeightConverter x:Key="ProfitPercentWeightConverter" />
     </Page.Resources>
 
@@ -62,13 +62,13 @@
                                              Text="{x:Bind ViewModel.CodeInput,Mode=TwoWay}"
                                              SelectionHighlightColor="Green" MinHeight="150"
                                              AllowFocusOnInteraction="True"
-                                             LostFocus="{x:Bind ViewModel.OnCodeInputLostFocusEventHandler}"
+                                             LostFocus="OnCodeInputLostFocusEventHandler"
                                              PlaceholderText="多个代码请用空格或逗号分隔"/>
                                     <StackPanel Orientation="Horizontal">
                                         <Button Content="加入自选" Margin="2"/>
                                         <Button Style="{StaticResource AccentButtonStyle}" 
                                                 IsEnabled="{x:Bind ViewModel.AnalysisPressedCommand.IsRunning, Converter={StaticResource ReverseBooleanConverter}, Mode=OneWay}"
-                                                Command="{x:Bind ViewModel.AnalysisPressedCommand}" 
+                                                Command="{x:Bind ViewModel.AnalysisPressedCommand}"
                                                 Content="执行分析" Margin="2"/>
                                         <ProgressRing HorizontalAlignment="Left"
                                                       IsActive="{x:Bind ViewModel.AnalysisPressedCommand.IsRunning, Mode=OneWay}" Margin="2"/>
@@ -82,7 +82,7 @@
                           CornerRadius="5" BorderThickness="0.8" BorderBrush="LightGray">
                     </Grid>
                 </Grid>
-                <Grid Grid.Row="1" Margin="5" CornerRadius="5" BorderThickness="0.8" BorderBrush="LightGray">
+                <Grid Grid.Row="1" Margin="5 0 2 0" CornerRadius="5" BorderThickness="0.8" BorderBrush="LightGray">
                     <Grid x:Name="ContentArea"
                           Padding="5">
                         <Grid.RowDefinitions>

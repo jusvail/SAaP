@@ -5,13 +5,14 @@ using System.Linq.Dynamic.Core;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Navigation;
 using SAaP.Contracts.Services;
+using SAaP.Core.Services;
 
 namespace SAaP.Views
 {
     /// <summary>
     /// main page
     /// </summary>
-    public sealed partial class MainPage : Page
+    public sealed partial class MainPage
     {
         public MainViewModel ViewModel { get; }
 
@@ -70,14 +71,24 @@ namespace SAaP.Views
 
         private async void LastingDays_OnTextSubmitted(ComboBox sender, ComboBoxTextSubmittedEventArgs args)
         {
+            // clear data grid first
             AnalyzeResultGrid.ItemsSource = null;
+            // execute analyze
             await ViewModel.OnLastingDaysValueChanged();
+            // bind item source back
             AnalyzeResultGrid.ItemsSource = ViewModel.AnalyzedResults;
         }
 
         private void ClearGrid_OnClick(object sender, RoutedEventArgs e)
         {
+            // clear data grid
             AnalyzeResultGrid.ItemsSource = null;
+        }
+
+        private void OnCodeInputLostFocusEventHandler(object sender, RoutedEventArgs e)
+        {
+            // format input code
+            CodeInput.Text = StockService.FormatPyArgument(ViewModel.FormatInputCode(CodeInput.Text));
         }
     }
 }

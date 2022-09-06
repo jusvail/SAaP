@@ -36,8 +36,8 @@ public class StockAnalyzeService : IStockAnalyzeService
         var bot = new AnalyzeBot(originalData);
 
         // best stop profit calculate
-        // up to 6%
-        var best = bot.CalcBestStopProfitPoint(6.0);
+        // up to 7%
+        var best = bot.CalcBestStopProfitPoint(7.0);
 
         // select company Name
         var companyName = await DbService.SelectCompanyNameByCode(codeName);

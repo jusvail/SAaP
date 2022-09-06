@@ -64,8 +64,9 @@ public class CsvToDbTransferService : ICsvToDbTransferService
         // read per line
         foreach (var line in await FileIO.ReadLinesAsync(file))
         {
+            // line split by ','
             var lineObj = line.Split(',');
-
+            // should be 6
             if (lineObj.Length != 6) continue;
 
             // query for exist
@@ -81,11 +82,11 @@ public class CsvToDbTransferService : ICsvToDbTransferService
             {
                 CodeName = codeName,
                 Day = lineObj[0],
-                Opening = DbService.TryParseStringToDouble(lineObj[1]),
-                High = DbService.TryParseStringToDouble(lineObj[2]),
-                Low = DbService.TryParseStringToDouble(lineObj[3]),
-                Ending = DbService.TryParseStringToDouble(lineObj[4]),
-                Volume = DbService.TryParseStringToInt(lineObj[5])
+                Opening = CalculationService.TryParseStringToDouble(lineObj[1]),
+                High = CalculationService.TryParseStringToDouble(lineObj[2]),
+                Low = CalculationService.TryParseStringToDouble(lineObj[3]),
+                Ending = CalculationService.TryParseStringToDouble(lineObj[4]),
+                Volume = CalculationService.TryParseStringToInt(lineObj[5])
             };
 
             // insert new record

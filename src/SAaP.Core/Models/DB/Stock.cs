@@ -1,19 +1,20 @@
 ﻿using LinqToDB.Mapping;
-using System.Xml.Linq;
 
-namespace SAaP.Core.Models.DB
+namespace SAaP.Core.Models.DB;
+
+[Table(Name = "Stock")]
+public class Stock
 {
-    [Table(Name = "STOCK")]
-    public class Stock
-    {
 
-        [PrimaryKey]
-        public string CodeName { get; set; }
+    [PrimaryKey]
+    public string CodeName { get; set; }
 
-        [Column]
-        public string CompanyName { get; set; }
+    [Column]
+    public string CompanyName { get; set; }
 
-        [Column]
-        public int BelongTo { get; set; }
-    }
+    [Column]
+    public int BelongTo { get; set; }
+
+    [Column]
+    public int Group { get; set; }
 }

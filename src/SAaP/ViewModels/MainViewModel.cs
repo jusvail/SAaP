@@ -112,7 +112,7 @@ public class MainViewModel : ObservableRecipient
         AnalyzedResults.Add(data);
     }
 
-    private List<string> FormatInputCode(string codeInput)
+    public List<string> FormatInputCode(string codeInput)
     {
         // format input
         var codes = StringHelper.FormattingWithComma(codeInput);
@@ -124,6 +124,9 @@ public class MainViewModel : ObservableRecipient
         // check null code
         if (accuracyCodes.Count == 0) return null;
 
+        // delete repeat code
+        accuracyCodes = accuracyCodes.GroupBy(a => a).Select(s => s.First()).ToList();
+
         // add comma
         var pyArg = StockService.FormatPyArgument(accuracyCodes);
 
@@ -131,10 +134,5 @@ public class MainViewModel : ObservableRecipient
         CodeInput = pyArg;
 
         return accuracyCodes;
-    }
-
-    public void OnCodeInputLostFocusEventHandler(object sender, RoutedEventArgs e)
-    {
-        FormatInputCode((sender as TextBox)?.Text);
     }
 }
