@@ -3,10 +3,9 @@ using CommunityToolkit.Mvvm.Input;
 using SAaP.Core.Helpers;
 using SAaP.Core.Models;
 using System.Collections.ObjectModel;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using SAaP.Contracts.Services;
 using SAaP.Core.Services;
+using SAaP.Core.DataModels;
 
 namespace SAaP.ViewModels;
 
@@ -16,13 +15,15 @@ public class MainViewModel : ObservableRecipient
     private string _lastingDays;
 
     // store csv output by py script to sqlite database
-    private readonly ICsvToDbTransferService _csvToDbTransferService;
+    private readonly IDbTransferService _dbTransferService;
     // analyze main service
     private readonly IStockAnalyzeService _stockAnalyzeService;
 
     public ObservableCollection<AnalysisResult> AnalyzedResults { get; } = new();
 
     public IAsyncRelayCommand AnalysisPressedCommand { get; }
+
+    public IAsyncRelayCommand AddToFavoriteCommand { get; }
 
     private IList<string> LastQueriedCodes { get; set; }
 
@@ -43,12 +44,19 @@ public class MainViewModel : ObservableRecipient
     public MainViewModel()
     { }
 
-    public MainViewModel(ICsvToDbTransferService csvToDbTransferService, IStockAnalyzeService stockAnalyzeService)
+    public MainViewModel(IDbTransferService dbTransferService, IStockAnalyzeService stockAnalyzeService)
     {
-        _csvToDbTransferService = csvToDbTransferService;
+        _dbTransferService = dbTransferService;
         _stockAnalyzeService = stockAnalyzeService;
         AnalysisPressedCommand = new AsyncRelayCommand(OnAnalysisPressed);
         ClearDataGrid = new RelayCommand(OnClearDataGrid);
+        AddToFavoriteCommand = new AsyncRelayCommand(AddToFavorite);
+    }
+
+    private async Task AddToFavorite()
+    {
+        var accuracyCodes = StringHelper.FormatInputCode(CodeInput);
+        // TODO add to favorite func
     }
 
     private void OnClearDataGrid()
@@ -59,12 +67,15 @@ public class MainViewModel : ObservableRecipient
     private async Task OnAnalysisPressed()
     {
         // check code accuracy
-        var accuracyCodes = FormatInputCode(CodeInput);
+        var accuracyCodes = StringHelper.FormatInputCode(CodeInput);
         // check null input
         if (accuracyCodes == null) return;
 
         // add comma
         var pyArg = StockService.FormatPyArgument(accuracyCodes);
+
+        // formatted code resetting
+        CodeInput = pyArg;
 
         // python script execution
         await PythonService.RunPythonScript(PythonService.TdxReader, "C:/devEnv/Tools/TDX", StartupService.PyDataPath, pyArg);
@@ -73,10 +84,13 @@ public class MainViewModel : ObservableRecipient
         // await Launcher.LaunchFolderAsync(await StorageFolder.GetFolderFromPathAsync(StartupService.PyDataPath));
 
         // write to sqlite database
-        await _csvToDbTransferService.Transfer(accuracyCodes);
+        await _dbTransferService.TransferCsvDataToDb(accuracyCodes);
 
         //store last queried  codes
         LastQueriedCodes = accuracyCodes;
+
+        // store this activity
+        await _dbTransferService.StoreActivityDataToDb(DateTime.Now, pyArg, string.Empty);
 
         // invoke analyze
         await OnLastingDaysValueChanged();
@@ -112,27 +126,25 @@ public class MainViewModel : ObservableRecipient
         AnalyzedResults.Add(data);
     }
 
-    public List<string> FormatInputCode(string codeInput)
+    public async Task RestoreFavoriteCodesString()
     {
-        // format input
-        var codes = StringHelper.FormattingWithComma(codeInput);
-        // check null input
-        if (codes == null) return null;
+        // initial db connection
+        await using var db = new DbSaap(StartupService.DbConnectionString);
 
-        // check code accuracy
-        var accuracyCodes = StockService.CheckStockCodeAccuracy(codes).ToList();
-        // check null code
-        if (accuracyCodes.Count == 0) return null;
 
-        // delete repeat code
-        accuracyCodes = accuracyCodes.GroupBy(a => a).Select(s => s.First()).ToList();
 
-        // add comma
-        var pyArg = StockService.FormatPyArgument(accuracyCodes);
+    }
 
-        // formatted code resetting
-        CodeInput = pyArg;
+    public async Task RestoreLastQueryString()
+    {
+        // get service
+        var restoreSettingsService = App.GetService<IRestoreSettingsService>();
+        // query from db
+        var lastQuery = await restoreSettingsService.RestoreLastQueryStringFromDb();
 
-        return accuracyCodes;
+        if (lastQuery != null)
+        {
+            CodeInput = lastQuery;
+        }
     }
 }

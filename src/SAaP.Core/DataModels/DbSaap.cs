@@ -1,5 +1,6 @@
 ﻿using LinqToDB;
 using SAaP.Core.Models.DB;
+using System;
 
 namespace SAaP.Core.DataModels;
 
@@ -14,6 +15,10 @@ public class DbSaap : LinqToDB.Data.DataConnection
     public ITable<Stock> Stock => this.GetTable<Stock>();
 
     public ITable<OriginalData> OriginalData => this.GetTable<OriginalData>();
+
+    public ITable<ActivityData> ActivityData => this.GetTable<ActivityData>();
+
+    public ITable<FavoriteData> Favorite => this.GetTable<FavoriteData>();
 
     public DbSaap(string dbPath) : base(LinqToDB.ProviderName.SQLite, dbPath)
     {}

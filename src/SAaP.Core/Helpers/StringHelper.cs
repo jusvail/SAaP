@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using SAaP.Core.Services;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace SAaP.Core.Helpers;
@@ -12,5 +14,23 @@ public static class StringHelper
         var trimmed = Regex.Replace(input.Trim(), "'|\"|\r|\r\n|\n|,|，|“|”|‘|’", " ");
 
         return Regex.Split(trimmed, @"\s+");
+    }
+
+    public static List<string> FormatInputCode(string codeInput)
+    {
+        // format input
+        var codes = FormattingWithComma(codeInput);
+        // check null input
+        if (codes == null) return null;
+
+        // check code accuracy
+        var accuracyCodes = StockService.CheckStockCodeAccuracy(codes).ToList();
+        // check null code
+        if (accuracyCodes.Count == 0) return null;
+
+        // delete repeat code
+        accuracyCodes = accuracyCodes.GroupBy(a => a).Select(s => s.First()).ToList();
+        
+        return accuracyCodes;
     }
 }

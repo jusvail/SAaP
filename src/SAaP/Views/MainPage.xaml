@@ -6,6 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:helpers="using:SAaP.Helper"
+    xmlns:db="using:SAaP.Core.Models.DB"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -16,6 +17,27 @@
         <helpers:OverpriceColorConverter x:Key="OverpriceColorConverter" />
         <helpers:ProfitWeightConverter x:Key="ProfitWeightConverter" />
         <helpers:ProfitPercentWeightConverter x:Key="ProfitPercentWeightConverter" />
+        <DataTemplate x:Key="FavoriteListViewTemplate" x:DataType="db:Stock">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Row="0"
+                           Text="{x:Bind CompanyName}"
+                           x:Phase="1"
+                           Style="{ThemeResource BaseTextBlockStyle}"
+                           Margin="5,6,0,0"/>
+                <TextBlock Grid.Row="1"
+                           Text="{x:Bind CodeName}"
+                           x:Phase="2"
+                           Style="{ThemeResource BodyTextBlockStyle}"
+                           Margin="5,0,0,6"/>
+            </Grid>
+        </DataTemplate>
     </Page.Resources>
 
     <Grid Padding="5">
@@ -26,9 +48,17 @@
 
         <StackPanel Grid.Column="0" Background="Azure" CornerRadius="5" BorderThickness="0.8" BorderBrush="LightGray">
             <RichTextBlock Margin="3" HorizontalAlignment="Left" VerticalAlignment="Top">
-                <Paragraph Foreground="CadetBlue">自选列表</Paragraph>
+                <Paragraph Foreground="Black">自选</Paragraph>
             </RichTextBlock>
-            <ListView/>
+            <HyperlinkButton Content="添加分组"></HyperlinkButton>
+
+            <ListView
+                x:Name="FavoriteCodes"
+                ItemTemplate="{StaticResource FavoriteListViewTemplate}"
+                BorderThickness="1"
+                BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
+                HorizontalAlignment="Left"/>
+
         </StackPanel>
         <Grid Grid.Column="1">
             <Grid>
@@ -65,8 +95,9 @@
                                              LostFocus="OnCodeInputLostFocusEventHandler"
                                              PlaceholderText="多个代码请用空格或逗号分隔"/>
                                     <StackPanel Orientation="Horizontal">
-                                        <Button Content="加入自选" Margin="2"/>
-                                        <Button Style="{StaticResource AccentButtonStyle}" 
+                                        <Button Content="加入自选" Margin="2"
+                                                Command="{x:Bind ViewModel.AddToFavoriteCommand}"/>
+                                        <Button x:Name="execBtn" Style="{StaticResource AccentButtonStyle}" 
                                                 IsEnabled="{x:Bind ViewModel.AnalysisPressedCommand.IsRunning, Converter={StaticResource ReverseBooleanConverter}, Mode=OneWay}"
                                                 Command="{x:Bind ViewModel.AnalysisPressedCommand}"
                                                 Content="执行分析" Margin="2"/>

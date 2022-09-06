@@ -3,8 +3,8 @@ using LinqToDB.Mapping;
 
 namespace SAaP.Core.Models.DB;
 
-[Table(Name = "LastActivity")]
-public class LastActivity
+[Table(Name = "ActivityData")]
+public class ActivityData
 {
 
     [PrimaryKey]

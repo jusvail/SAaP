@@ -1,35 +1,33 @@
-﻿using System.Threading.Tasks;
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using SAaP.Contracts.Services;
 using SAaP.Core.Services;
 using SAaP.Views;
 
-namespace SAaP.Services
+namespace SAaP.Services;
+
+public class ActivationService : IActivationService
 {
-    public class ActivationService : IActivationService
+    private UIElement _main;
+
+    public async Task ActivateAsync(object activationArgs)
     {
-        private UIElement _main;
+        // Execute tasks before activation.
+        await InitializeAsync();
 
-        public async Task ActivateAsync(object activationArgs)
+        // Set the MainWindow Content.
+        if (App.MainWindow.Content == null)
         {
-            // Execute tasks before activation.
-            await InitializeAsync();
-
-            // Set the MainWindow Content.
-            if (App.MainWindow.Content == null)
-            {
-                _main = App.GetService<ShellPage>();
-                App.MainWindow.Content = _main ?? new Frame();
-            }
-
-            App.MainWindow.Activate();
+            _main = App.GetService<ShellPage>();
+            App.MainWindow.Content = _main ?? new Frame();
         }
 
-        private static async Task InitializeAsync()
-        {
-            // folder tree creation
-            await StartupService.EnsureWorkSpaceFolderTreeIntegrityAsync();
-        }
+        App.MainWindow.Activate();
+    }
+
+    private static async Task InitializeAsync()
+    {
+        // folder tree creation
+        await StartupService.EnsureWorkSpaceFolderTreeIntegrityAsync();
     }
 }

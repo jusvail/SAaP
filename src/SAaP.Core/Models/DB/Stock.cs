@@ -16,5 +16,5 @@ public class Stock
     public int BelongTo { get; set; }
 
     [Column]
-    public int Group { get; set; }
+    public int GroupId { get; set; }
 }

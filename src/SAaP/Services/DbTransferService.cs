@@ -7,7 +7,7 @@ using LinqToDB;
 
 namespace SAaP.Services;
 
-public class CsvToDbTransferService : ICsvToDbTransferService
+public class DbTransferService : IDbTransferService
 {
 
     /// <summary>
@@ -15,16 +15,13 @@ public class CsvToDbTransferService : ICsvToDbTransferService
     /// </summary>
     /// <param name="codeNames">stock's code name</param>
     /// <returns>awaiting task</returns>
-    public async Task Transfer(IEnumerable<string> codeNames)
+    public async Task TransferCsvDataToDb(IEnumerable<string> codeNames)
     {
         // pydata path
         var pyDataFolder = await StorageFolder.GetFolderFromPathAsync(StartupService.PyDataPath);
 
         // db connection
         await using var db = new DbSaap(StartupService.DbConnectionString);
-
-        // delete last queried history
-        await db.Stock.DeleteAsync();
 
         // loop file via code name
         foreach (var codeName in codeNames)
@@ -54,9 +51,34 @@ public class CsvToDbTransferService : ICsvToDbTransferService
             var companyName = await StockService.FetchCompanyNameByCode(codeName, stock.BelongTo);
             stock.CompanyName = companyName;
 
-            // query history store into db
-            await db.InsertAsync(stock);
+            // insert only not exist
+            if (!await DbService.CheckRecordExistInStock(codeName))
+                // query history store into db
+                await db.InsertAsync(stock);
         }
+    }
+
+    public async Task StoreActivityDataToDb(ActivityData activity)
+    {
+        // don't pass a null
+        if (activity == null) return;
+        // db connection
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+        // insert async
+        await db.InsertAsync(activity);
+    }
+
+    public async Task StoreActivityDataToDb(DateTime now, string queryString, string data)
+    {
+        // construct a new object
+        var activityData = new ActivityData()
+        {
+            Date = now,
+            QueryString = queryString,
+            AnalyzeData = data
+        };
+        // insert async
+        await StoreActivityDataToDb(activityData);
     }
 
     private static async Task InsertToDbIfRecordNotExist(IStorageFile file, DbSaap db, string codeName)

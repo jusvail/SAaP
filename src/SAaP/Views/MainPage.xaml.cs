@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Navigation;
 using SAaP.Contracts.Services;
 using SAaP.Core.Services;
+using SAaP.Core.Helpers;
 
 namespace SAaP.Views
 {
@@ -31,10 +32,11 @@ namespace SAaP.Views
         {
             base.OnNavigatedTo(e);
 
-            // get service
-            var restoreSettingsService = App.GetService<IRestoreSettingsService>();
-            // restore query history to db
-            ViewModel.CodeInput = await restoreSettingsService.RestoreLastQueryStringFromDb();
+            // restore query history from db
+            await ViewModel.RestoreLastQueryString();
+
+            // restore favorite codes from db
+            await ViewModel.RestoreFavoriteCodesString();
         }
 
         private void DataGrid_OnSorting(object sender, DataGridColumnEventArgs e)
@@ -87,8 +89,14 @@ namespace SAaP.Views
 
         private void OnCodeInputLostFocusEventHandler(object sender, RoutedEventArgs e)
         {
-            // format input code
-            CodeInput.Text = StockService.FormatPyArgument(ViewModel.FormatInputCode(CodeInput.Text));
+            // return if is null
+            if (string.IsNullOrEmpty(CodeInput.Text)) return;
+
+            var formatted = StringHelper.FormatInputCode(CodeInput.Text);
+
+            if (formatted != null)
+                // format input code
+                CodeInput.Text = StockService.FormatPyArgument(formatted);
         }
     }
 }

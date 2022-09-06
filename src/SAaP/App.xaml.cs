@@ -4,9 +4,7 @@ using Microsoft.Extensions.Hosting;
 using SAaP.Contracts.Services;
 using SAaP.Services;
 using SAaP.Views;
-using System;
 using SAaP.ViewModels;
-using SAaP.Core.Services;
 
 namespace SAaP;
 
@@ -46,7 +44,7 @@ public partial class App
             .ConfigureServices((context, services) =>
                 {
                     services.AddSingleton<IActivationService, ActivationService>();
-                    services.AddSingleton<ICsvToDbTransferService, CsvToDbTransferService>();
+                    services.AddSingleton<IDbTransferService, DbTransferService>();
                     services.AddSingleton<IStockAnalyzeService, StockAnalyzeService>();
                     services.AddSingleton<IRestoreSettingsService, RestoreSettingsService>();
                     services.AddSingleton<IFetchStockDataService, FetchStockDataService>();
