@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using LinqToDB;
 using SAaP.Core.Models.DB;
 using System.Threading.Tasks;
-using LinqToDB.Data;
 using SAaP.Core.DataModels;
 using SAaP.Core.Models;
 
@@ -60,5 +58,31 @@ public static class DbService
         var groupBy = query.GroupBy(q => q.GroupId);
 
         return await groupBy.ToDictionaryAsync(g => g.Key, g => g.ToList());
+    }
+
+    public static async Task AddToFavorite(string codeName, string groupName)
+    {
+        var db = new DbSaap(StartupService.DbConnectionString);
+
+        var query = from f in db.Favorite
+                    where f.GroupName == groupName && f.Code == codeName
+                    select f;
+
+        if (query.Any()) return;
+
+        var ids = db.Favorite.Select(f => f.Id);
+
+        var id = 0;
+
+        if (ids.Any()) id = ids.Max();
+
+        var favorite = new FavoriteData()
+        {
+            Code = codeName,
+            GroupName = groupName,
+            Id = id
+        };
+
+        await db.InsertAsync(favorite);
     }
 }

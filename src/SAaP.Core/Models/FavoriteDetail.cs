@@ -2,9 +2,9 @@
 {
     public class FavoriteDetail
     {
-        public string codeName { get; set; }
+        public string CodeName { get; set; }
 
-        public string CompanayName { get; set; }
+        public string CompanyName { get; set; }
 
         public int GroupId { get; set; }
 

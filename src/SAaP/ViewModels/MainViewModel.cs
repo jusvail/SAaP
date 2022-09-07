@@ -5,27 +5,40 @@ using SAaP.Core.Models;
 using System.Collections.ObjectModel;
 using SAaP.Contracts.Services;
 using SAaP.Core.Services;
-using SAaP.Core.DataModels;
 
 namespace SAaP.ViewModels;
 
 public class MainViewModel : ObservableRecipient
 {
+    private bool _isQueryAllChecked;
     private string _codeInput;
     private string _lastingDays;
+    private string _selectedFavGroup;
 
     // store csv output by py script to sqlite database
     private readonly IDbTransferService _dbTransferService;
     // analyze main service
     private readonly IStockAnalyzeService _stockAnalyzeService;
+    // restore  settings service
+    private readonly IRestoreSettingsService _restoreSettingsService;
 
     public ObservableCollection<AnalysisResult> AnalyzedResults { get; } = new();
 
-    public IAsyncRelayCommand AnalysisPressedCommand { get; }
+    public ObservableCollection<string> FavoriteGroups { get; } = new();
 
-    public IAsyncRelayCommand AddToFavoriteCommand { get; }
+    public ObservableCollection<FavoriteDetail> GroupList { get; } = new();
 
     private IList<string> LastQueriedCodes { get; set; }
+
+    public IAsyncRelayCommand AnalysisPressedCommand { get; }
+
+    public IRelayCommand ClearDataGrid { get; }
+
+    public string SelectedFavGroup
+    {
+        get => _selectedFavGroup;
+        set => SetProperty(ref _selectedFavGroup, value);
+    }
 
     public string CodeInput
     {
@@ -38,25 +51,48 @@ public class MainViewModel : ObservableRecipient
         get => _lastingDays;
         set => SetProperty(ref _lastingDays, value);
     }
-
-    public IRelayCommand ClearDataGrid { get; }
+    public bool IsQueryAllChecked
+    {
+        get => _isQueryAllChecked;
+        set => SetProperty(ref _isQueryAllChecked, value);
+    }
 
     public MainViewModel()
     { }
 
-    public MainViewModel(IDbTransferService dbTransferService, IStockAnalyzeService stockAnalyzeService)
+    public MainViewModel(IDbTransferService dbTransferService, IStockAnalyzeService stockAnalyzeService, IRestoreSettingsService restoreSettingsService)
     {
         _dbTransferService = dbTransferService;
         _stockAnalyzeService = stockAnalyzeService;
+        _restoreSettingsService = restoreSettingsService;
         AnalysisPressedCommand = new AsyncRelayCommand(OnAnalysisPressed);
         ClearDataGrid = new RelayCommand(OnClearDataGrid);
-        AddToFavoriteCommand = new AsyncRelayCommand(AddToFavorite);
     }
 
-    private async Task AddToFavorite()
+    public async Task AddToFavorite(string groupName)
     {
         var accuracyCodes = StringHelper.FormatInputCode(CodeInput);
-        // TODO add to favorite func
+
+        if (!accuracyCodes.Any()) return;
+
+        foreach (var accuracyCode in accuracyCodes)
+        {
+            await DbService.AddToFavorite(accuracyCode, groupName);
+        }
+
+        await RefreshFavoriteGroup();
+    }
+
+    private async Task RefreshFavoriteGroup()
+    {
+        var favorites = _restoreSettingsService.RestoreFavoriteCodesString(SelectedFavGroup);
+
+        GroupList.Clear();
+
+        await foreach (var favorite in favorites)
+        {
+            GroupList.Add(favorite);
+        }
     }
 
     private void OnClearDataGrid()
@@ -78,13 +114,16 @@ public class MainViewModel : ObservableRecipient
         CodeInput = pyArg;
 
         // python script execution
-        await PythonService.RunPythonScript(PythonService.TdxReader, "C:/devEnv/Tools/TDX", StartupService.PyDataPath, pyArg);
+        await PythonService.RunPythonScript(PythonService.TdxReader
+            , "C:/devEnv/Tools/TDX"
+            , StartupService.PyDataPath
+            , IsQueryAllChecked ? string.Empty : pyArg);
 
         // TODO remove this after release
         // await Launcher.LaunchFolderAsync(await StorageFolder.GetFolderFromPathAsync(StartupService.PyDataPath));
 
         // write to sqlite database
-        await _dbTransferService.TransferCsvDataToDb(accuracyCodes);
+        await _dbTransferService.TransferCsvDataToDb(accuracyCodes, IsQueryAllChecked);
 
         //store last queried  codes
         LastQueriedCodes = accuracyCodes;
@@ -126,13 +165,18 @@ public class MainViewModel : ObservableRecipient
         AnalyzedResults.Add(data);
     }
 
-    public async Task RestoreFavoriteCodesString()
+    public async Task RestoreFavoriteGroups()
     {
-        // initial db connection
-        await using var db = new DbSaap(StartupService.DbConnectionString);
+        var groups = (await _restoreSettingsService.GetFavoriteGroupsName()).ToList();
 
-
-
+        if (!groups.Any())
+        {
+            FavoriteGroups.Add("自选股");
+        }
+        else
+        {
+            foreach (var group in groups) FavoriteGroups.Add(group);
+        }
     }
 
     public async Task RestoreLastQueryString()

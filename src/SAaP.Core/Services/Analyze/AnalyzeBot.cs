@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using SAaP.Core.Models.DB;
 
@@ -130,32 +131,60 @@ namespace SAaP.Core.Services.Analyze
         public double CalcStopProfitCompoundInterest(double stopProfit)
         {
             // start amount
-            var start = 100.0;
+            var principal = 100000.0;
+
+            // hold stock / how much we can buy at ending of first day's yesterday
+            // 1 hand => 100 stock
+            var holdHand = Math.Floor(principal / (_originalData[^1].Ending * 100));
+            // remind principal
+            var remind = principal - holdHand * 100 * _originalData[^1].Ending;
+
+            // assume buy at 0 day's ending
 
             // loop overprice list
             for (var i = 0; i < _overpricedList.Count; i++)
             {
+                // before day's ending
+                var yesterdaysEnding = _originalData[_originalData.Count - 1 - i].Ending;
+
                 // if overprice higher than stop profit, add stop profit only
-                if (_overpricedList[i] > stopProfit)
+                if (_overpricedList[i] >= stopProfit)
                 {
-                    start *= (1 + stopProfit / 100);
+                    // sold all stock
+                    var sold = yesterdaysEnding * (1 + stopProfit / 100) * holdHand * 100;
+                    holdHand = 0;
+                    // a goo day :> hahaha
+                    principal = remind + sold;
+
+                    // not last of analyze day
+                    if (i == _overpricedList.Count - 1) break;
+
+                    // today's ending, we buy again
+                    holdHand = Math.Floor(principal / (_originalData[_originalData.Count - 2 - i].Ending * 100));
+                    remind = principal - holdHand * 100 * _originalData[_originalData.Count - 2 - i].Ending;
                 }
-                // if minus overprice, a loss day :<
+                // if minus overprice, a loss day :< f**k
                 // or a earnings day but not as expected
-                else if (_overpricedList[i] < 0)
+                else
                 {
-                    start *= (1 + _ttm[i] / 100);
+                    // do nothing
                 }
             }
 
+            // if we have remind stock, sold all
+            if (holdHand != 0)
+            {
+                principal = _originalData[0].Ending * holdHand * 100 + remind;
+            }
+
             // how much can we earned....
-            return start;
+            return principal / 1000;
         }
 
         public double CalcNoActionProfit()
         {
-            var oldest = _originalData[^1].Opening;
-            var newest = _originalData[1].Ending;
+            var oldest = _originalData[^1].Ending;
+            var newest = _originalData[0].Ending;
 
             return newest * 100 / oldest;
         }

@@ -1,6 +1,8 @@
 ﻿using System.Data.Common;
+using ColorCode.Common;
 using SAaP.Contracts.Services;
 using SAaP.Core.DataModels;
+using SAaP.Core.Models;
 using SAaP.Core.Models.DB;
 using SAaP.Core.Services;
 
@@ -23,20 +25,63 @@ public class RestoreSettingsService : IRestoreSettingsService
         return lastQueried.Any() ? lastQueried.First().QueryString : string.Empty;
     }
 
-    public async Task<IEnumerable<Stock>> RestoreFavoriteCodesString(string group)
+    public async IAsyncEnumerable<FavoriteDetail> RestoreFavoriteCodesString(string groupName)
     {
         // db connection
         await using var db = new DbSaap(StartupService.DbConnectionString);
 
-        var favs = from s in db.Stock
-            join f in db.Favorite on s.GroupId equals f.Id
-                select s;
+        var result = from f in db.Favorite
+               join s in db.Stock on f.Code equals s.CodeName
+               where f.GroupName == groupName
+               orderby s.CodeName
+               select new FavoriteDetail()
+               {
+                   CodeName = f.Code,
+                   CompanyName = s.CompanyName,
+                   GroupId = f.Id,
+                   GroupName = f.GroupName
+               };
 
-        return null;
+        foreach (var favoriteDetail in result)
+        {
+            yield return favoriteDetail;
+        }
+
     }
 
-    public async Task<Dictionary<string, IEnumerable<Stock>>> RestoreAllFavoriteGroupsString()
+    public async Task<Dictionary<string, IEnumerable<FavoriteDetail>>> RestoreAllFavoriteGroupsString()
     {
-        throw new NotImplementedException();
+        // db connection
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+
+        var favoriteDetails = from f in db.Favorite
+                            join s in db.Stock on f.Code equals s.CodeName
+                            orderby s.CodeName
+                            select new FavoriteDetail()
+                            {
+                                CodeName = f.Code,
+                                CompanyName = s.CompanyName,
+                                GroupId = f.Id,
+                                GroupName = f.GroupName
+                            };
+
+        var groups = favoriteDetails.GroupBy(f => f.GroupName, f => f);
+
+        var dic = new Dictionary<string, IEnumerable<FavoriteDetail>>();
+
+        foreach (var group in groups)
+        {
+            dic.Add(group.Key, group.ToList());
+        }
+
+        return dic;
+    }
+
+    public async Task<IEnumerable<string>> GetFavoriteGroupsName()
+    {
+        // db connection
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+
+        return db.Favorite.Select(f => f.GroupName).Distinct().ToList();
     }
 }

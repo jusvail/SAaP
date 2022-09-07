@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:helpers="using:SAaP.Helper"
-    xmlns:db="using:SAaP.Core.Models.DB"
+    xmlns:models="using:SAaP.Core.Models"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -17,7 +17,7 @@
         <helpers:OverpriceColorConverter x:Key="OverpriceColorConverter" />
         <helpers:ProfitWeightConverter x:Key="ProfitWeightConverter" />
         <helpers:ProfitPercentWeightConverter x:Key="ProfitPercentWeightConverter" />
-        <DataTemplate x:Key="FavoriteListViewTemplate" x:DataType="db:Stock">
+        <DataTemplate x:Key="FavoriteListViewTemplate" x:DataType="models:FavoriteDetail">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
@@ -42,23 +42,27 @@
 
     <Grid Padding="5">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition MaxWidth="120"/>
+            <ColumnDefinition MaxWidth="150"/>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-
-        <StackPanel Grid.Column="0" Background="Azure" CornerRadius="5" BorderThickness="0.8" BorderBrush="LightGray">
-            <RichTextBlock Margin="3" HorizontalAlignment="Left" VerticalAlignment="Top">
-                <Paragraph Foreground="Black">自选</Paragraph>
-            </RichTextBlock>
-            <HyperlinkButton Content="添加分组"></HyperlinkButton>
-
-            <ListView
-                x:Name="FavoriteCodes"
-                ItemTemplate="{StaticResource FavoriteListViewTemplate}"
-                BorderThickness="1"
-                BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
-                HorizontalAlignment="Left"/>
-
+        <StackPanel Grid.Column="0">
+            <StackPanel Background="Azure" CornerRadius="5" BorderThickness="0.8" BorderBrush="LightGray">
+                <Grid>
+                    <ComboBox x:Name="FavoriteListSelect" IsEditable="False" Margin="2"
+                          ItemsSource="{x:Bind ViewModel.FavoriteGroups}" SelectedIndex="0"
+                          Text="{x:Bind ViewModel.SelectedFavGroup,Mode=TwoWay}"
+                          TextSubmitted="FavoriteListSelect_OnTextSubmitted"/>
+                </Grid>
+            </StackPanel>
+                <ListView
+                        x:Name="FavoriteCodes"
+                        ItemTemplate="{StaticResource FavoriteListViewTemplate}"
+                        ItemsSource="{x:Bind ViewModel.GroupList}"
+                        BorderThickness="1"
+                        MinWidth="150"
+                        MinHeight="400"
+                        BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
+                        HorizontalAlignment="Left"/>
         </StackPanel>
         <Grid Grid.Column="1">
             <Grid>
@@ -78,6 +82,9 @@
                                 Title="免责声明"
                                 IsClosable="False"
                                 Message="本程序仅限学习交流使用。本程序仅进行数据分析，并且不构成任何买卖建议。擅自根据本程序进行交易所造成的后果自负。" />
+                            <InfoBar x:Name="NotifyUser"  IsEnabled="False" IsOpen="False"
+                                     Severity="Informational"
+                                     IsClosable="True"/>
                         </StackPanel>
                         <Grid Padding="5">
                             <Grid>
@@ -85,7 +92,14 @@
                                     <ColumnDefinition Width="auto" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="输入股票代码："  Grid.Column="0"/>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="输入股票代码："/>
+                                    <CheckBox x:Name="QueryAll" Content="查询所有" 
+                                              IsChecked="{x:Bind ViewModel.IsQueryAllChecked, Mode=TwoWay}"
+                                              Checked="QueryAll_OnChecked"
+                                              Unchecked="QueryAll_OnUnchecked">
+                                    </CheckBox>
+                                </StackPanel>
                                 <StackPanel Grid.Column="1">
                                     <TextBox x:Name="CodeInput" AutomationProperties.Name="multi-line TextBox"
                                              TextWrapping="Wrap" AcceptsReturn="True" IsSpellCheckEnabled="True"
@@ -95,8 +109,8 @@
                                              LostFocus="OnCodeInputLostFocusEventHandler"
                                              PlaceholderText="多个代码请用空格或逗号分隔"/>
                                     <StackPanel Orientation="Horizontal">
-                                        <Button Content="加入自选" Margin="2"
-                                                Command="{x:Bind ViewModel.AddToFavoriteCommand}"/>
+                                        <Button x:Name="AddToFavoriteGroup" Content="加入自选" Margin="2"
+                                                Click="AddToFavoriteGroup_OnClick"/>
                                         <Button x:Name="execBtn" Style="{StaticResource AccentButtonStyle}" 
                                                 IsEnabled="{x:Bind ViewModel.AnalysisPressedCommand.IsRunning, Converter={StaticResource ReverseBooleanConverter}, Mode=OneWay}"
                                                 Command="{x:Bind ViewModel.AnalysisPressedCommand}"
@@ -124,7 +138,7 @@
                                     Margin="1" Padding="5 0">
                             <TextBlock Text="近" VerticalAlignment="Center" Margin="3 0"/>
                             <ComboBox x:Name="LastingDays" IsEditable="True" 
-                                      ItemsSource="{x:Bind FontSizes}" SelectedIndex="2"
+                                      ItemsSource="{x:Bind LastingDaysTemplate}" SelectedIndex="1"
                                       Text="{x:Bind ViewModel.LastingDays,Mode=TwoWay}"
                                       TextSubmitted="LastingDays_OnTextSubmitted"/>
                             <TextBlock Text="交易日分析结果" VerticalAlignment="Center" Margin="3 0"/>
@@ -176,8 +190,6 @@
                                     </controls:DataGridTemplateColumn.CellTemplate>
                                 </controls:DataGridTemplateColumn>
                                 <controls:DataGridTextColumn Binding="{Binding OverPricedDaysHigherThan1P}" Header="1%+opD" Tag="OverPricedDaysHigherThan1P"/>
-                                <controls:DataGridTextColumn Binding="{Binding MaxContinueOverPricedDay}" Header="mc+opD" Tag="MaxContinueOverPricedDay"/>
-                                <controls:DataGridTextColumn Binding="{Binding MaxContinueMinusOverPricedDay}" Header="mc-opD" Tag="MaxContinueMinusOverPricedDay"/>
                                 <controls:DataGridTemplateColumn Header="+avop%" Tag="AverageOverPricedPercent">
                                     <controls:DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
@@ -242,6 +254,8 @@
                                         </DataTemplate>
                                     </controls:DataGridTemplateColumn.CellTemplate>
                                 </controls:DataGridTemplateColumn>
+                                <controls:DataGridTextColumn Binding="{Binding MaxContinueOverPricedDay}" Header="mc+opD" Tag="MaxContinueOverPricedDay"/>
+                                <controls:DataGridTextColumn Binding="{Binding MaxContinueMinusOverPricedDay}" Header="mc-opD" Tag="MaxContinueMinusOverPricedDay"/>
                                 <controls:DataGridTextColumn Binding="{Binding FirstTradingDay}" Header="std" Tag="FirstTradingDay"/>
                                 <controls:DataGridTextColumn Binding="{Binding LastTradingDay}" Header="ltd" Tag="LastTradingDay"/>
                                 <controls:DataGridTemplateColumn Header="评价">

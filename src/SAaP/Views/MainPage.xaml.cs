@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Navigation;
 using SAaP.Contracts.Services;
 using SAaP.Core.Services;
 using SAaP.Core.Helpers;
+using SAaP.ControlPages;
 
 namespace SAaP.Views
 {
@@ -17,9 +18,9 @@ namespace SAaP.Views
     {
         public MainViewModel ViewModel { get; }
 
-        public List<double> FontSizes { get; } = new()
+        public List<double> LastingDaysTemplate { get; } = new()
         {
-            5, 10, 15, 20, 30, 50, 100, 120, 150, 200
+            5, 10, 15, 20, 30, 40, 50, 100, 120, 150, 200
         };
 
         public MainPage()
@@ -36,7 +37,7 @@ namespace SAaP.Views
             await ViewModel.RestoreLastQueryString();
 
             // restore favorite codes from db
-            await ViewModel.RestoreFavoriteCodesString();
+            await ViewModel.RestoreFavoriteGroups();
         }
 
         private void DataGrid_OnSorting(object sender, DataGridColumnEventArgs e)
@@ -97,6 +98,67 @@ namespace SAaP.Views
             if (formatted != null)
                 // format input code
                 CodeInput.Text = StockService.FormatPyArgument(formatted);
+        }
+
+        private void QueryAll_OnChecked(object sender, RoutedEventArgs e)
+        {
+            CodeInput.IsEnabled = false;
+            NotifyUser.IsEnabled = true;
+            NotifyUser.IsOpen = true;
+            NotifyUser.Title = "警告";
+            NotifyUser.Message = "查询所有可能花费大量时间。";
+        }
+
+        private void QueryAll_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            CodeInput.IsEnabled = true;
+            NotifyUser.IsOpen = false;
+            NotifyUser.IsEnabled = false;
+        }
+
+        private void FavoriteListSelect_OnTextSubmitted(ComboBox sender, ComboBoxTextSubmittedEventArgs args)
+        {
+            throw new NotImplementedException();
+        }
+
+        private async void AddToFavoriteGroup_OnClick(object sender, RoutedEventArgs e)
+        {
+            var dia = new AddFavoriteGroupDialog(ViewModel.FavoriteGroups.ToList());
+            var dialog = new ContentDialog
+            {
+                // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
+                XamlRoot = this.XamlRoot,
+                Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
+                Title = "是这个吗？",
+                PrimaryButtonText = "加入自选组",
+                CloseButtonText = "取消",
+                DefaultButton = ContentDialogButton.Primary,
+                Content = dia
+            };
+
+            var result = await dialog.ShowAsync();
+
+            if (result != ContentDialogResult.Primary) return;
+
+            string groupName;
+
+            if (dia.CreateNewChecked)
+            {
+                if (string.IsNullOrEmpty(dia.GroupName))
+                {
+                    dialog.Title = "名称不可以不填<_<";
+                    await dialog.ShowAsync();
+                    return;
+                }
+
+                groupName = dia.GroupName;
+            }
+            else
+            {
+                groupName = dia.GroupNames[dia.FavoriteListSelectSelectIndex];
+            }
+
+            await ViewModel.AddToFavorite(groupName);
         }
     }
 }

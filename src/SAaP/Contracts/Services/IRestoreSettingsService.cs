@@ -1,4 +1,4 @@
-﻿using SAaP.Core.Models.DB;
+﻿using SAaP.Core.Models;
 
 namespace SAaP.Contracts.Services;
 
@@ -6,8 +6,9 @@ public interface IRestoreSettingsService
 {
     Task<string> RestoreLastQueryStringFromDb();
 
-    Task<IEnumerable<Stock>> RestoreFavoriteCodesString(string group);
+    IAsyncEnumerable<FavoriteDetail> RestoreFavoriteCodesString(string group);
 
-    Task<Dictionary<string, IEnumerable<Stock>>> RestoreAllFavoriteGroupsString();
+    Task<Dictionary<string, IEnumerable<FavoriteDetail>>> RestoreAllFavoriteGroupsString();
 
+    Task<IEnumerable<string>> GetFavoriteGroupsName();
 }
