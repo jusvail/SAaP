@@ -7,8 +7,9 @@
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:helpers="using:SAaP.Helper"
     xmlns:models="using:SAaP.Core.Models"
+    xmlns:system="using:System"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}">
 
     <Page.Resources>
         <helpers:ReverseBooleanConverter x:Key="ReverseBooleanConverter" />
@@ -29,18 +30,17 @@
                 <TextBlock Grid.Row="0"
                            Text="{x:Bind CompanyName}"
                            x:Phase="1"
-                           Style="{ThemeResource BaseTextBlockStyle}"
+                           FontWeight="Bold"
                            Margin="5,6,0,0"/>
                 <TextBlock Grid.Row="1"
                            Text="{x:Bind CodeName}"
                            x:Phase="2"
-                           Style="{ThemeResource BodyTextBlockStyle}"
                            Margin="5,0,0,6"/>
             </Grid>
         </DataTemplate>
     </Page.Resources>
 
-    <Grid Padding="5">
+    <Grid Padding="5" Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition MaxWidth="150"/>
             <ColumnDefinition Width="*" />
@@ -49,8 +49,9 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*" />
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <StackPanel >
+            <StackPanel>
                 <Grid>
                     <ComboBox x:Name="FavoriteListSelect" IsEditable="False" Margin="2"
                               ItemsSource="{x:Bind ViewModel.FavoriteGroups}" SelectedIndex="{x:Bind ViewModel.SelectedFavGroupIndex,Mode=TwoWay}"
@@ -60,12 +61,92 @@
             <Grid Grid.Row="1">
                 <ListView
                         x:Name="FavoriteCodes"
-                        Width="150"
+                        MinWidth="150"
                         Margin="2"
                         ItemTemplate="{StaticResource FavoriteListViewTemplate}"
                         ItemsSource="{x:Bind ViewModel.GroupList}"
                         BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
                         HorizontalAlignment="Left"/>
+            </Grid>
+            <Grid Grid.Row="2">
+                <StackPanel>
+                    <Grid x:Name="FavoriteCodeManagePanel"  Visibility="Collapsed">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="4 2">
+                            <Button Content="管理" Margin="0 0 4 0">
+                                <Button.Flyout>
+                                    <Flyout>
+                                        <StackPanel>
+                                            <TextBlock Text="将选中的股票从自选股中删除？" Margin="0,0,0,12" />
+                                            <Button Content="给我删！" Style="{StaticResource AccentButtonStyle}" 
+                                                    CommandParameter="{x:Bind FavoriteCodes}"
+                                                    Command="{x:Bind ViewModel.DeleteSelectedFavoriteCodesCommand}"/>
+                                        </StackPanel>
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
+                            <Button Content="加入查询"
+                                    CommandParameter="{x:Bind FavoriteCodes}"
+                                    Command="{x:Bind ViewModel.AddToQueryingCommand}"></Button>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" >
+                            <Grid Margin="14 2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="78"/>
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Grid>
+                                    <CheckBox x:Name="FavoriteCodeManageSelectAll" Content="全选" 
+                                              Checked="FavoriteCodeManageSelectAll_OnChecked"
+                                              Unchecked="FavoriteCodeManageSelectAll_OnUnchecked">
+                                    </CheckBox>
+                                </Grid>
+                                <Grid Grid.Column="1">
+                                    <Button x:Name="FavoriteCodeManageCancel" 
+                                            HorizontalAlignment="Right"
+                                            Content="取消" Click="FavoriteCodeManageCancel_OnClick"></Button>
+                                </Grid>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="4">
+                        <HyperlinkButton x:Name="EditFavoriteGroup" Content="编辑" Click="EditFavoriteGroup_OnClick"/>
+                        <Button x:Name="ManageFavoriteGroup" 
+                            Content="管理自选组" >
+                            <Button.Flyout>
+                                <Flyout>
+                                    <StackPanel>
+                                        <ListView x:Name="ManageGroupListView" 
+                                              ItemsSource="{x:Bind ViewModel.FavoriteGroups}"
+                                              SelectionMode="Multiple"
+                                              HorizontalAlignment="Left"/>
+                                        <Grid Margin="14 2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="100"/>
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid>
+                                                <CheckBox x:Name="ManageGroupSelectAll" Content="全选" 
+                                                      Checked="ManageGroupSelectAll_OnChecked"
+                                                      Unchecked="ManageGroupSelectAll_OnUnchecked">
+                                                </CheckBox>
+                                            </Grid>
+                                            <Grid Grid.Column="1">
+                                                <Button Content="删除" 
+                                                    CommandParameter="{x:Bind ManageGroupListView.SelectedItems}"
+                                                    Command="{x:Bind ViewModel.DeleteSelectedFavoriteGroupsCommand}"></Button>
+                                            </Grid>
+                                        </Grid>
+                                    </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
+
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
             </Grid>
         </Grid>
         <Grid Grid.Column="1">

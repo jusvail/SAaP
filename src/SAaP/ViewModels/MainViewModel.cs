@@ -5,6 +5,7 @@ using SAaP.Core.Models;
 using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml.Controls;
 using SAaP.Contracts.Services;
+using SAaP.Core.Models.DB;
 using SAaP.Core.Services;
 
 namespace SAaP.ViewModels;
@@ -27,6 +28,8 @@ public class MainViewModel : ObservableRecipient
 
     public ObservableCollection<string> FavoriteGroups { get; } = new();
 
+    public ObservableCollection<string> FavoriteGroupsWhichReadyToDelete { get; } = new();
+
     public ObservableCollection<FavoriteDetail> GroupList { get; } = new();
 
     private IList<string> LastQueriedCodes { get; set; }
@@ -34,6 +37,12 @@ public class MainViewModel : ObservableRecipient
     public IAsyncRelayCommand AnalysisPressedCommand { get; }
 
     public IRelayCommand ClearDataGrid { get; }
+
+    public IAsyncRelayCommand<IList<object>> DeleteSelectedFavoriteGroupsCommand { get; }
+
+    public IAsyncRelayCommand<object> DeleteSelectedFavoriteCodesCommand { get; }
+
+    public IRelayCommand<object> AddToQueryingCommand { get; }
 
     public int SelectedFavGroupIndex
     {
@@ -68,19 +77,64 @@ public class MainViewModel : ObservableRecipient
         _restoreSettingsService = restoreSettingsService;
         AnalysisPressedCommand = new AsyncRelayCommand(OnAnalysisPressed);
         ClearDataGrid = new RelayCommand(OnClearDataGrid);
+        DeleteSelectedFavoriteGroupsCommand = new AsyncRelayCommand<IList<object>>(DeleteSelectedFavoriteGroups);
+        DeleteSelectedFavoriteCodesCommand = new AsyncRelayCommand<object>(DeleteSelectedFavoriteCodes);
+        AddToQueryingCommand = new RelayCommand<object>(AddToQuerying);
     }
 
-    public async Task AddToFavorite(string groupName)
+    private void AddToQuerying(object listView)
     {
+        var lv = listView as ListView;
+
+        if (lv == null) return;
+
         var accuracyCodes = StringHelper.FormatInputCode(CodeInput);
 
-        if (!accuracyCodes.Any()) return;
-
-        foreach (var accuracyCode in accuracyCodes)
+        foreach (FavoriteDetail select in lv.SelectedItems)
         {
-            await DbService.AddToFavorite(accuracyCode, groupName);
+            if (!accuracyCodes.Contains(select.CodeName)) accuracyCodes.Add(select.CodeName);
         }
 
+        CodeInput = StockService.FormatPyArgument(accuracyCodes);
+    }
+
+    private async Task DeleteSelectedFavoriteCodes(object listView)
+    {
+        var lv = listView as ListView;
+
+        if (lv == null) return;
+
+        var selectedList = lv.SelectedItems;
+
+        for (var i = 0; i < selectedList.Count; i++)
+        {
+            var favorite = (FavoriteDetail)selectedList[i];
+            await _dbTransferService.DeleteFavoriteCodes(new FavoriteData
+            {
+                Id = favorite.GroupId,
+                GroupName = favorite.GroupName,
+                Code = favorite.CodeName
+            });
+            // remove from ui list
+            GroupList.Remove(favorite);
+        }
+    }
+
+    private async Task DeleteSelectedFavoriteGroups(IList<object> selectedItems)
+    {
+        if (!selectedItems.Any()) return;
+
+        foreach (string group in selectedItems)
+        {
+            await _dbTransferService.DeleteFavoriteGroups(group);
+        }
+
+        // restore FavoriteGroups is necessary
+        await BackupCurrentSelectGroupAndRestoreFavoriteGroups();
+    }
+
+    private async Task BackupCurrentSelectGroupAndRestoreFavoriteGroups()
+    {
         var currentGroup = string.Empty;
 
         if (FavoriteGroups.Any())
@@ -94,8 +148,24 @@ public class MainViewModel : ObservableRecipient
         if (FavoriteGroups.Any())
         {
             // will trigger FavoriteListSelectionChanged
-            SelectedFavGroupIndex = FavoriteGroups.IndexOf(currentGroup);
+            var index = FavoriteGroups.IndexOf(currentGroup);
+            // user may delete a group displayed currently
+            SelectedFavGroupIndex = index > 0 ? index : 0;
         }
+    }
+
+    public async Task AddToFavorite(string groupName)
+    {
+        var accuracyCodes = StringHelper.FormatInputCode(CodeInput);
+
+        if (!accuracyCodes.Any()) return;
+
+        foreach (var accuracyCode in accuracyCodes)
+        {
+            await DbService.AddToFavorite(accuracyCode, groupName);
+        }
+
+        await BackupCurrentSelectGroupAndRestoreFavoriteGroups();
     }
 
     private void OnClearDataGrid()

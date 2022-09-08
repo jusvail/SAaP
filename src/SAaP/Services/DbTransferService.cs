@@ -5,6 +5,8 @@ using Windows.Storage;
 using SAaP.Core.Models.DB;
 using LinqToDB;
 using ColorCode.Common;
+using SAaP.Core.Models;
+
 // ReSharper disable PossibleMultipleEnumeration
 
 namespace SAaP.Services;
@@ -139,6 +141,31 @@ public class DbTransferService : IDbTransferService
         };
         // insert async
         await StoreActivityDataToDb(activityData);
+    }
+
+    public async Task DeleteFavoriteGroups(string group)
+    {
+        if (string.IsNullOrEmpty(group)) return;
+
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+
+        var ready = db.Favorite.Where(f => f.GroupName == group);
+
+        if (!ready.Any()) return;
+
+        foreach (var deleteData in ready)
+        {
+            await db.DeleteAsync(deleteData);
+        }
+    }
+
+    public async Task DeleteFavoriteCodes(FavoriteData favorite)
+    {
+        if (favorite == null) return;
+
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+
+        await db.DeleteAsync(favorite);
     }
 
     private static async IAsyncEnumerable<OriginalData> GetInsertionListWhichNotExistInDb(IStorageFile file, string codeName)

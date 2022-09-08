@@ -105,7 +105,7 @@ namespace SAaP.Views
             NotifyUser.IsEnabled = true;
             NotifyUser.IsOpen = true;
             NotifyUser.Title = "警告";
-            NotifyUser.Message = "查询所有可能花费大量时间。";
+            NotifyUser.Message = "查询所有可能花费大量时间。(可能要几个小时😎)";
         }
 
         private void QueryAll_OnUnchecked(object sender, RoutedEventArgs e)
@@ -114,10 +114,12 @@ namespace SAaP.Views
             NotifyUser.IsOpen = false;
             NotifyUser.IsEnabled = false;
         }
-  
+
         private async void AddToFavoriteGroup_OnClick(object sender, RoutedEventArgs e)
         {
             var dia = new AddFavoriteGroupDialog(ViewModel.FavoriteGroups.ToList());
+            // 把逻辑写在这里真的很丑陋<_<
+            // 有没有更好的办法？
             var dialog = new ContentDialog
             {
                 // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
@@ -129,30 +131,74 @@ namespace SAaP.Views
                 DefaultButton = ContentDialogButton.Primary,
                 Content = dia
             };
-
+            // show dialog
             var result = await dialog.ShowAsync();
-
+            // return if non primary button clicked
             if (result != ContentDialogResult.Primary) return;
-
+            // acquire selected/custom group name
             string groupName;
-
+            // new?
             if (dia.CreateNewChecked)
             {
+                // don't left it blank dude
                 if (string.IsNullOrEmpty(dia.GroupName))
                 {
                     dialog.Title = "名称不可以不填<_<";
                     await dialog.ShowAsync();
                     return;
                 }
-
+                // gotcha
                 groupName = dia.GroupName;
             }
             else
             {
+                // selected groupName
                 groupName = dia.GroupNames[dia.FavoriteListSelectSelectIndex];
             }
-
+            // store into db main
             await ViewModel.AddToFavorite(groupName);
+        }
+
+        private void ManageGroupSelectAll_OnChecked(object sender, RoutedEventArgs e)
+        {
+            ManageGroupListView.SelectAll();
+        }
+
+        private void ManageGroupSelectAll_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            ManageGroupListView.SelectedValue = false;
+        }
+
+        private void FavoriteCodeManageSelectAll_OnChecked(object sender, RoutedEventArgs e)
+        {
+            FavoriteCodes.SelectAll();
+        }
+
+        private void FavoriteCodeManageSelectAll_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            FavoriteCodes.SelectedValue = false;
+        }
+
+        private void EditFavoriteGroup_OnClick(object sender, RoutedEventArgs e)
+        {
+            FavoriteCodeManagePanel.Visibility = Visibility.Visible;
+            FavoriteCodeManageCancel.Visibility = Visibility.Visible;
+
+            ManageFavoriteGroup.Visibility = Visibility.Collapsed;
+            EditFavoriteGroup.Visibility = Visibility.Collapsed;
+
+            FavoriteCodes.SelectionMode = ListViewSelectionMode.Multiple;
+        }
+
+        private void FavoriteCodeManageCancel_OnClick(object sender, RoutedEventArgs e)
+        {
+            FavoriteCodeManagePanel.Visibility = Visibility.Collapsed;
+            FavoriteCodeManageCancel.Visibility = Visibility.Collapsed;
+
+            ManageFavoriteGroup.Visibility = Visibility.Visible;
+            EditFavoriteGroup.Visibility = Visibility.Visible;
+
+            FavoriteCodes.SelectionMode = ListViewSelectionMode.Single;
         }
     }
 }

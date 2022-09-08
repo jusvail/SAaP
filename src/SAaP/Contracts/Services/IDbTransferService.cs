@@ -1,4 +1,5 @@
-﻿using SAaP.Core.Models.DB;
+﻿using SAaP.Core.Models;
+using SAaP.Core.Models.DB;
 
 namespace SAaP.Contracts.Services
 {
@@ -9,5 +10,10 @@ namespace SAaP.Contracts.Services
         Task StoreActivityDataToDb(ActivityData activity);
 
         Task StoreActivityDataToDb(DateTime now, string queryString, string data);
+
+        Task DeleteFavoriteGroups(string group);
+
+        Task DeleteFavoriteCodes(FavoriteData favorite);
+
     }
 }
