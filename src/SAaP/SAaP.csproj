@@ -12,6 +12,7 @@
     <EnableMsixTooling>true</EnableMsixTooling>
     <DefaultLanguage>zh-CN</DefaultLanguage>
     <ImplicitUsings>enable</ImplicitUsings>
+	<EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="ControlPages\AddFavoriteGroupDialog.xaml" />
