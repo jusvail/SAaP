@@ -64,17 +64,24 @@ public static class DbService
     {
         var db = new DbSaap(StartupService.DbConnectionString);
 
-        var query = from f in db.Favorite
-                    where f.GroupName == groupName && f.Code == codeName
-                    select f;
+        var favoriteDatas = db.Favorite.Select(f => f);
 
-        if (query.Any()) return;
+        // exist return
+        if (favoriteDatas.Any(f => f.Code == codeName && f.GroupName == groupName)) return;
 
-        var ids = db.Favorite.Select(f => f.Id);
-
+        // default value when no data in table 
         var id = 0;
+        // otherwise max value
+        if (favoriteDatas.Any())
+        {
+            id = favoriteDatas.Max(f => f.Id) + 1;
+        }
 
-        if (ids.Any()) id = ids.Max();
+        // use exist group id when group exist
+        if (favoriteDatas.Any(f => f.GroupName == groupName))
+        {
+            id = db.Favorite.Where(f => f.GroupName == groupName).Select(f => f.Id).ToList()[0];
+        }
 
         var favorite = new FavoriteData()
         {

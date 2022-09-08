@@ -25,8 +25,6 @@ else:
     sys.exit()
 
 # 可转债的值变换与普通股有出入
-
-
 def zz_parse(zzc, original):
 
     # print(zzc)
@@ -36,9 +34,9 @@ def zz_parse(zzc, original):
         return original / 100
 
 
-def stock_csv(filepath, name):
+def store_stock_data_to_csv(filepath, name):
 
-    # 可转债判断
+    # 代码前2位
     zzc = name[2:4]
 
     with open(filepath, 'rb') as f:
@@ -70,8 +68,6 @@ def stock_csv(filepath, name):
             date_format = datetime.datetime.strptime(
                 str(stock_date[0]), '%Y%M%d')  # 格式化日期
 
-            # print(zz_parse(zzc, stock_high[0]))
-
             list = date_format.strftime('%Y/%M/%d') + "," + str(zz_parse(zzc, stock_open[0])) + "," + str(zz_parse(zzc, stock_high[0])) + "," + str(
                 zz_parse(zzc, stock_low[0])) + "," + str(zz_parse(zzc, stock_close[0])) + "," + str(stock_vol[0]) + "\n"
 
@@ -90,12 +86,12 @@ if 'quest_code' in globals():
 
         code_name = 'sh' + i + '.day'
         if os.path.exists(data_sh + code_name):
-            stock_csv(data_sh + code_name, 'sh' + i)
+            store_stock_data_to_csv(data_sh + code_name, 'sh' + i)
             continue
 
         code_name = 'sz' + i + '.day'
         if os.path.exists(data_sz + code_name):
-            stock_csv(data_sz + code_name, 'sz' + i)
+            store_stock_data_to_csv(data_sz + code_name, 'sz' + i)
             continue
 
         print('neither shanghai or shenzhen')
@@ -104,10 +100,10 @@ else:
     # exec all code
     file_sh = os.listdir(data_sh)
     for i in file_sh:
-        stock_csv(data_sh + i, i[:-4])
+        store_stock_data_to_csv(data_sh + i, i[:-4])
 
     file_sz = os.listdir(data_sz)
     for i in file_sz:
-        stock_csv(data_sz + i, i[:-4])
+        store_stock_data_to_csv(data_sz + i, i[:-4])
 
 print("finished")

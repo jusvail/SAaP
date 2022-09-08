@@ -13,15 +13,15 @@
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal">
             <ComboBox x:Name="FavoriteListSelect"  TextSubmitted="FavoriteListSelect_OnTextSubmitted"
-                      ItemsSource="{x:Bind GroupNames}"  Margin="2"
-                      SelectedIndex="{x:Bind FavoriteListSelectSelectIndex,Mode=TwoWay}"/>
-            <CheckBox x:Name="CreateNew" Content="新建分组" Margin="2"
+                          ItemsSource="{x:Bind GroupNames}"  Margin="2"
+                          SelectedIndex="{x:Bind FavoriteListSelectSelectIndex,Mode=TwoWay}"/>
+            <CheckBox x:Name="CreateNew" Content="新建分组" Margin="5 2"
                       IsChecked="{x:Bind CreateNewChecked,Mode=TwoWay}"
                       Unchecked="CreateNew_OnUnchecked"
                       Checked="CreateNew_OnChecked"/>
         </StackPanel>
-        <Grid Grid.Row="1" Margin="2" HorizontalAlignment="Left">
-            <TextBox x:Name="NewGroupName" MinWidth="250" Text="{x:Bind GroupName,Mode=TwoWay}"/>
+        <Grid Grid.Row="1" Margin="2" HorizontalAlignment="Left" MinHeight="30">
+            <TextBox x:Name="NewGroupName" MinWidth="250" Visibility="Collapsed" Text="{x:Bind GroupName,Mode=TwoWay}"/>
         </Grid>
     </Grid>
 </Page>

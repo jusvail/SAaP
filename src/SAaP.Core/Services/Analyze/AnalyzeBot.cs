@@ -15,7 +15,8 @@ namespace SAaP.Core.Services.Analyze
 
         private IList<double> _overpricedList;
 
-        private IList<double> _ttm;
+        // temp unusable so remove
+        // private IList<double> _ttm;
 
         public AnalyzeBot(IList<OriginalData> originalData)
         {
@@ -37,7 +38,7 @@ namespace SAaP.Core.Services.Analyze
             // overpriced list
             _overpricedList = new List<double>(_actualCount);
             // ttm list
-            _ttm = new List<double>(_actualCount);
+            //_ttm = new List<double>(_actualCount);
 
             for (var i = _count - 1; i > 0; i--)
             {
@@ -46,8 +47,8 @@ namespace SAaP.Core.Services.Analyze
                 _overpricedList.Add(overprice);
 
                 //calc ttm
-                var ttm = CalculationService.CalcTtm(_originalData[i].Ending, _originalData[i - 1].Ending);
-                _ttm.Add(ttm);
+                //var ttm = CalculationService.CalcTtm(_originalData[i].Ending, _originalData[i - 1].Ending);
+                //_ttm.Add(ttm);
             }
         }
 
@@ -142,13 +143,13 @@ namespace SAaP.Core.Services.Analyze
             // assume buy at 0 day's ending
 
             // loop overprice list
-            for (var i = 0; i < _overpricedList.Count; i++)
+            for (var i = _originalData.Count - 2; i >= 0; i--)
             {
                 // before day's ending
-                var yesterdaysEnding = _originalData[_originalData.Count - 1 - i].Ending;
+                var yesterdaysEnding = _originalData[i + 1].Ending;
 
                 // if overprice higher than stop profit, add stop profit only
-                if (_overpricedList[i] >= stopProfit)
+                if (_overpricedList[_originalData.Count - i - 2] >= stopProfit)
                 {
                     // sold all stock
                     var sold = yesterdaysEnding * (1 + stopProfit / 100) * holdHand * 100;
@@ -160,8 +161,8 @@ namespace SAaP.Core.Services.Analyze
                     if (i == _overpricedList.Count - 1) break;
 
                     // today's ending, we buy again
-                    holdHand = Math.Floor(principal / (_originalData[_originalData.Count - 2 - i].Ending * 100));
-                    remind = principal - holdHand * 100 * _originalData[_originalData.Count - 2 - i].Ending;
+                    holdHand = Math.Floor(principal / (_originalData[i].Ending * 100));
+                    remind = principal - holdHand * 100 * _originalData[i].Ending;
                 }
                 // if minus overprice, a loss day :< f**k
                 // or a earnings day but not as expected
@@ -220,9 +221,10 @@ namespace SAaP.Core.Services.Analyze
 
         public string CalcEvaluate()
         {
-            return CalcNoActionProfit() switch
+            var earn = CalcNoActionProfit();
+            return earn switch
             {
-                > 200 => "躺赚{p%100}倍",
+                > 200 => $"躺赚{CalculationService.Round2(earn / 100)}倍",
                 > 150 => "躺赚50%+",
                 > 120 => "躺赚20%+",
                 > 110 => "躺赚10%+",

@@ -4,7 +4,6 @@ using CommunityToolkit.WinUI.UI.Controls;
 using System.Linq.Dynamic.Core;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Navigation;
-using SAaP.Contracts.Services;
 using SAaP.Core.Services;
 using SAaP.Core.Helpers;
 using SAaP.ControlPages;
@@ -115,12 +114,7 @@ namespace SAaP.Views
             NotifyUser.IsOpen = false;
             NotifyUser.IsEnabled = false;
         }
-
-        private void FavoriteListSelect_OnTextSubmitted(ComboBox sender, ComboBoxTextSubmittedEventArgs args)
-        {
-            throw new NotImplementedException();
-        }
-
+  
         private async void AddToFavoriteGroup_OnClick(object sender, RoutedEventArgs e)
         {
             var dia = new AddFavoriteGroupDialog(ViewModel.FavoriteGroups.ToList());

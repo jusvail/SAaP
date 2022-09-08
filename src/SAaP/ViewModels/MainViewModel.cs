@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using SAaP.Core.Helpers;
 using SAaP.Core.Models;
 using System.Collections.ObjectModel;
+using Microsoft.UI.Xaml.Controls;
 using SAaP.Contracts.Services;
 using SAaP.Core.Services;
 
@@ -13,7 +14,7 @@ public class MainViewModel : ObservableRecipient
     private bool _isQueryAllChecked;
     private string _codeInput;
     private string _lastingDays;
-    private string _selectedFavGroup;
+    private int _selectedFavGroupIndex;
 
     // store csv output by py script to sqlite database
     private readonly IDbTransferService _dbTransferService;
@@ -34,10 +35,10 @@ public class MainViewModel : ObservableRecipient
 
     public IRelayCommand ClearDataGrid { get; }
 
-    public string SelectedFavGroup
+    public int SelectedFavGroupIndex
     {
-        get => _selectedFavGroup;
-        set => SetProperty(ref _selectedFavGroup, value);
+        get => _selectedFavGroupIndex;
+        set => SetProperty(ref _selectedFavGroupIndex, value);
     }
 
     public string CodeInput
@@ -80,18 +81,20 @@ public class MainViewModel : ObservableRecipient
             await DbService.AddToFavorite(accuracyCode, groupName);
         }
 
-        await RefreshFavoriteGroup();
-    }
+        var currentGroup = string.Empty;
 
-    private async Task RefreshFavoriteGroup()
-    {
-        var favorites = _restoreSettingsService.RestoreFavoriteCodesString(SelectedFavGroup);
-
-        GroupList.Clear();
-
-        await foreach (var favorite in favorites)
+        if (FavoriteGroups.Any())
         {
-            GroupList.Add(favorite);
+            currentGroup = FavoriteGroups[SelectedFavGroupIndex];
+        }
+
+        // restore favorite group comboBox
+        await RestoreFavoriteGroups();
+
+        if (FavoriteGroups.Any())
+        {
+            // will trigger FavoriteListSelectionChanged
+            SelectedFavGroupIndex = FavoriteGroups.IndexOf(currentGroup);
         }
     }
 
@@ -169,6 +172,8 @@ public class MainViewModel : ObservableRecipient
     {
         var groups = (await _restoreSettingsService.GetFavoriteGroupsName()).ToList();
 
+        FavoriteGroups.Clear();
+
         if (!groups.Any())
         {
             FavoriteGroups.Add("自选股");
@@ -176,6 +181,19 @@ public class MainViewModel : ObservableRecipient
         else
         {
             foreach (var group in groups) FavoriteGroups.Add(group);
+        }
+    }
+
+    private async Task RefreshFavoriteGroup(string selectedGroup)
+    {
+
+        var favorites = _restoreSettingsService.RestoreFavoriteCodesString(selectedGroup);
+
+        GroupList.Clear();
+
+        await foreach (var favorite in favorites)
+        {
+            GroupList.Add(favorite);
         }
     }
 
@@ -190,5 +208,11 @@ public class MainViewModel : ObservableRecipient
         {
             CodeInput = lastQuery;
         }
+    }
+
+    public async void FavoriteListSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (SelectedFavGroupIndex == -1) return;
+        await RefreshFavoriteGroup(FavoriteGroups[SelectedFavGroupIndex]);
     }
 }

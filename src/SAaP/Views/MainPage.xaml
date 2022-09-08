@@ -45,25 +45,29 @@
             <ColumnDefinition MaxWidth="150"/>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <StackPanel Grid.Column="0">
-            <StackPanel Background="Azure" CornerRadius="5" BorderThickness="0.8" BorderBrush="LightGray">
+        <Grid Grid.Column="0" Background="Azure" CornerRadius="5" BorderThickness="0.8" BorderBrush="LightGray">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <StackPanel >
                 <Grid>
                     <ComboBox x:Name="FavoriteListSelect" IsEditable="False" Margin="2"
-                          ItemsSource="{x:Bind ViewModel.FavoriteGroups}" SelectedIndex="0"
-                          Text="{x:Bind ViewModel.SelectedFavGroup,Mode=TwoWay}"
-                          TextSubmitted="FavoriteListSelect_OnTextSubmitted"/>
+                              ItemsSource="{x:Bind ViewModel.FavoriteGroups}" SelectedIndex="{x:Bind ViewModel.SelectedFavGroupIndex,Mode=TwoWay}"
+                              SelectionChanged="{x:Bind ViewModel.FavoriteListSelectionChanged}"/>
                 </Grid>
             </StackPanel>
+            <Grid Grid.Row="1">
                 <ListView
                         x:Name="FavoriteCodes"
+                        Width="150"
+                        Margin="2"
                         ItemTemplate="{StaticResource FavoriteListViewTemplate}"
                         ItemsSource="{x:Bind ViewModel.GroupList}"
-                        BorderThickness="1"
-                        MinWidth="150"
-                        MinHeight="400"
                         BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
                         HorizontalAlignment="Left"/>
-        </StackPanel>
+            </Grid>
+        </Grid>
         <Grid Grid.Column="1">
             <Grid>
                 <Grid.RowDefinitions>
