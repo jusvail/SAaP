@@ -7,15 +7,12 @@ using Microsoft.UI.Xaml.Controls;
 using SAaP.Contracts.Services;
 using SAaP.Core.Models.DB;
 using SAaP.Core.Services;
+using SAaP.Constant;
 
 namespace SAaP.ViewModels;
 
 public class MainViewModel : ObservableRecipient
 {
-    private bool _isQueryAllChecked;
-    private string _codeInput;
-    private string _lastingDays;
-    private int _selectedFavGroupIndex;
 
     // store csv output by py script to sqlite database
     private readonly IDbTransferService _dbTransferService;
@@ -24,11 +21,20 @@ public class MainViewModel : ObservableRecipient
     // restore  settings service
     private readonly IRestoreSettingsService _restoreSettingsService;
 
+    private bool _isQueryAllChecked;
+    private int _selectedFavGroupIndex;
+    private int _selectedActivityDate;
+    private string _codeInput;
+    private string _lastingDays;
+    private string _currentStatus;
+
     public ObservableCollection<AnalysisResult> AnalyzedResults { get; } = new();
 
     public ObservableCollection<string> FavoriteGroups { get; } = new();
 
-    public ObservableCollection<string> FavoriteGroupsWhichReadyToDelete { get; } = new();
+    public ObservableCollection<string> ActivityDateList { get; } = new();
+
+    public ObservableCollection<ActivityData> ActivityDates { get; } = new();
 
     public ObservableCollection<FavoriteDetail> GroupList { get; } = new();
 
@@ -39,6 +45,8 @@ public class MainViewModel : ObservableRecipient
     public IRelayCommand ClearDataGrid { get; }
 
     public IAsyncRelayCommand<IList<object>> DeleteSelectedFavoriteGroupsCommand { get; }
+
+    public IAsyncRelayCommand<IList<object>> DeleteSelectedActivityCommand { get; }
 
     public IAsyncRelayCommand<object> DeleteSelectedFavoriteCodesCommand { get; }
 
@@ -67,6 +75,18 @@ public class MainViewModel : ObservableRecipient
         set => SetProperty(ref _isQueryAllChecked, value);
     }
 
+    public int SelectedActivityDate
+    {
+        get => _selectedActivityDate;
+        set => SetProperty(ref _selectedActivityDate, value);
+    }
+
+    public string CurrentStatus
+    {
+        get => _currentStatus;
+        set => SetProperty(ref _currentStatus, value);
+    }
+
     public MainViewModel()
     { }
 
@@ -79,16 +99,17 @@ public class MainViewModel : ObservableRecipient
         ClearDataGrid = new RelayCommand(OnClearDataGrid);
         DeleteSelectedFavoriteGroupsCommand = new AsyncRelayCommand<IList<object>>(DeleteSelectedFavoriteGroups);
         DeleteSelectedFavoriteCodesCommand = new AsyncRelayCommand<object>(DeleteSelectedFavoriteCodes);
+        DeleteSelectedActivityCommand = new AsyncRelayCommand<IList<object>>(DeleteSelectedActivity);
         AddToQueryingCommand = new RelayCommand<object>(AddToQuerying);
     }
 
-    private void AddToQuerying(object listView)
+    public void AddToQuerying(object listView)
     {
         var lv = listView as ListView;
 
         if (lv == null) return;
 
-        var accuracyCodes = StringHelper.FormatInputCode(CodeInput);
+        var accuracyCodes = StringHelper.FormatInputCode(CodeInput) ?? new List<string>();
 
         foreach (FavoriteDetail select in lv.SelectedItems)
         {
@@ -115,9 +136,9 @@ public class MainViewModel : ObservableRecipient
                 GroupName = favorite.GroupName,
                 Code = favorite.CodeName
             });
-            // remove from ui list
-            GroupList.Remove(favorite);
         }
+        // reload group
+        await RefreshFavoriteGroup(FavoriteGroups[SelectedFavGroupIndex]);
     }
 
     private async Task DeleteSelectedFavoriteGroups(IList<object> selectedItems)
@@ -131,6 +152,19 @@ public class MainViewModel : ObservableRecipient
 
         // restore FavoriteGroups is necessary
         await BackupCurrentSelectGroupAndRestoreFavoriteGroups();
+    }
+
+    private async Task DeleteSelectedActivity(IList<object> selectedItems)
+    {
+        if (!selectedItems.Any()) return;
+
+        foreach (string group in selectedItems)
+        {
+            await _dbTransferService.DeleteActivity(group);
+        }
+
+        // restore Activity is necessary
+        await BackupCurrentSelectActivityListAndRestoreSelected();
     }
 
     private async Task BackupCurrentSelectGroupAndRestoreFavoriteGroups()
@@ -175,6 +209,8 @@ public class MainViewModel : ObservableRecipient
 
     private async Task OnAnalysisPressed()
     {
+        SetCurrentStatus("开始执行。。。");
+
         // check code accuracy
         var accuracyCodes = StringHelper.FormatInputCode(CodeInput);
         // check null input
@@ -183,8 +219,12 @@ public class MainViewModel : ObservableRecipient
         // add comma
         var pyArg = StockService.FormatPyArgument(accuracyCodes);
 
+        SetCurrentStatus("检查输入。。。");
+
         // formatted code resetting
         CodeInput = pyArg;
+
+        SetCurrentStatus("开始执行python脚本。。。");
 
         // python script execution
         await PythonService.RunPythonScript(PythonService.TdxReader
@@ -195,17 +235,28 @@ public class MainViewModel : ObservableRecipient
         // TODO remove this after release
         // await Launcher.LaunchFolderAsync(await StorageFolder.GetFolderFromPathAsync(StartupService.PyDataPath));
 
+        SetCurrentStatus("py脚本执行完毕，开始将数据导入至本地数据库");
+
         // write to sqlite database
         await _dbTransferService.TransferCsvDataToDb(accuracyCodes, IsQueryAllChecked);
 
         //store last queried  codes
         LastQueriedCodes = accuracyCodes;
 
+        SetCurrentStatus("保存历史查询数据。。。");
+
         // store this activity
         await _dbTransferService.StoreActivityDataToDb(DateTime.Now, pyArg, string.Empty);
+        
+        SetCurrentStatus("开始分析数据。。。");
 
         // invoke analyze
         await OnLastingDaysValueChanged();
+
+        SetCurrentStatus("完成。。。");
+
+        // query history update
+        await BackupCurrentSelectActivityListAndRestoreSelected();
     }
 
     public async Task OnLastingDaysValueChanged()
@@ -274,9 +325,63 @@ public class MainViewModel : ObservableRecipient
         // query from db
         var lastQuery = await restoreSettingsService.RestoreLastQueryStringFromDb();
 
-        if (lastQuery != null)
+        if (lastQuery != null) CodeInput = lastQuery;
+    }
+
+    public async Task RestoreActivity()
+    {
+        // get all activity date
+        var activityDates = _restoreSettingsService.RestoreRecentlyActivityGroupByDate();
+        // clear first is needed
+        ActivityDateList.Clear();
+
+        await foreach (var activityDate in activityDates)
         {
-            CodeInput = lastQuery;
+            // add to list
+            ActivityDateList.Add(activityDate);
+        }
+
+        if (!ActivityDateList.Any())
+        {
+            // if no data, add today
+            ActivityDateList.Add(DateTime.Today.ToString(PjConstant.DateFormatUsedToCompare));
+        }
+    }
+
+    private async Task RefreshActivityList(string date)
+    {
+        if (SelectedActivityDate == -1) return;
+
+        var activityDates = _restoreSettingsService.RestoreRecentlyActivityListByDate(date);
+
+        //clear first
+        ActivityDates.Clear();
+
+        await foreach (var activityDate in activityDates)
+        {
+            // add to list
+            ActivityDates.Add(activityDate);
+        }
+    }
+
+    private async Task BackupCurrentSelectActivityListAndRestoreSelected()
+    {
+        var currentActivityDate = string.Empty;
+
+        if (ActivityDateList.Any())
+        {
+            currentActivityDate = ActivityDateList[SelectedActivityDate];
+        }
+
+        // restore favorite group comboBox
+        await RestoreActivity();
+
+        if (ActivityDateList.Any())
+        {
+            // will trigger FavoriteListSelectionChanged
+            var index = ActivityDateList.IndexOf(currentActivityDate);
+            // user may delete a group displayed currently
+            SelectedActivityDate = index > 0 ? index : 0;
         }
     }
 
@@ -284,5 +389,23 @@ public class MainViewModel : ObservableRecipient
     {
         if (SelectedFavGroupIndex == -1) return;
         await RefreshFavoriteGroup(FavoriteGroups[SelectedFavGroupIndex]);
+    }
+
+    public async Task QueryHistorySelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (SelectedActivityDate == -1) return;
+        await RefreshActivityList(ActivityDateList[SelectedActivityDate]);
+    }
+
+    public void ActivityDateClicked(object sender, ItemClickEventArgs e)
+    {
+        if (e.ClickedItem is not ActivityData activityData) return;
+
+        CodeInput = activityData.QueryString;
+    }
+
+    private void SetCurrentStatus(string status)
+    {
+        CurrentStatus = status;
     }
 }

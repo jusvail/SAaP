@@ -3,6 +3,7 @@ using SAaP.ViewModels;
 using CommunityToolkit.WinUI.UI.Controls;
 using System.Linq.Dynamic.Core;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
 using SAaP.Core.Services;
 using SAaP.Core.Helpers;
@@ -33,8 +34,9 @@ namespace SAaP.Views
             base.OnNavigatedTo(e);
 
             // restore query history from db
+            await ViewModel.RestoreActivity();
+            // restore query history from db
             await ViewModel.RestoreLastQueryString();
-
             // restore favorite codes from db
             await ViewModel.RestoreFavoriteGroups();
         }
@@ -105,7 +107,7 @@ namespace SAaP.Views
             NotifyUser.IsEnabled = true;
             NotifyUser.IsOpen = true;
             NotifyUser.Title = "警告";
-            NotifyUser.Message = "查询所有可能花费大量时间。(可能要几个小时😎)";
+            NotifyUser.Message = "查询所有股票可能会花费大量时间。(几小时😎, 甚至几天)";
         }
 
         private void QueryAll_OnUnchecked(object sender, RoutedEventArgs e)
@@ -199,6 +201,26 @@ namespace SAaP.Views
             EditFavoriteGroup.Visibility = Visibility.Visible;
 
             FavoriteCodes.SelectionMode = ListViewSelectionMode.Single;
+        }
+
+        private void ManageActivitySelectAll_OnChecked(object sender, RoutedEventArgs e)
+        {
+            ManageActivityListView.SelectAll();
+        }
+
+        private void ManageActivitySelectAll_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            ManageActivityListView.SelectedValue = false;
+        }
+
+        private void FavoriteListItem_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            ViewModel.AddToQuerying(FavoriteCodes);
+        }
+
+        private void ClearInput_OnClick(object sender, RoutedEventArgs e)
+        {
+            ViewModel.CodeInput = "";
         }
     }
 }

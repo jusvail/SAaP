@@ -159,6 +159,25 @@ public class DbTransferService : IDbTransferService
         }
     }
 
+    public async Task DeleteActivity(string date)
+    {
+        // don't pass a strange stuff
+        if (!DateTime.TryParse(date, out var thisDay)) return;
+
+        var dayOfTomorrow = thisDay.AddDays(1.0);
+
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+
+        var ready = db.ActivityData.Where(a => a.Date > thisDay && a.Date < dayOfTomorrow);
+
+        if (!ready.Any()) return;
+
+        foreach (var deleteData in ready)
+        {
+            await db.DeleteAsync(deleteData);
+        }
+    }
+
     public async Task DeleteFavoriteCodes(FavoriteData favorite)
     {
         if (favorite == null) return;

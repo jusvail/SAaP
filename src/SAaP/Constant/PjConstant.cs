@@ -3,5 +3,7 @@
     public static class PjConstant
     {
         public const string AppTitle = "AppTitle";
+
+        public const string DateFormatUsedToCompare = "yyyy/MM/dd";
     }
 }

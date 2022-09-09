@@ -13,6 +13,8 @@ namespace SAaP.Contracts.Services
 
         Task DeleteFavoriteGroups(string group);
 
+        Task DeleteActivity(string date);
+
         Task DeleteFavoriteCodes(FavoriteData favorite);
 
     }

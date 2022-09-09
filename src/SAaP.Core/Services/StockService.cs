@@ -1,4 +1,5 @@
-﻿using SAaP.Core.Services.Api;
+﻿using System;
+using SAaP.Core.Services.Api;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -56,8 +57,10 @@ public static class StockService
         {
             sb.Append(arg).Append(',');
         }
-        // remove last ','
-        return sb.Remove(sb.Length - 1, 1).ToString();
+
+        return sb.Length > 0 ?
+            // remove last ','
+            sb.Remove(sb.Length - 1, 1).ToString() : string.Empty;
     }
 
     public static async Task<string> FetchCompanyNameByCode(string codeName, int flag)

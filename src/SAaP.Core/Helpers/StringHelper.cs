@@ -7,7 +7,7 @@ namespace SAaP.Core.Helpers;
 
 public static class StringHelper
 {
-    public static IEnumerable<string> FormattingWithComma(string input)
+    private static IEnumerable<string> FormattingWithComma(string input)
     {
         if (string.IsNullOrEmpty(input)) return null;
 
@@ -16,6 +16,12 @@ public static class StringHelper
         return Regex.Split(trimmed, @"\s+");
     }
 
+    /// <summary>
+    /// split string by '|\"|\r|\r\n|\n|,|，|“|”|‘|’"
+    /// return a trimmed string list
+    /// </summary>
+    /// <param name="codeInput">input</param>
+    /// <returns>trimmed string list</returns>
     public static List<string> FormatInputCode(string codeInput)
     {
         // format input

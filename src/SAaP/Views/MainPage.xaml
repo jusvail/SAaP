@@ -7,19 +7,22 @@
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:helpers="using:SAaP.Helper"
     xmlns:models="using:SAaP.Core.Models"
-    xmlns:system="using:System"
+    xmlns:db="using:SAaP.Core.Models.DB"
     mc:Ignorable="d"
     Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}">
 
     <Page.Resources>
         <helpers:ReverseBooleanConverter x:Key="ReverseBooleanConverter" />
+        <helpers:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <helpers:ProfitColorConverter x:Key="ProfitColorConverter" />
         <helpers:ProfitPercentColorConverter x:Key="ProfitPercentColorConverter" />
         <helpers:OverpriceColorConverter x:Key="OverpriceColorConverter" />
-        <helpers:ProfitWeightConverter x:Key="ProfitWeightConverter" />
+        <helpers:ProfitWeightConverter x:Key="ProfitWeightConverter" /> 
         <helpers:ProfitPercentWeightConverter x:Key="ProfitPercentWeightConverter" />
+        <helpers:SimplifySearchStringConverter x:Key="SimplifySearchStringConverter" />
         <DataTemplate x:Key="FavoriteListViewTemplate" x:DataType="models:FavoriteDetail">
-            <Grid>
+            <Grid DoubleTapped="FavoriteListItem_OnDoubleTapped"
+                  IsDoubleTapEnabled="True">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="*"/>
@@ -38,6 +41,26 @@
                            Margin="5,0,0,6"/>
             </Grid>
         </DataTemplate>
+        <DataTemplate x:Key="ActivityTemplate" x:DataType="db:ActivityData">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Row="0"
+                           Text="{x:Bind Date}"
+                           x:Phase="1"
+                           FontWeight="Bold"
+                           Margin="5,6,0,0"/>
+                <TextBlock Grid.Row="1"
+                           Text="{x:Bind QueryString, Converter={StaticResource SimplifySearchStringConverter}}"
+                           x:Phase="2"
+                           Margin="5,0,0,6"/>
+            </Grid>
+        </DataTemplate>
     </Page.Resources>
 
     <Grid Padding="5" Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}">
@@ -45,7 +68,8 @@
             <ColumnDefinition MaxWidth="150"/>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <Grid Grid.Column="0" Background="Azure" CornerRadius="5" BorderThickness="0.8" BorderBrush="LightGray">
+        <Grid Grid.Column="0" Background="LightBlue" 
+              CornerRadius="5" BorderThickness="1" BorderBrush="LightGray">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*" />
@@ -93,7 +117,7 @@
                                     Command="{x:Bind ViewModel.AddToQueryingCommand}"></Button>
                         </StackPanel>
                         <StackPanel Grid.Row="1" Orientation="Horizontal" >
-                            <Grid Margin="14 2">
+                            <Grid Margin="14 2 0 -3">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="78"/>
                                     <ColumnDefinition Width="Auto" />
@@ -136,14 +160,13 @@
                                             </Grid>
                                             <Grid Grid.Column="1">
                                                 <Button Content="删除" 
-                                                    CommandParameter="{x:Bind ManageGroupListView.SelectedItems}"
-                                                    Command="{x:Bind ViewModel.DeleteSelectedFavoriteGroupsCommand}"></Button>
+                                                        CommandParameter="{x:Bind ManageGroupListView.SelectedItems}"
+                                                        Command="{x:Bind ViewModel.DeleteSelectedFavoriteGroupsCommand}"></Button>
                                             </Grid>
                                         </Grid>
                                     </StackPanel>
                                 </Flyout>
                             </Button.Flyout>
-
                         </Button>
                     </StackPanel>
                 </StackPanel>
@@ -160,7 +183,7 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="180" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
+                    <StackPanel Grid.Column="0" x:Name="SfPanel">
                         <StackPanel Padding="5 0 5 0">
                             <InfoBar IsOpen="True"
                                 Severity="Warning"
@@ -193,26 +216,99 @@
                                              AllowFocusOnInteraction="True"
                                              LostFocus="OnCodeInputLostFocusEventHandler"
                                              PlaceholderText="多个代码请用空格或逗号分隔"/>
-                                    <StackPanel Orientation="Horizontal">
-                                        <Button x:Name="AddToFavoriteGroup" Content="加入自选" Margin="2"
+                                    <Grid Margin="0 2 0 0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                            <Button x:Name="AddToFavoriteGroup" Content="加入自选" 
                                                 Click="AddToFavoriteGroup_OnClick"/>
-                                        <Button x:Name="execBtn" Style="{StaticResource AccentButtonStyle}" 
+                                            <Button x:Name="execBtn" Style="{StaticResource AccentButtonStyle}" 
                                                 IsEnabled="{x:Bind ViewModel.AnalysisPressedCommand.IsRunning, Converter={StaticResource ReverseBooleanConverter}, Mode=OneWay}"
                                                 Command="{x:Bind ViewModel.AnalysisPressedCommand}"
-                                                Content="执行分析" Margin="2"/>
-                                        <ProgressRing HorizontalAlignment="Left"
-                                                      IsActive="{x:Bind ViewModel.AnalysisPressedCommand.IsRunning, Mode=OneWay}" Margin="2"/>
-                                    </StackPanel>
+                                                Content="执行分析" Margin="4 0"/>
+                                            <Grid Margin="2">
+                                                <ProgressRing HorizontalAlignment="Left"
+                                                              IsActive="{x:Bind ViewModel.AnalysisPressedCommand.IsRunning, Mode=OneWay}" Margin="2"/>
+                                            </Grid>
+                                            <Grid Visibility="{x:Bind ViewModel.AnalysisPressedCommand.IsRunning
+                                                ,Converter={StaticResource BooleanToVisibilityConverter}
+                                                , Mode=OneWay}">
+                                                <TextBlock HorizontalAlignment="Left"
+                                                           VerticalAlignment="Center"
+                                                           Text="{x:Bind ViewModel.CurrentStatus,Mode=OneWay}" />
+                                            </Grid>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <HyperlinkButton Content="清空" Click="ClearInput_OnClick"/>
+                                            <Button Content="管理查询记录">
+                                                <Button.Flyout>
+                                                    <Flyout>
+                                                        <StackPanel>
+                                                            <ListView x:Name="ManageActivityListView" 
+                                                                      ItemsSource="{x:Bind ViewModel.ActivityDateList}"
+                                                                      SelectionMode="Multiple"
+                                                                      HorizontalAlignment="Left"/>
+                                                            <Grid Margin="14 2">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="100"/>
+                                                                    <ColumnDefinition Width="Auto" />
+                                                                </Grid.ColumnDefinitions>
+                                                                <Grid>
+                                                                    <CheckBox x:Name="ManageActivitySelectAll" Content="全选" 
+                                                                              Checked="ManageActivitySelectAll_OnChecked"
+                                                                              Unchecked="ManageActivitySelectAll_OnUnchecked">
+                                                                    </CheckBox>
+                                                                </Grid>
+                                                                <Grid Grid.Column="1">
+                                                                    <Button Content="删除" 
+                                                                            CommandParameter="{x:Bind ManageActivityListView.SelectedItems}"
+                                                                            Command="{x:Bind ViewModel.DeleteSelectedActivityCommand}"></Button>
+                                                                </Grid>
+                                                            </Grid>
+                                                        </StackPanel>
+                                                    </Flyout>
+                                                </Button.Flyout>
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
                                 </StackPanel>
                             </Grid>
                         </Grid>
                     </StackPanel>
-                    <Grid Grid.Column="1" Background="LightCoral" 
-                          Margin="0 0 2 5"
-                          CornerRadius="5" BorderThickness="0.8" BorderBrush="LightGray">
+                    <Grid Grid.Column="1" Background="LightCoral"
+                          VerticalAlignment="Top"
+                          Padding="0 0 0 5"
+                          CornerRadius="5" BorderThickness="1" BorderBrush="LightGray">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <StackPanel>
+                                <Grid>
+                                    <ComboBox x:Name="QueryHistory" IsEditable="False" Margin="2"
+                                              ItemsSource="{x:Bind ViewModel.ActivityDateList}" 
+                                              SelectedIndex="{x:Bind ViewModel.SelectedActivityDate,Mode=TwoWay}"
+                                              SelectionChanged="{x:Bind ViewModel.QueryHistorySelectionChanged}"/>
+                                </Grid>
+                            </StackPanel>
+                            <StackPanel Grid.Row="1">
+                                <ListView
+                                    MinWidth="175"
+                                    Height="245"
+                                    IsItemClickEnabled="True"
+                                    ItemClick="{x:Bind ViewModel.ActivityDateClicked}"
+                                    ItemTemplate="{StaticResource ActivityTemplate}"
+                                    ItemsSource="{x:Bind ViewModel.ActivityDates}"
+                                    BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
+                                    HorizontalAlignment="Left"/>
+                            </StackPanel>
+                        </Grid>
                     </Grid>
                 </Grid>
-                <Grid Grid.Row="1" Margin="5 0 2 0" CornerRadius="5" BorderThickness="0.8" BorderBrush="LightGray">
+                <Grid Grid.Row="1" Margin="5 4 0 0" CornerRadius="5" BorderThickness="1" BorderBrush="LightGray">
                     <Grid x:Name="ContentArea"
                           Padding="5">
                         <Grid.RowDefinitions>
