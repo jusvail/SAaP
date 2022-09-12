@@ -9,228 +9,233 @@ using SAaP.Core.Services;
 using SAaP.Core.Helpers;
 using SAaP.ControlPages;
 
-namespace SAaP.Views
+namespace SAaP.Views;
+
+/// <summary>
+/// main page
+/// </summary>
+public sealed partial class MainPage
 {
-    /// <summary>
-    /// main page
-    /// </summary>
-    public sealed partial class MainPage
+    public MainViewModel ViewModel { get; }
+
+    public List<double> LastingDaysTemplate { get; } = new()
     {
-        public MainViewModel ViewModel { get; }
+        5, 10, 15, 20, 30, 40, 50, 100, 120, 150, 200
+    };
 
-        public List<double> LastingDaysTemplate { get; } = new()
+    public MainPage()
+    {
+        ViewModel = App.GetService<MainViewModel>();
+        InitializeComponent();
+    }
+
+    protected override async void OnNavigatedTo(NavigationEventArgs e)
+    {
+        base.OnNavigatedTo(e);
+
+        // restore query history from db
+        await ViewModel.RestoreActivity();
+        // restore query history from db
+        await ViewModel.RestoreLastQueryString();
+        // restore favorite codes from db
+        await ViewModel.RestoreFavoriteGroups();
+    }
+
+    private void DataGrid_OnSorting(object sender, DataGridColumnEventArgs e)
+    {
+        // just for sure
+        if (e.Column.Tag == null) return;
+
+        // args for linq dynamic sorting
+        string args;
+
+        foreach (var column in AnalyzeResultGrid.Columns)
         {
-            5, 10, 15, 20, 30, 40, 50, 100, 120, 150, 200
+            // self skip
+            if (e.Column == column) continue;
+            // clear others sort direction
+            column.SortDirection = null;
+        }
+
+        // direction decide
+        if (e.Column.SortDirection is null or DataGridSortDirection.Descending)
+        {
+            e.Column.SortDirection = DataGridSortDirection.Ascending;
+            args = $"{e.Column.Tag} desc";
+        }
+        else
+        {
+            e.Column.SortDirection = DataGridSortDirection.Descending;
+            args = $"{e.Column.Tag} asc";
+        }
+
+        // sort using linq dynamic && update item source
+        AnalyzeResultGrid.ItemsSource = ViewModel.AnalyzedResults.AsQueryable().OrderBy(args);
+    }
+
+    private async void LastingDays_OnTextSubmitted(ComboBox sender, ComboBoxTextSubmittedEventArgs args)
+    {
+        // clear data grid first
+        AnalyzeResultGrid.ItemsSource = null;
+        // execute analyze
+        await ViewModel.OnLastingDaysValueChanged();
+        // bind item source back
+        AnalyzeResultGrid.ItemsSource = ViewModel.AnalyzedResults;
+    }
+
+    private void ClearGrid_OnClick(object sender, RoutedEventArgs e)
+    {
+        // clear data grid
+        AnalyzeResultGrid.ItemsSource = null;
+    }
+
+    private void OnCodeInputLostFocusEventHandler(object sender, RoutedEventArgs e)
+    {
+        // return if is null
+        if (string.IsNullOrEmpty(CodeInput.Text)) return;
+
+        var formatted = StringHelper.FormatInputCode(CodeInput.Text);
+
+        if (formatted != null)
+            // format input code
+            CodeInput.Text = StockService.FormatPyArgument(formatted);
+    }
+
+    private void QueryAll_OnChecked(object sender, RoutedEventArgs e)
+    {
+        CodeInput.IsEnabled = false;
+        NotifyUser.IsEnabled = true;
+        NotifyUser.IsOpen = true;
+        NotifyUser.Title = "警告";
+        NotifyUser.Message = "查询所有股票可能会花费大量时间。(几小时😎, 甚至几天)";
+    }
+
+    private void QueryAll_OnUnchecked(object sender, RoutedEventArgs e)
+    {
+        CodeInput.IsEnabled = true;
+        NotifyUser.IsOpen = false;
+        NotifyUser.IsEnabled = false;
+    }
+
+    private async void AddToFavoriteGroup_OnClick(object sender, RoutedEventArgs e)
+    {
+        var dia = new AddFavoriteGroupDialog(ViewModel.FavoriteGroups.ToList());
+        // 把逻辑写在这里真的很丑陋<_<
+        // 有没有更好的办法？
+        var dialog = new ContentDialog
+        {
+            // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
+            XamlRoot = this.XamlRoot,
+            Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
+            Title = "是这个吗？",
+            PrimaryButtonText = "加入自选组",
+            CloseButtonText = "取消",
+            DefaultButton = ContentDialogButton.Primary,
+            Content = dia
         };
-
-        public MainPage()
+        // show dialog
+        var result = await dialog.ShowAsync();
+        // return if non primary button clicked
+        if (result != ContentDialogResult.Primary) return;
+        // acquire selected/custom group name
+        string groupName;
+        // new?
+        if (dia.CreateNewChecked)
         {
-            ViewModel = App.GetService<MainViewModel>();
-            InitializeComponent();
-        }
-
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
-        {
-            base.OnNavigatedTo(e);
-
-            // restore query history from db
-            await ViewModel.RestoreActivity();
-            // restore query history from db
-            await ViewModel.RestoreLastQueryString();
-            // restore favorite codes from db
-            await ViewModel.RestoreFavoriteGroups();
-        }
-
-        private void DataGrid_OnSorting(object sender, DataGridColumnEventArgs e)
-        {
-            // just for sure
-            if (e.Column.Tag == null) return;
-
-            // args for linq dynamic sorting
-            string args;
-
-            foreach (var column in AnalyzeResultGrid.Columns)
+            // don't left it blank dude
+            if (string.IsNullOrEmpty(dia.GroupName))
             {
-                // self skip
-                if (e.Column == column) continue;
-                // clear others sort direction
-                column.SortDirection = null;
+                dialog.Title = "名称不可以不填<_<";
+                await dialog.ShowAsync();
+                return;
             }
-
-            // direction decide
-            if (e.Column.SortDirection is null or DataGridSortDirection.Descending)
-            {
-                e.Column.SortDirection = DataGridSortDirection.Ascending;
-                args = $"{e.Column.Tag} desc";
-            }
-            else
-            {
-                e.Column.SortDirection = DataGridSortDirection.Descending;
-                args = $"{e.Column.Tag} asc";
-            }
-
-            // sort using linq dynamic && update item source
-            AnalyzeResultGrid.ItemsSource = ViewModel.AnalyzedResults.AsQueryable().OrderBy(args);
+            // gotcha
+            groupName = dia.GroupName;
         }
-
-        private async void LastingDays_OnTextSubmitted(ComboBox sender, ComboBoxTextSubmittedEventArgs args)
+        else
         {
-            // clear data grid first
-            AnalyzeResultGrid.ItemsSource = null;
-            // execute analyze
-            await ViewModel.OnLastingDaysValueChanged();
-            // bind item source back
-            AnalyzeResultGrid.ItemsSource = ViewModel.AnalyzedResults;
+            // selected groupName
+            groupName = dia.GroupNames[dia.FavoriteListSelectSelectIndex];
         }
+        // store into db main
+        await ViewModel.AddToFavorite(groupName);
+    }
 
-        private void ClearGrid_OnClick(object sender, RoutedEventArgs e)
-        {
-            // clear data grid
-            AnalyzeResultGrid.ItemsSource = null;
-        }
+    private void ManageGroupSelectAll_OnChecked(object sender, RoutedEventArgs e)
+    {
+        ManageGroupListView.SelectAll();
+    }
 
-        private void OnCodeInputLostFocusEventHandler(object sender, RoutedEventArgs e)
-        {
-            // return if is null
-            if (string.IsNullOrEmpty(CodeInput.Text)) return;
+    private void ManageGroupSelectAll_OnUnchecked(object sender, RoutedEventArgs e)
+    {
+        ManageGroupListView.SelectedValue = false;
+    }
 
-            var formatted = StringHelper.FormatInputCode(CodeInput.Text);
+    private void FavoriteCodeManageSelectAll_OnChecked(object sender, RoutedEventArgs e)
+    {
+        FavoriteCodes.SelectAll();
+    }
 
-            if (formatted != null)
-                // format input code
-                CodeInput.Text = StockService.FormatPyArgument(formatted);
-        }
+    private void FavoriteCodeManageSelectAll_OnUnchecked(object sender, RoutedEventArgs e)
+    {
+        FavoriteCodes.SelectedValue = false;
+    }
 
-        private void QueryAll_OnChecked(object sender, RoutedEventArgs e)
-        {
-            CodeInput.IsEnabled = false;
-            NotifyUser.IsEnabled = true;
-            NotifyUser.IsOpen = true;
-            NotifyUser.Title = "警告";
-            NotifyUser.Message = "查询所有股票可能会花费大量时间。(几小时😎, 甚至几天)";
-        }
+    private void EditFavoriteGroup_OnClick(object sender, RoutedEventArgs e)
+    {
+        FavoriteCodeManagePanel.Visibility = Visibility.Visible;
+        FavoriteCodeManageCancel.Visibility = Visibility.Visible;
 
-        private void QueryAll_OnUnchecked(object sender, RoutedEventArgs e)
-        {
-            CodeInput.IsEnabled = true;
-            NotifyUser.IsOpen = false;
-            NotifyUser.IsEnabled = false;
-        }
+        ManageFavoriteGroup.Visibility = Visibility.Collapsed;
+        EditFavoriteGroup.Visibility = Visibility.Collapsed;
 
-        private async void AddToFavoriteGroup_OnClick(object sender, RoutedEventArgs e)
-        {
-            var dia = new AddFavoriteGroupDialog(ViewModel.FavoriteGroups.ToList());
-            // 把逻辑写在这里真的很丑陋<_<
-            // 有没有更好的办法？
-            var dialog = new ContentDialog
-            {
-                // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
-                XamlRoot = this.XamlRoot,
-                Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
-                Title = "是这个吗？",
-                PrimaryButtonText = "加入自选组",
-                CloseButtonText = "取消",
-                DefaultButton = ContentDialogButton.Primary,
-                Content = dia
-            };
-            // show dialog
-            var result = await dialog.ShowAsync();
-            // return if non primary button clicked
-            if (result != ContentDialogResult.Primary) return;
-            // acquire selected/custom group name
-            string groupName;
-            // new?
-            if (dia.CreateNewChecked)
-            {
-                // don't left it blank dude
-                if (string.IsNullOrEmpty(dia.GroupName))
-                {
-                    dialog.Title = "名称不可以不填<_<";
-                    await dialog.ShowAsync();
-                    return;
-                }
-                // gotcha
-                groupName = dia.GroupName;
-            }
-            else
-            {
-                // selected groupName
-                groupName = dia.GroupNames[dia.FavoriteListSelectSelectIndex];
-            }
-            // store into db main
-            await ViewModel.AddToFavorite(groupName);
-        }
+        FavoriteCodes.SelectionMode = ListViewSelectionMode.Multiple;
+    }
 
-        private void ManageGroupSelectAll_OnChecked(object sender, RoutedEventArgs e)
-        {
-            ManageGroupListView.SelectAll();
-        }
+    private void FavoriteCodeManageCancel_OnClick(object sender, RoutedEventArgs e)
+    {
+        FavoriteCodeManagePanel.Visibility = Visibility.Collapsed;
+        FavoriteCodeManageCancel.Visibility = Visibility.Collapsed;
 
-        private void ManageGroupSelectAll_OnUnchecked(object sender, RoutedEventArgs e)
-        {
-            ManageGroupListView.SelectedValue = false;
-        }
+        ManageFavoriteGroup.Visibility = Visibility.Visible;
+        EditFavoriteGroup.Visibility = Visibility.Visible;
 
-        private void FavoriteCodeManageSelectAll_OnChecked(object sender, RoutedEventArgs e)
-        {
-            FavoriteCodes.SelectAll();
-        }
+        FavoriteCodes.SelectionMode = ListViewSelectionMode.Single;
+    }
 
-        private void FavoriteCodeManageSelectAll_OnUnchecked(object sender, RoutedEventArgs e)
-        {
-            FavoriteCodes.SelectedValue = false;
-        }
+    private void ManageActivitySelectAll_OnChecked(object sender, RoutedEventArgs e)
+    {
+        ManageActivityListView.SelectAll();
+    }
 
-        private void EditFavoriteGroup_OnClick(object sender, RoutedEventArgs e)
-        {
-            FavoriteCodeManagePanel.Visibility = Visibility.Visible;
-            FavoriteCodeManageCancel.Visibility = Visibility.Visible;
+    private void ManageActivitySelectAll_OnUnchecked(object sender, RoutedEventArgs e)
+    {
+        ManageActivityListView.SelectedValue = false;
+    }
 
-            ManageFavoriteGroup.Visibility = Visibility.Collapsed;
-            EditFavoriteGroup.Visibility = Visibility.Collapsed;
+    private void FavoriteListItem_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+    {
+        ViewModel.AddToQuerying(FavoriteCodes);
+    }
 
-            FavoriteCodes.SelectionMode = ListViewSelectionMode.Multiple;
-        }
+    private void ClearInput_OnClick(object sender, RoutedEventArgs e)
+    {
+        ViewModel.CodeInput = "";
+    }
 
-        private void FavoriteCodeManageCancel_OnClick(object sender, RoutedEventArgs e)
-        {
-            FavoriteCodeManagePanel.Visibility = Visibility.Collapsed;
-            FavoriteCodeManageCancel.Visibility = Visibility.Collapsed;
+    private void ShellMenuBarSettingsButton_PointerEntered(object sender, PointerRoutedEventArgs e)
+    {
+        AnimatedIcon.SetState((UIElement)sender, "PointerOver");
+    }
 
-            ManageFavoriteGroup.Visibility = Visibility.Visible;
-            EditFavoriteGroup.Visibility = Visibility.Visible;
+    private void ShellMenuBarSettingsButton_PointerExited(object sender, PointerRoutedEventArgs e)
+    {
+        AnimatedIcon.SetState((UIElement)sender, "Normal");
+    }
 
-            FavoriteCodes.SelectionMode = ListViewSelectionMode.Single;
-        }
-
-        private void ManageActivitySelectAll_OnChecked(object sender, RoutedEventArgs e)
-        {
-            ManageActivityListView.SelectAll();
-        }
-
-        private void ManageActivitySelectAll_OnUnchecked(object sender, RoutedEventArgs e)
-        {
-            ManageActivityListView.SelectedValue = false;
-        }
-
-        private void FavoriteListItem_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            ViewModel.AddToQuerying(FavoriteCodes);
-        }
-
-        private void ClearInput_OnClick(object sender, RoutedEventArgs e)
-        {
-            ViewModel.CodeInput = "";
-        }
-
-        private void ShellMenuBarSettingsButton_PointerEntered(object sender, PointerRoutedEventArgs e)
-        {
-            AnimatedIcon.SetState((UIElement)sender, "PointerOver");
-        }
-
-        private void ShellMenuBarSettingsButton_PointerExited(object sender, PointerRoutedEventArgs e)
-        {
-            AnimatedIcon.SetState((UIElement)sender, "Normal");
-        }
+    private void CodeNameCell_OnClick(object sender, RoutedEventArgs e)
+    {
+        var hyb = sender as HyperlinkButton;
+        if (hyb != null) ViewModel.RedirectToAnalyzeDetailCommand.Execute(hyb.Content);
     }
 }

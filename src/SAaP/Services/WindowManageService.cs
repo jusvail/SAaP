@@ -18,6 +18,13 @@ public class WindowManageService : IWindowManageService
         _pageService = pageService;
     }
 
+    public Window CreateWindow()
+    {
+        var newWindow = new Window();
+        TrackWindow(newWindow);
+        return newWindow;
+    }
+
     public void CreateWindowAndNavigateTo(string key)
     {
         lock (_activeWindowsKeys)
@@ -43,21 +50,34 @@ public class WindowManageService : IWindowManageService
         window.Closed += (_, _) =>
         {
             _activeWindowsKeys.Remove(key);
-            ActiveWindows.Remove(window);
         };
+
+        TrackWindow(window);
 
         window.Activate();
 
-        ActiveWindows.Add(window);
-
         _activeWindowsKeys.Add(key);
     }
-
+    public void TrackWindow(Window window)
+    {
+        window.Closed += (_, _) =>
+        {
+            ActiveWindows.Remove(window);
+        };
+        ActiveWindows.Add(window);
+    }
 
     public Window GetWindowForElement(UIElement element)
     {
         return element.XamlRoot == null
             ? null
             : ActiveWindows.FirstOrDefault(window => element.XamlRoot == window.Content.XamlRoot);
+    }
+
+    public Window GetWindowForElement(XamlRoot xamlRoot)
+    {
+        return xamlRoot == null
+            ? null
+            : ActiveWindows.FirstOrDefault(window => xamlRoot == window.Content.XamlRoot);
     }
 }

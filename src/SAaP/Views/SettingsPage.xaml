@@ -2,13 +2,63 @@
     x:Class="SAaP.Views.SettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:SAaP.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}">
 
-    <Grid>
-    <TextBlock Text="dfgdfgsfdgsdfgsfdg"></TextBlock>
+    <Grid Margin="40">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock
+            Grid.Row="0"
+            x:Uid="Settings_Title"
+            Style="{StaticResource PageTitleStyle}" />
+        <StackPanel
+            Grid.Row="1" 
+            Padding="5"
+            x:Name="ContentArea">
+            <Grid Padding="10" HorizontalAlignment="Left"
+                  MinWidth="540">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="python安装目录:" VerticalAlignment="Center" 
+                           Margin="{StaticResource SettingsPageGridElementMargin}"></TextBlock>
+                <TextBox Grid.Row="0" Grid.Column="1" IsEnabled="False"
+                         Text="{x:Bind ViewModel.PythonInstallationPath,Mode=TwoWay}"
+                         Margin="{StaticResource SettingsPageGridElementMargin}"></TextBox>
+                <Button Grid.Row="0" Grid.Column="2" Content="选择"
+                        Margin="{StaticResource SettingsPageGridElementMargin}"
+                        CommandParameter="{x:Bind XamlRoot}"
+                        Command="{x:Bind ViewModel.OnPythonInstallationPathPressed}"></Button>
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="tdx安装目录:" VerticalAlignment="Center"
+                           Margin="{StaticResource SettingsPageGridElementMargin}"></TextBlock>
+                <TextBox Grid.Row="1" Grid.Column="1" IsEnabled="False"
+                         Text="{x:Bind ViewModel.TdxInstallationPath,Mode=TwoWay}"
+                         Margin="{StaticResource SettingsPageGridElementMargin}"></TextBox>
+                <Button Grid.Row="1" Grid.Column="2" Content="选择"
+                        Margin="{StaticResource SettingsPageGridElementMargin}"
+                        CommandParameter="{x:Bind XamlRoot}"
+                        Command="{x:Bind ViewModel.OnTdxInstallationPathPressed}"></Button>
+            </Grid>
+            <TextBlock x:Uid="Settings_About" Style="{ThemeResource SubtitleTextBlockStyle}"  />
+
+            <StackPanel>
+                <TextBlock 
+                    x:Uid="Settings_AboutDescription"
+                    Margin="{StaticResource XSmallTopMargin}"
+                    Style="{ThemeResource BodyTextBlockStyle}"/>
+            </StackPanel>
+        </StackPanel>
     </Grid>
 </Page>

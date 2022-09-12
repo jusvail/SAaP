@@ -8,6 +8,8 @@ using SAaP.Core.Models.DB;
 using SAaP.Core.Services;
 using SAaP.Constant;
 using System.Collections.ObjectModel;
+using SAaP.Extensions;
+using SAaP.Views;
 
 namespace SAaP.ViewModels;
 
@@ -21,6 +23,8 @@ public class MainViewModel : ObservableRecipient
     private readonly IRestoreSettingsService _restoreSettingsService;
     // window Manager
     private readonly IWindowManageService _windowManageService;
+    // settings service
+    private readonly ILocalSettingsService _localSettingsService;
 
     private bool _isQueryAllChecked;
     private int _selectedFavGroupIndex;
@@ -41,9 +45,13 @@ public class MainViewModel : ObservableRecipient
 
     private IList<string> LastQueriedCodes { get; set; }
 
-    public IAsyncRelayCommand AnalysisPressedCommand { get; }
-
     public IRelayCommand ClearDataGridCommand { get; }
+
+    public IRelayCommand MenuSettingsCommand { get; }
+
+    public IRelayCommand<object> AddToQueryingCommand { get; }
+
+    public IAsyncRelayCommand AnalysisPressedCommand { get; }
 
     public IAsyncRelayCommand<IList<object>> DeleteSelectedFavoriteGroupsCommand { get; }
 
@@ -51,9 +59,7 @@ public class MainViewModel : ObservableRecipient
 
     public IAsyncRelayCommand<object> DeleteSelectedFavoriteCodesCommand { get; }
 
-    public IRelayCommand<object> AddToQueryingCommand { get; }
-
-    public IRelayCommand MenuSettingsCommand { get; }
+    public IAsyncRelayCommand<object> RedirectToAnalyzeDetailCommand { get; }
 
     public int SelectedFavGroupIndex
     {
@@ -91,18 +97,18 @@ public class MainViewModel : ObservableRecipient
         set => SetProperty(ref _currentStatus, value);
     }
 
-    public MainViewModel()
-    { }
-
-    public MainViewModel(IDbTransferService dbTransferService
+    public MainViewModel(
+        IDbTransferService dbTransferService
         , IStockAnalyzeService stockAnalyzeService
         , IRestoreSettingsService restoreSettingsService
-        , IWindowManageService windowManageService)
+        , IWindowManageService windowManageService
+        , ILocalSettingsService localSettingsService)
     {
         _dbTransferService = dbTransferService;
         _stockAnalyzeService = stockAnalyzeService;
         _restoreSettingsService = restoreSettingsService;
         _windowManageService = windowManageService;
+        _localSettingsService = localSettingsService;
 
         AnalysisPressedCommand = new AsyncRelayCommand(OnAnalysisPressed);
         ClearDataGridCommand = new RelayCommand(OnClearDataGrid);
@@ -111,11 +117,29 @@ public class MainViewModel : ObservableRecipient
         DeleteSelectedActivityCommand = new AsyncRelayCommand<IList<object>>(DeleteSelectedActivity);
         AddToQueryingCommand = new RelayCommand<object>(AddToQuerying);
         MenuSettingsCommand = new RelayCommand(OnMenuSettingsPressed);
+        RedirectToAnalyzeDetailCommand = new AsyncRelayCommand<object>(RedirectToAnalyzeDetail);
+    }
+
+    private async Task RedirectToAnalyzeDetail(object obj)
+    {
+        var codeName = obj as string;
+
+        if (string.IsNullOrEmpty(codeName)) return;
+
+        var window = _windowManageService.CreateWindow();
+
+        var companyName = await StockService.FetchCompanyNameByCode(codeName);
+
+        window.Title = "AnalyzeDetailPageTitle".GetLocalized() + $": [{codeName} {companyName}]";
+
+        window.Content = new AnalyzeDetailPage(codeName);
+
+        window.Activate();
     }
 
     private void OnMenuSettingsPressed()
     {
-        _windowManageService.CreateWindowAndNavigateTo(typeof(SettingsViewModel).FullName);
+        _windowManageService.CreateWindowAndNavigateTo(typeof(SettingsViewModel).FullName!);
     }
 
     public void AddToQuerying(object listView)
@@ -239,11 +263,30 @@ public class MainViewModel : ObservableRecipient
         // formatted code resetting
         CodeInput = pyArg;
 
+        var pyPath = await _localSettingsService.ReadSettingAsync<string>(PjConstant.PythonInstallationPath);
+
+        if (string.IsNullOrEmpty(pyPath))
+        {
+            SetCurrentStatus("ERROR=>python路径未设置，任务终止");
+            return;
+        }
+
+        var tdxPath = await _localSettingsService.ReadSettingAsync<string>(PjConstant.TdxInstallationPath);
+
+        if (string.IsNullOrEmpty(tdxPath))
+        {
+            SetCurrentStatus("ERROR=>tdx路径未设置，任务终止");
+            return;
+        }
+
         SetCurrentStatus("开始执行python脚本。。。");
+
+        var pyExecPath = Path.Combine(pyPath, PythonService.PyName);
 
         // python script execution
         await PythonService.RunPythonScript(PythonService.TdxReader
-            , "C:/devEnv/Tools/TDX"
+            , pyExecPath
+            , tdxPath
             , StartupService.PyDataPath
             , IsQueryAllChecked ? string.Empty : pyArg);
 

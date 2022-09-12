@@ -6,8 +6,6 @@ public class AnalysisResult
 
     public string CompanyName { get; set; }
 
-    public int Duration { get; set; }
-
     public double OverPricedPercent { get; set; }
 
     public int OverPricedDays { get; set; }

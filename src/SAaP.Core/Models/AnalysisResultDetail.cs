@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace SAaP.Core.Models;
 
-namespace SAaP.Core.Models
+public class AnalysisResultDetail : AnalysisResult
 {
-    public class AnalysisResultDetail 
-    {
-    }
+    public int Duration { get; set; }
+
 }

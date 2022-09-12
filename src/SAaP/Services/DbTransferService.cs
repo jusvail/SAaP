@@ -79,7 +79,7 @@ public class DbTransferService : IDbTransferService
             foreach (var codeName in codeNames)
             {
                 // sh stock data
-                var issh = await FileService.TryGetItemAsync(pyDataFolder, StockService.GetOutputNameSh(codeName));
+                var issh = await pyDataFolder.TryGetItemAsync(StockService.GetOutputNameSh(codeName)) as StorageFile;
 
                 // last query codes store into db
                 var stock = new Stock { CodeName = codeName, BelongTo = -1 };
@@ -91,7 +91,7 @@ public class DbTransferService : IDbTransferService
                 }
 
                 // sz stock data
-                var issz = await FileService.TryGetItemAsync(pyDataFolder, StockService.GetOutputNameSz(codeName));
+                var issz = await pyDataFolder.TryGetItemAsync(StockService.GetOutputNameSz(codeName)) as StorageFile;
 
                 if (issz != null)
                 {

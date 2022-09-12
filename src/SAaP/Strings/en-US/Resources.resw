@@ -117,10 +117,22 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AnalyzeDetailPageTitle" xml:space="preserve">
+    <value>Analyze Detail</value>
+  </data>
   <data name="AppTitle" xml:space="preserve">
     <value>Stock Analyse and unpredictable Prediction</value>
   </data>
   <data name="SettingsPageTitle" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Settings_About.Text" xml:space="preserve">
+    <value>About this application</value>
+  </data>
+  <data name="Settings_AboutDescription.Text" xml:space="preserve">
+    <value>Test Test</value>
+  </data>
+  <data name="Settings_Title.Text" xml:space="preserve">
     <value>Settings</value>
   </data>
   <data name="ShellMenuBarItem_File.Title" xml:space="preserve">

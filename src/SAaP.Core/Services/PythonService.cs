@@ -11,7 +11,9 @@ public static class PythonService
     // tdx script location
     public const string TdxReader = "tdx_reader.py";
 
-    public static Task RunPythonScript(string pyScriptName, params string[] args)
+    public const string PyName = "python.exe";
+
+    public static Task RunPythonScript(string pyScriptName, string pythonExecFullPath, params string[] args)
     {
         // py script location
         var path = AppDomain.CurrentDomain.SetupInformation.ApplicationBase + PyFolder + pyScriptName;
@@ -24,7 +26,7 @@ public static class PythonService
         // process start info
         var startInfo = new ProcessStartInfo
         {
-            FileName = "C:/devEnv/Python/Python310/python.exe", // TODO custom py env location await
+            FileName = pythonExecFullPath, 
             Arguments = sb.ToString(),
             UseShellExecute = false,
             RedirectStandardOutput = true,

@@ -1,19 +1,40 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.IO;
 using System.Text;
-using System.Threading.Tasks;
-using ABI.Windows.Storage;
-using StorageFile = Windows.Storage.StorageFile;
-using StorageFolder = Windows.Storage.StorageFolder;
+using Newtonsoft.Json;
+using SAaP.Core.Contracts.Services;
 
 namespace SAaP.Core.Services
 {
-    public static class FileService
+    public class FileService : IFileService
     {
+        public T Read<T>(string folderPath, string fileName)
+        {
+            var path = Path.Combine(folderPath, fileName);
 
-        public static async Task<StorageFile> TryGetItemAsync(StorageFolder top, string name)
-            => await top.TryGetItemAsync(name) as StorageFile;
+            if (!File.Exists(path)) return default;
 
+            var json = File.ReadAllText(path);
+
+            return JsonConvert.DeserializeObject<T>(json);
+        }
+
+        public void Save<T>(string folderPath, string fileName, T content)
+        {
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
+
+            var fileContent = JsonConvert.SerializeObject(content);
+            File.WriteAllText(Path.Combine(folderPath, fileName), fileContent, Encoding.UTF8);
+        }
+
+        public void Delete(string folderPath, string fileName)
+        {
+            if (fileName != null && File.Exists(Path.Combine(folderPath, fileName)))
+            {
+                File.Delete(Path.Combine(folderPath, fileName));
+            }
+        }
     }
 }

@@ -1,0 +1,160 @@
+﻿<Page
+    x:Class="SAaP.Views.AnalyzeDetailPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:SAaP.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:helper="using:SAaP.Helper"
+    xmlns:models="using:SAaP.Core.Models"
+    xmlns:db="using:SAaP.Core.Models.DB"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <helper:ReverseBooleanConverter x:Key="ReverseBooleanConverter" />
+        <helper:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <helper:ProfitColorConverter x:Key="ProfitColorConverter" />
+        <helper:ProfitPercentColorConverter x:Key="ProfitPercentColorConverter" />
+        <helper:OverpriceColorConverter x:Key="OverpriceColorConverter" />
+        <helper:ProfitWeightConverter x:Key="ProfitWeightConverter" />
+        <helper:ProfitPercentWeightConverter x:Key="ProfitPercentWeightConverter" />
+        <helper:SimplifySearchStringConverter x:Key="SimplifySearchStringConverter" />
+    </Page.Resources>
+
+    <Grid Margin="5" CornerRadius="5" BorderThickness="1" BorderBrush="LightGray">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid>
+
+        </Grid>
+        <Grid Grid.Row="1">
+            <controls:DataGrid x:Name="AnalyzeResultGrid"
+                                           Margin="0 5"
+                                           VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                           HorizontalScrollBarVisibility="Visible"
+                                           VerticalScrollBarVisibility="Visible"
+                                           AutoGenerateColumns="False"
+                                           CanUserSortColumns="True"    
+                                           CanUserReorderColumns="True"
+                                           CanUserResizeColumns="True"
+                                           ColumnHeaderHeight="32"
+                                           MaxColumnWidth="400"
+                                           FrozenColumnCount="0"
+                                           GridLinesVisibility="Horizontal"
+                                           HeadersVisibility="Column"
+                                           IsReadOnly="True"
+                                           SelectionMode="Extended"
+                                           RowGroupHeaderPropertyNameAlternative="Range"
+                                           Sorting="DataGrid_OnSorting"
+                                           ItemsSource="{x:Bind ViewModel.AnalyzedResults, Mode=OneWay}">
+                <controls:DataGrid.Resources>
+                    <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor" Color="Transparent" />
+                </controls:DataGrid.Resources>
+                <controls:DataGrid.Columns>
+                    <controls:DataGridTextColumn Binding="{Binding Duration}"  Header="最近N交易日" Tag="Duration" />
+                    <controls:DataGridTextColumn Binding="{Binding CodeName}"  Header="代码" Tag="CodeName" />
+                    <controls:DataGridTextColumn Binding="{Binding CompanyName}" Header="名称" Tag="CompanyName"/>
+                    <controls:DataGridTemplateColumn Header="op%" Tag="OverPricedPercent">
+                        <controls:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding OverPricedPercent}" Style="{StaticResource DataGridCellStyle}"
+                                                       FontWeight="{Binding OverPricedPercent,Converter={StaticResource OverpriceColorConverter},Mode=OneWay}"
+                                                       Foreground="{Binding OverPricedPercent,Converter={StaticResource OverpriceColorConverter},Mode=OneWay}"/>
+                            </DataTemplate>
+                        </controls:DataGridTemplateColumn.CellTemplate>
+                    </controls:DataGridTemplateColumn>
+                    <controls:DataGridTextColumn Binding="{Binding OverPricedDays}" Header="opD" Tag="OverPricedDays"/>
+                    <controls:DataGridTemplateColumn Header="1%+op%" Tag="OverPricedPercentHigherThan1P">
+                        <controls:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding OverPricedPercentHigherThan1P}" Style="{StaticResource DataGridCellStyle}"
+                                                       FontWeight="{Binding OverPricedPercentHigherThan1P,Converter={StaticResource OverpriceColorConverter},Mode=OneWay}"
+                                                       Foreground="{Binding OverPricedPercentHigherThan1P,Converter={StaticResource OverpriceColorConverter},Mode=OneWay}"/>
+                            </DataTemplate>
+                        </controls:DataGridTemplateColumn.CellTemplate>
+                    </controls:DataGridTemplateColumn>
+                    <controls:DataGridTextColumn Binding="{Binding OverPricedDaysHigherThan1P}" Header="1%+opD" Tag="OverPricedDaysHigherThan1P"/>
+                    <controls:DataGridTemplateColumn Header="+avop%" Tag="AverageOverPricedPercent">
+                        <controls:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding AverageOverPricedPercent}" Style="{StaticResource DataGridCellStyle}"
+                                                       FontWeight="{Binding AverageOverPricedPercent,Converter={StaticResource ProfitPercentWeightConverter},Mode=OneWay}"
+                                                       Foreground="{Binding AverageOverPricedPercent,Converter={StaticResource ProfitPercentColorConverter},Mode=OneWay}"/>
+                            </DataTemplate>
+                        </controls:DataGridTemplateColumn.CellTemplate>
+                    </controls:DataGridTemplateColumn>
+                    <controls:DataGridTemplateColumn Header="1%+avop%" Tag="AverageOverPricedPercentHigherThan1P">
+                        <controls:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding AverageOverPricedPercentHigherThan1P}" Style="{StaticResource DataGridCellStyle}"
+                                                       FontWeight="{Binding AverageOverPricedPercentHigherThan1P,Converter={StaticResource ProfitPercentWeightConverter},Mode=OneWay}"
+                                                       Foreground="{Binding AverageOverPricedPercentHigherThan1P,Converter={StaticResource ProfitPercentColorConverter},Mode=OneWay}"/>
+                            </DataTemplate>
+                        </controls:DataGridTemplateColumn.CellTemplate>
+                    </controls:DataGridTemplateColumn>
+                    <controls:DataGridTemplateColumn Header="1%+sp获利" Tag="StopProfitWith1P">
+                        <controls:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding StopProfitWith1P}" Style="{StaticResource DataGridCellStyle}"
+                                                       FontWeight="{Binding StopProfitWith1P,Converter={StaticResource ProfitWeightConverter},Mode=OneWay}"
+                                                       Foreground="{Binding StopProfitWith1P,Converter={StaticResource ProfitColorConverter},Mode=OneWay}"/>
+                            </DataTemplate>
+                        </controls:DataGridTemplateColumn.CellTemplate>
+                    </controls:DataGridTemplateColumn>
+                    <controls:DataGridTemplateColumn Header="2%+sp获利" Tag="StopProfitWith2P">
+                        <controls:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding StopProfitWith2P}" Style="{StaticResource DataGridCellStyle}"
+                                                       FontWeight="{Binding StopProfitWith2P,Converter={StaticResource ProfitWeightConverter},Mode=OneWay}"
+                                                       Foreground="{Binding StopProfitWith2P,Converter={StaticResource ProfitColorConverter},Mode=OneWay}"/>
+                            </DataTemplate>
+                        </controls:DataGridTemplateColumn.CellTemplate>
+                    </controls:DataGridTemplateColumn>
+                    <controls:DataGridTemplateColumn Header="3%+sp获利" Tag="StopProfitWith3P">
+                        <controls:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding StopProfitWith3P}" Style="{StaticResource DataGridCellStyle}"
+                                                       FontWeight="{Binding StopProfitWith3P,Converter={StaticResource ProfitWeightConverter},Mode=OneWay}"
+                                                       Foreground="{Binding StopProfitWith3P,Converter={StaticResource ProfitColorConverter},Mode=OneWay}"/>
+                            </DataTemplate>
+                        </controls:DataGridTemplateColumn.CellTemplate>
+                    </controls:DataGridTemplateColumn>
+                    <controls:DataGridTemplateColumn Header="躺平获利" Tag="NoActionProfit">
+                        <controls:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding NoActionProfit}" Style="{StaticResource DataGridCellStyle}"
+                                                       FontWeight="{Binding NoActionProfit,Converter={StaticResource ProfitWeightConverter},Mode=OneWay}"
+                                                       Foreground="{Binding NoActionProfit,Converter={StaticResource ProfitColorConverter},Mode=OneWay}"/>
+                            </DataTemplate>
+                        </controls:DataGridTemplateColumn.CellTemplate>
+                    </controls:DataGridTemplateColumn>
+                    <controls:DataGridTextColumn Binding="{Binding BestStopProfit}" Header="Bsp" Tag="BestStopProfit"/>
+                    <controls:DataGridTemplateColumn Header="Bsp获利" Tag="BestEarnings">
+                        <controls:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding BestEarnings}" Style="{StaticResource DataGridCellStyle}"
+                                                       FontWeight="{Binding BestEarnings,Converter={StaticResource ProfitWeightConverter},Mode=OneWay}"
+                                                       Foreground="{Binding BestEarnings,Converter={StaticResource ProfitColorConverter},Mode=OneWay}"/>
+                            </DataTemplate>
+                        </controls:DataGridTemplateColumn.CellTemplate>
+                    </controls:DataGridTemplateColumn>
+                    <controls:DataGridTextColumn Binding="{Binding MaxContinueOverPricedDay}" Header="mc+opD" Tag="MaxContinueOverPricedDay"/>
+                    <controls:DataGridTextColumn Binding="{Binding MaxContinueMinusOverPricedDay}" Header="mc-opD" Tag="MaxContinueMinusOverPricedDay"/>
+                    <controls:DataGridTextColumn Binding="{Binding FirstTradingDay}" Header="std" Tag="FirstTradingDay"/>
+                    <controls:DataGridTextColumn Binding="{Binding LastTradingDay}" Header="ltd" Tag="LastTradingDay"/>
+                    <controls:DataGridTemplateColumn Header="评价">
+                        <controls:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <HyperlinkButton Content="{Binding Evaluate}" />
+                            </DataTemplate>
+                        </controls:DataGridTemplateColumn.CellTemplate>
+                    </controls:DataGridTemplateColumn>
+                </controls:DataGrid.Columns>
+            </controls:DataGrid>
+        </Grid>
+    </Grid>
+</Page>

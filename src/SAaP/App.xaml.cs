@@ -2,11 +2,13 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SAaP.Contracts.Services;
+using SAaP.Core.Contracts.Services;
+using SAaP.Core.Services;
 using SAaP.Extensions;
+using SAaP.Models;
 using SAaP.Services;
 using SAaP.Views;
 using SAaP.ViewModels;
-using SAaP.Models;
 
 namespace SAaP;
 
@@ -28,7 +30,7 @@ public partial class App
         return service;
     }
 
-    public static Window MainWindow { get; set; } = new() {  Title = "AppTitle".GetLocalized() };
+    public static Window MainWindow { get; set; } = new() { Title = "AppTitle".GetLocalized() };
 
     /// <summary>
     /// Initializes the singleton application object.  This is the first line of authored code
@@ -45,16 +47,23 @@ public partial class App
                 {
                     services.AddSingleton<IActivationService, ActivationService>();
                     services.AddSingleton<IDbTransferService, DbTransferService>();
-                    services.AddSingleton<IStockAnalyzeService, StockAnalyzeService>();
-                    services.AddSingleton<IRestoreSettingsService, RestoreSettingsService>();
                     services.AddSingleton<IFetchStockDataService, FetchStockDataService>();
+                    services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
                     services.AddSingleton<IPageService, PageService>();
+                    services.AddSingleton<IRestoreSettingsService, RestoreSettingsService>();
+                    services.AddSingleton<IStockAnalyzeService, StockAnalyzeService>();
                     services.AddSingleton<IWindowManageService, WindowManageService>();
 
-                    services.AddTransient<ShellPage>();
-                    services.AddTransient<ShellViewModel>();
+                    services.AddSingleton<IFileService, FileService>();
+
+                    services.AddTransient<AnalyzeDetailPage>();
+                    services.AddTransient<AnalyzeDetailViewModel>();
                     services.AddTransient<MainPage>();
                     services.AddTransient<MainViewModel>();
+                    services.AddTransient<ShellPage>();
+                    services.AddTransient<ShellViewModel>();
+                    services.AddTransient<SettingsPage>();
+                    services.AddTransient<SettingsViewModel>();
 
                     // Configuration
                     services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
