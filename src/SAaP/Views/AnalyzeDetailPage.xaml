@@ -55,7 +55,7 @@
                     <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor" Color="Transparent" />
                 </controls:DataGrid.Resources>
                 <controls:DataGrid.Columns>
-                    <controls:DataGridTextColumn Binding="{Binding Duration}"  Header="最近N交易日" Tag="Duration" />
+                    <controls:DataGridTextColumn Binding="{Binding Duration}"  Header="LND" Tag="Duration" />
                     <controls:DataGridTextColumn Binding="{Binding CodeName}"  Header="代码" Tag="CodeName" />
                     <controls:DataGridTextColumn Binding="{Binding CompanyName}" Header="名称" Tag="CompanyName"/>
                     <controls:DataGridTemplateColumn Header="op%" Tag="OverPricedPercent">
