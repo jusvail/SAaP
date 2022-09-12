@@ -68,15 +68,56 @@ public static class StockService
         // query from db first
         var companyName = await DbService.SelectCompanyNameByCode(codeName);
         //if exist return
-        if (companyName != null) return companyName;
+        if (!string.IsNullOrEmpty(companyName)) return companyName;
 
         // not exist in db so get from internet
+        if (flag < 0) return await FetchCompanyNameFromInternet(codeName);
 
         // tx api => full request string
         var api = WebServiceApi.GenerateTxQueryString(GetLocByFlag(flag), codeName);
         // get result through http
         var result = await Http.GetStringAsync(api);
 
+        // extract company name
+        return ExtraCompanyNameFromHttpString(result);
+    }
+
+    private static async Task<string> FetchCompanyNameFromInternet(string codeName)
+    {
+        if (string.IsNullOrEmpty(codeName)) return string.Empty;
+        
+        // tx api => full request string
+        var api = WebServiceApi.GenerateTxQueryString(GetLocByFlag(0), codeName);
+        // get result through http
+        var result = await Http.GetStringAsync(api);
+
+        var companyName = ExtraCompanyNameFromHttpString(result);
+        // find in sh
+        if (!string.IsNullOrEmpty(companyName)) return companyName;
+
+        // if not exist, find in sz
+        api = WebServiceApi.GenerateTxQueryString(GetLocByFlag(1), codeName);
+
+        result = await Http.GetStringAsync(api);
+
+        companyName = ExtraCompanyNameFromHttpString(result);
+
+        return companyName;
+    }
+
+    public static async Task<string> FetchCompanyNameByCode(string codeName)
+    {
+        // query from db first
+        var companyName = await DbService.SelectCompanyNameByCode(codeName);
+        //if exist return
+        if (!string.IsNullOrEmpty(companyName)) return companyName;
+
+        // not exist in db so get from internet
+        return await FetchCompanyNameFromInternet(codeName);
+    }
+
+    private static string ExtraCompanyNameFromHttpString(string result)
+    {
         // no way
         if (result == null) return null;
 

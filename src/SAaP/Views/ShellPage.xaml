@@ -10,8 +10,8 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="32"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="32"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <Grid x:Name="AppTitleBar" Grid.Row="0">

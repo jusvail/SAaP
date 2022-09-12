@@ -59,10 +59,10 @@ public static class DbService
 
         return await groupBy.ToDictionaryAsync(g => g.Key, g => g.ToList());
     }
-
+    
     public static async Task AddToFavorite(string codeName, string groupName)
     {
-        var db = new DbSaap(StartupService.DbConnectionString);
+        await using var db = new DbSaap(StartupService.DbConnectionString);
 
         var favoriteDatas = db.Favorite.Select(f => f);
 

@@ -14,7 +14,7 @@ public static class PythonService
     public static Task RunPythonScript(string pyScriptName, params string[] args)
     {
         // py script location
-        var path = System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase + PyFolder + pyScriptName;
+        var path = AppDomain.CurrentDomain.SetupInformation.ApplicationBase + PyFolder + pyScriptName;
 
         //args generate
         var sb = new StringBuilder(path);

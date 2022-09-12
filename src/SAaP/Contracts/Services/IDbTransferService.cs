@@ -17,5 +17,6 @@ namespace SAaP.Contracts.Services
 
         Task DeleteFavoriteCodes(FavoriteData favorite);
 
+        Task AddToFavorite(string codeName, string groupName);
     }
 }

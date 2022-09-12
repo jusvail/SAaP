@@ -2,9 +2,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SAaP.Contracts.Services;
+using SAaP.Extensions;
 using SAaP.Services;
 using SAaP.Views;
 using SAaP.ViewModels;
+using SAaP.Models;
 
 namespace SAaP;
 
@@ -13,10 +15,7 @@ namespace SAaP;
 /// </summary>
 public partial class App
 {
-    public IHost Host
-    {
-        get;
-    }
+    public IHost Host { get; }
 
     public static T GetService<T>()
         where T : class
@@ -29,7 +28,7 @@ public partial class App
         return service;
     }
 
-    public static Window MainWindow { get; set; } = new();
+    public static Window MainWindow { get; set; } = new() {  Title = "AppTitle".GetLocalized() };
 
     /// <summary>
     /// Initializes the singleton application object.  This is the first line of authored code
@@ -38,6 +37,7 @@ public partial class App
     public App()
     {
         InitializeComponent();
+
         Host = Microsoft.Extensions.Hosting.Host
             .CreateDefaultBuilder()
             .UseContentRoot(AppContext.BaseDirectory)
@@ -48,13 +48,26 @@ public partial class App
                     services.AddSingleton<IStockAnalyzeService, StockAnalyzeService>();
                     services.AddSingleton<IRestoreSettingsService, RestoreSettingsService>();
                     services.AddSingleton<IFetchStockDataService, FetchStockDataService>();
+                    services.AddSingleton<IPageService, PageService>();
+                    services.AddSingleton<IWindowManageService, WindowManageService>();
 
                     services.AddTransient<ShellPage>();
                     services.AddTransient<ShellViewModel>();
                     services.AddTransient<MainPage>();
                     services.AddTransient<MainViewModel>();
+
+                    // Configuration
+                    services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
                 }
             ).Build();
+
+        // register unhandled exception
+        UnhandledException += App_UnhandledException;
+    }
+
+    private static void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+    {
+        Console.Write(e.Message);
     }
 
     /// <summary>

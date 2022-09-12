@@ -4,8 +4,6 @@ using SAaP.Core.Services;
 using Windows.Storage;
 using SAaP.Core.Models.DB;
 using LinqToDB;
-using ColorCode.Common;
-using SAaP.Core.Models;
 
 // ReSharper disable PossibleMultipleEnumeration
 
@@ -46,7 +44,7 @@ public class DbTransferService : IDbTransferService
                 var codeName = tmpName.Substring(2, 6);
 
                 // last query codes store into db
-                var stock = new Stock { CodeName = codeName };
+                var stock = new Stock { CodeName = codeName, BelongTo = -1 };
 
                 insertionList = GetInsertionListWhichNotExistInDb(file, codeName);
 
@@ -84,7 +82,7 @@ public class DbTransferService : IDbTransferService
                 var issh = await FileService.TryGetItemAsync(pyDataFolder, StockService.GetOutputNameSh(codeName));
 
                 // last query codes store into db
-                var stock = new Stock { CodeName = codeName };
+                var stock = new Stock { CodeName = codeName, BelongTo = -1 };
 
                 if (issh != null)
                 {
@@ -221,4 +219,36 @@ public class DbTransferService : IDbTransferService
             yield return originalData;
         }
     }
+
+    public async Task AddToFavorite(string codeName, string groupName)
+    {
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+
+        var existInStock = db.Stock.Where(s => s.CodeName == codeName);
+
+        // add if not exist in stock
+        if (!existInStock.Any())
+        {
+            var stock = new Stock { CodeName = codeName, BelongTo = -1 };
+            // try with sh
+            var belong = StockService.ShFlag;
+
+            var companyName = await StockService.FetchCompanyNameByCode(codeName, belong);
+
+            if (string.IsNullOrEmpty(companyName))
+            {
+                belong = StockService.SzFlag;
+                companyName = await StockService.FetchCompanyNameByCode(codeName, belong);
+            }
+
+            stock.BelongTo = belong;
+            stock.CompanyName = companyName;
+
+            await db.InsertAsync(stock);
+        }
+
+        // add to favorite table
+        await DbService.AddToFavorite(codeName, groupName);
+    }
+
 }

@@ -2,7 +2,6 @@
 
 namespace SAaP.ViewModels;
 
-public class ShellViewModel : ObservableRecipient
+internal class SettingsViewModel : ObservableRecipient
 {
-
 }

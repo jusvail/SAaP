@@ -222,5 +222,15 @@ namespace SAaP.Views
         {
             ViewModel.CodeInput = "";
         }
+
+        private void ShellMenuBarSettingsButton_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            AnimatedIcon.SetState((UIElement)sender, "PointerOver");
+        }
+
+        private void ShellMenuBarSettingsButton_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            AnimatedIcon.SetState((UIElement)sender, "Normal");
+        }
     }
 }

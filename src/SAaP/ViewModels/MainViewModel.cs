@@ -1,25 +1,26 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.UI.Xaml.Controls;
 using SAaP.Core.Helpers;
 using SAaP.Core.Models;
-using System.Collections.ObjectModel;
-using Microsoft.UI.Xaml.Controls;
 using SAaP.Contracts.Services;
 using SAaP.Core.Models.DB;
 using SAaP.Core.Services;
 using SAaP.Constant;
+using System.Collections.ObjectModel;
 
 namespace SAaP.ViewModels;
 
 public class MainViewModel : ObservableRecipient
 {
-
     // store csv output by py script to sqlite database
     private readonly IDbTransferService _dbTransferService;
     // analyze main service
     private readonly IStockAnalyzeService _stockAnalyzeService;
-    // restore  settings service
+    // restore settings service
     private readonly IRestoreSettingsService _restoreSettingsService;
+    // window Manager
+    private readonly IWindowManageService _windowManageService;
 
     private bool _isQueryAllChecked;
     private int _selectedFavGroupIndex;
@@ -42,7 +43,7 @@ public class MainViewModel : ObservableRecipient
 
     public IAsyncRelayCommand AnalysisPressedCommand { get; }
 
-    public IRelayCommand ClearDataGrid { get; }
+    public IRelayCommand ClearDataGridCommand { get; }
 
     public IAsyncRelayCommand<IList<object>> DeleteSelectedFavoriteGroupsCommand { get; }
 
@@ -51,6 +52,8 @@ public class MainViewModel : ObservableRecipient
     public IAsyncRelayCommand<object> DeleteSelectedFavoriteCodesCommand { get; }
 
     public IRelayCommand<object> AddToQueryingCommand { get; }
+
+    public IRelayCommand MenuSettingsCommand { get; }
 
     public int SelectedFavGroupIndex
     {
@@ -69,6 +72,7 @@ public class MainViewModel : ObservableRecipient
         get => _lastingDays;
         set => SetProperty(ref _lastingDays, value);
     }
+
     public bool IsQueryAllChecked
     {
         get => _isQueryAllChecked;
@@ -90,17 +94,28 @@ public class MainViewModel : ObservableRecipient
     public MainViewModel()
     { }
 
-    public MainViewModel(IDbTransferService dbTransferService, IStockAnalyzeService stockAnalyzeService, IRestoreSettingsService restoreSettingsService)
+    public MainViewModel(IDbTransferService dbTransferService
+        , IStockAnalyzeService stockAnalyzeService
+        , IRestoreSettingsService restoreSettingsService
+        , IWindowManageService windowManageService)
     {
         _dbTransferService = dbTransferService;
         _stockAnalyzeService = stockAnalyzeService;
         _restoreSettingsService = restoreSettingsService;
+        _windowManageService = windowManageService;
+
         AnalysisPressedCommand = new AsyncRelayCommand(OnAnalysisPressed);
-        ClearDataGrid = new RelayCommand(OnClearDataGrid);
+        ClearDataGridCommand = new RelayCommand(OnClearDataGrid);
         DeleteSelectedFavoriteGroupsCommand = new AsyncRelayCommand<IList<object>>(DeleteSelectedFavoriteGroups);
         DeleteSelectedFavoriteCodesCommand = new AsyncRelayCommand<object>(DeleteSelectedFavoriteCodes);
         DeleteSelectedActivityCommand = new AsyncRelayCommand<IList<object>>(DeleteSelectedActivity);
         AddToQueryingCommand = new RelayCommand<object>(AddToQuerying);
+        MenuSettingsCommand = new RelayCommand(OnMenuSettingsPressed);
+    }
+
+    private void OnMenuSettingsPressed()
+    {
+        _windowManageService.CreateWindowAndNavigateTo(typeof(SettingsViewModel).FullName);
     }
 
     public void AddToQuerying(object listView)
@@ -196,7 +211,7 @@ public class MainViewModel : ObservableRecipient
 
         foreach (var accuracyCode in accuracyCodes)
         {
-            await DbService.AddToFavorite(accuracyCode, groupName);
+            await _dbTransferService.AddToFavorite(accuracyCode, groupName);
         }
 
         await BackupCurrentSelectGroupAndRestoreFavoriteGroups();
@@ -247,7 +262,7 @@ public class MainViewModel : ObservableRecipient
 
         // store this activity
         await _dbTransferService.StoreActivityDataToDb(DateTime.Now, pyArg, string.Empty);
-        
+
         SetCurrentStatus("开始分析数据。。。");
 
         // invoke analyze
