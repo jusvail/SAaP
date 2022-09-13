@@ -120,6 +120,9 @@
   <data name="AnalyzeDetailPageTitle" xml:space="preserve">
     <value>Analyze Detail</value>
   </data>
+  <data name="AppDisplayName" xml:space="preserve">
+    <value>SAaP</value>
+  </data>
   <data name="AppTitle" xml:space="preserve">
     <value>Stock Analyse and unpredictable Prediction</value>
   </data>
@@ -130,7 +133,7 @@
     <value>About this application</value>
   </data>
   <data name="Settings_AboutDescription.Text" xml:space="preserve">
-    <value>Test Test</value>
+    <value>project homapage=&gt;</value>
   </data>
   <data name="Settings_Title.Text" xml:space="preserve">
     <value>Settings</value>

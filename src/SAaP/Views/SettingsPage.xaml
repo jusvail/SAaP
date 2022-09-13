@@ -53,11 +53,20 @@
             </Grid>
             <TextBlock x:Uid="Settings_About" Style="{ThemeResource SubtitleTextBlockStyle}"  />
 
-            <StackPanel>
-                <TextBlock 
-                    x:Uid="Settings_AboutDescription"
-                    Margin="{StaticResource XSmallTopMargin}"
-                    Style="{ThemeResource BodyTextBlockStyle}"/>
+            <StackPanel Margin="{StaticResource XSmallTopMargin}" Padding="10 0 0 0">
+                <TextBlock Text="{x:Bind ViewModel.VersionDescription, Mode=OneWay}" Style="{ThemeResource BodyTextBlockStyle}" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0"
+                               x:Uid="Settings_AboutDescription"
+                               VerticalAlignment="Center"
+                               Style="{ThemeResource BodyTextBlockStyle}"/>
+                    <HyperlinkButton Grid.Column="1" Content="https://github.com/ryoukou/SAaP" 
+                                     NavigateUri="https://github.com/ryoukou/SAaP"></HyperlinkButton>
+                </Grid>
             </StackPanel>
         </StackPanel>
     </Grid>

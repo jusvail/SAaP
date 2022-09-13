@@ -120,6 +120,9 @@
   <data name="AnalyzeDetailPageTitle" xml:space="preserve">
     <value>详细分析</value>
   </data>
+  <data name="AppDisplayName" xml:space="preserve">
+    <value>SAaP</value>
+  </data>
   <data name="AppTitle" xml:space="preserve">
     <value>股票溢价分析</value>
   </data>
@@ -130,7 +133,7 @@
     <value>关于此程序</value>
   </data>
   <data name="Settings_AboutDescription.Text" xml:space="preserve">
-    <value>测试测试测试测试</value>
+    <value>项目地址=&gt;</value>
   </data>
   <data name="Settings_Title.Text" xml:space="preserve">
     <value>设置</value>
