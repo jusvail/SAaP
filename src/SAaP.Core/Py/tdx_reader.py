@@ -1,9 +1,11 @@
 # -*- coding: UTF-8 -*-
 
+import logging
 import os
 import sys
 import struct
 import datetime
+
 
 if len(sys.argv) < 3:
     print('no enough args!')
@@ -24,6 +26,12 @@ else:
     print('args too much')
     sys.exit()
 
+logging.basicConfig(filename=os.path.join(out_path, 'py_log.txt'), level=logging.INFO,format='%(asctime)s %(levelname)s: %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+
+logging.info("start => tdx_reader.py")
+logging.info("tdx_path =>" + tdx_path)
+logging.info("out_path =>" + out_path)
+
 # 可转债的值变换与普通股有出入
 def zz_parse(zzc, original):
 
@@ -35,6 +43,9 @@ def zz_parse(zzc, original):
 
 
 def store_stock_data_to_csv(filepath, name):
+
+    logging.info(": exec store_stock_data_to_csv => " + name)
+    logging.info(": exec path => " + filepath)
 
     # 代码前2位
     zzc = name[2:4]
@@ -79,6 +90,9 @@ data_sh = tdx_path + '/vipdoc/sh/lday/'
 data_sz = tdx_path + '/vipdoc/sz/lday/'
 
 if 'quest_code' in globals():
+
+    logging.info("quest code =>" + quest_code)
+
     # exec specific code
     for i in quest_code.split(','):
         if len(i) != 6:
@@ -94,9 +108,11 @@ if 'quest_code' in globals():
             store_stock_data_to_csv(data_sz + code_name, 'sz' + i)
             continue
 
+        logging.info("neither shanghai or shenzhen =>" + i)
         print('neither shanghai or shenzhen')
         sys.exit()
 else:
+    logging.info("exec all codes")
     # exec all code
     file_sh = os.listdir(data_sh)
     for i in file_sh:
@@ -106,4 +122,5 @@ else:
     for i in file_sz:
         store_stock_data_to_csv(data_sz + i, i[:-4])
 
+logging.info("end .......")
 print("finished")

@@ -8,6 +8,7 @@ using SAaP.Core.Models.DB;
 using SAaP.Core.Services;
 using SAaP.Constant;
 using System.Collections.ObjectModel;
+using Windows.Storage;
 using SAaP.Extensions;
 using SAaP.Views;
 
@@ -279,16 +280,27 @@ public class MainViewModel : ObservableRecipient
             return;
         }
 
-        SetCurrentStatus("开始执行python脚本。。。");
-
         var pyExecPath = Path.Combine(pyPath, PythonService.PyName);
 
+        //const string pyScriptPath = "C:\\Workspace\\WK\\blk test\\tdx_reader.py";
+        var pyScriptPath = Path.Combine(AppDomain.CurrentDomain.SetupInformation.ApplicationBase!, PythonService.PyFolder, PythonService.TdxReader);
+
+        var f = await StorageFile.GetFileFromPathAsync(pyScriptPath);
+
+        if (f == null)
+        {
+            SetCurrentStatus("无法找到python脚本。。。");
+            return;
+        }
+
+        SetCurrentStatus("开始执行python脚本。。。");
+
         // python script execution
-        await PythonService.RunPythonScript(PythonService.TdxReader
-            , pyExecPath
-            , tdxPath
-            , StartupService.PyDataPath
-            , IsQueryAllChecked ? string.Empty : pyArg);
+        await PythonService.RunPythonScript(pyExecPath
+             , pyScriptPath
+             , tdxPath
+             , StartupService.PyDataPath
+             , IsQueryAllChecked ? string.Empty : pyArg);
 
         // TODO remove this after release
         // await Launcher.LaunchFolderAsync(await StorageFolder.GetFolderFromPathAsync(StartupService.PyDataPath));

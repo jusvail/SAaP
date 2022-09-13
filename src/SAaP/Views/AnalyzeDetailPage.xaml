@@ -56,8 +56,6 @@
                 </controls:DataGrid.Resources>
                 <controls:DataGrid.Columns>
                     <controls:DataGridTextColumn Binding="{Binding Duration}"  Header="LND" Tag="Duration" />
-                    <controls:DataGridTextColumn Binding="{Binding CodeName}"  Header="代码" Tag="CodeName" />
-                    <controls:DataGridTextColumn Binding="{Binding CompanyName}" Header="名称" Tag="CompanyName"/>
                     <controls:DataGridTemplateColumn Header="op%" Tag="OverPricedPercent">
                         <controls:DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -142,10 +140,10 @@
                             </DataTemplate>
                         </controls:DataGridTemplateColumn.CellTemplate>
                     </controls:DataGridTemplateColumn>
-                    <controls:DataGridTextColumn Binding="{Binding MaxContinueOverPricedDay}" Header="mc+opD" Tag="MaxContinueOverPricedDay"/>
-                    <controls:DataGridTextColumn Binding="{Binding MaxContinueMinusOverPricedDay}" Header="mc-opD" Tag="MaxContinueMinusOverPricedDay"/>
                     <controls:DataGridTextColumn Binding="{Binding FirstTradingDay}" Header="std" Tag="FirstTradingDay"/>
                     <controls:DataGridTextColumn Binding="{Binding LastTradingDay}" Header="ltd" Tag="LastTradingDay"/>
+                    <controls:DataGridTextColumn Binding="{Binding MaxContinueOverPricedDay}" Header="mc+opD" Tag="MaxContinueOverPricedDay"/>
+                    <controls:DataGridTextColumn Binding="{Binding MaxContinueMinusOverPricedDay}" Header="mc-opD" Tag="MaxContinueMinusOverPricedDay"/>
                     <controls:DataGridTemplateColumn Header="评价">
                         <controls:DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>

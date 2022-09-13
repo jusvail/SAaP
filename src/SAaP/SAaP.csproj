@@ -13,6 +13,15 @@
     <DefaultLanguage>zh-CN</DefaultLanguage>
     <ImplicitUsings>enable</ImplicitUsings>
 	<EnableWindowsTargeting>true</EnableWindowsTargeting>
+	<GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+	<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+	<PackageCertificateKeyFile>SAaP_TemporaryKey.pfx</PackageCertificateKeyFile>
+	<AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+	<AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+	<AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
+	<GenerateTestArtifacts>True</GenerateTestArtifacts>
+	<AppxBundle>Never</AppxBundle>
+	<HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="ControlPages\AddFavoriteGroupDialog.xaml" />
