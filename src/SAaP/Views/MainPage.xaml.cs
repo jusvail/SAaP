@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Navigation;
 using SAaP.Core.Services;
 using SAaP.Core.Helpers;
 using SAaP.ControlPages;
+using SAaP.Core.Models;
 
 namespace SAaP.Views;
 
@@ -157,8 +158,24 @@ public sealed partial class MainPage
             // selected groupName
             groupName = dia.GroupNames[dia.FavoriteListSelectSelectIndex];
         }
+
+        string codes;
+
+        if (sender.GetType() == typeof(DataGrid))
+        {
+            var grid = sender as DataGrid;
+
+            var analysis = (AnalysisResult)grid!.SelectedItem;
+
+            codes = analysis.CodeName;
+        }
+        else
+        {
+            codes = CodeInput.Text;
+        }
+
         // store into db main
-        await ViewModel.AddToFavorite(groupName);
+        await ViewModel.AddToFavorite(groupName, codes);
     }
 
     private void ManageGroupSelectAll_OnChecked(object sender, RoutedEventArgs e)
@@ -201,6 +218,8 @@ public sealed partial class MainPage
         EditFavoriteGroup.Visibility = Visibility.Visible;
 
         FavoriteCodes.SelectionMode = ListViewSelectionMode.Single;
+
+        FavoriteCodeManageSelectAll.IsChecked = false;
     }
 
     private void ManageActivitySelectAll_OnChecked(object sender, RoutedEventArgs e)
@@ -237,5 +256,17 @@ public sealed partial class MainPage
     {
         var hyb = sender as HyperlinkButton;
         if (hyb != null) ViewModel.RedirectToAnalyzeDetailCommand.Execute(hyb.Content);
+    }
+
+    private void DeleteFavoriteCodesButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        FavoriteCodeManageSelectAll.IsChecked = false;
+    }
+
+    private void FavoriteGroups_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        FavoriteCodeManageSelectAll.IsChecked = false;
+
+        ViewModel.FavoriteListSelectionChanged(sender, e);
     }
 }

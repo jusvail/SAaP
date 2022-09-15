@@ -81,9 +81,9 @@
             </Grid.RowDefinitions>
             <StackPanel>
                 <Grid>
-                    <ComboBox IsEditable="False" Margin="2"
+                    <ComboBox IsEditable="False" Margin="2" x:Name="FavoriteGroups"
                               ItemsSource="{x:Bind ViewModel.FavoriteGroups}" SelectedIndex="{x:Bind ViewModel.SelectedFavGroupIndex,Mode=TwoWay}"
-                              SelectionChanged="{x:Bind ViewModel.FavoriteListSelectionChanged}"/>
+                              SelectionChanged="FavoriteGroups_OnSelectionChanged"/>
                 </Grid>
             </StackPanel>
             <Grid Grid.Row="1">
@@ -109,7 +109,8 @@
                                     <Flyout>
                                         <StackPanel>
                                             <TextBlock Text="将选中的股票从自选股中删除？" Margin="0,0,0,12" />
-                                            <Button Content="给我删！" Style="{StaticResource AccentButtonStyle}" 
+                                            <Button x:Name="DeleteFavoriteCodesButton" Content="给我删！" Style="{StaticResource AccentButtonStyle}" 
+                                                    Click="DeleteFavoriteCodesButton_OnClick"
                                                     CommandParameter="{x:Bind FavoriteCodes}"
                                                     Command="{x:Bind ViewModel.DeleteSelectedFavoriteCodesCommand}"/>
                                         </StackPanel>
@@ -373,6 +374,8 @@
                                            MaxColumnWidth="400"
                                            FrozenColumnCount="0"
                                            GridLinesVisibility="Horizontal"
+                                           IsDoubleTapEnabled="True"
+                                           DoubleTapped="AddToFavoriteGroup_OnClick"
                                            HeadersVisibility="Column"
                                            IsReadOnly="True"
                                            SelectionMode="Extended"

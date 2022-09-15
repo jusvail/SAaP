@@ -250,9 +250,9 @@ public class MainViewModel : ObservableRecipient
         }
     }
 
-    public async Task AddToFavorite(string groupName)
+    public async Task AddToFavorite(string groupName, string codes)
     {
-        var accuracyCodes = StringHelper.FormatInputCode(CodeInput);
+        var accuracyCodes = StringHelper.FormatInputCode(codes);
 
         if (!accuracyCodes.Any()) return;
 
