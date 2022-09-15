@@ -2,7 +2,10 @@
 
 public static class WebServiceApi
 {
-    private const string TxStockApi = "http://qt.gtimg.cn/q=";
+    public const string TxStockApi = "http://qt.gtimg.cn/q=";
+
+    public const string DfPopularListStockApi = "https://emappdata.eastmoney.com/stockrank/getAllCurrentList";
+
 
     public static string GenerateTxQueryString(string codeNameFull)
     {

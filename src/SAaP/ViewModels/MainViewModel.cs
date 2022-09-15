@@ -8,6 +8,7 @@ using SAaP.Core.Models.DB;
 using SAaP.Core.Services;
 using SAaP.Constant;
 using System.Collections.ObjectModel;
+using System.Text;
 using Windows.Storage;
 using SAaP.Extensions;
 using SAaP.Views;
@@ -54,6 +55,8 @@ public class MainViewModel : ObservableRecipient
 
     public IAsyncRelayCommand AnalysisPressedCommand { get; }
 
+    public IAsyncRelayCommand QueryHot100CodesCommand { get; }
+
     public IAsyncRelayCommand<IList<object>> DeleteSelectedFavoriteGroupsCommand { get; }
 
     public IAsyncRelayCommand<IList<object>> DeleteSelectedActivityCommand { get; }
@@ -61,6 +64,7 @@ public class MainViewModel : ObservableRecipient
     public IAsyncRelayCommand<object> DeleteSelectedFavoriteCodesCommand { get; }
 
     public IAsyncRelayCommand<object> RedirectToAnalyzeDetailCommand { get; }
+
 
     public int SelectedFavGroupIndex
     {
@@ -119,6 +123,24 @@ public class MainViewModel : ObservableRecipient
         AddToQueryingCommand = new RelayCommand<object>(AddToQuerying);
         MenuSettingsCommand = new RelayCommand(OnMenuSettingsPressed);
         RedirectToAnalyzeDetailCommand = new AsyncRelayCommand<object>(RedirectToAnalyzeDetail);
+        QueryHot100CodesCommand = new AsyncRelayCommand(QueryHot100Codes);
+    }
+
+    private async Task QueryHot100Codes()
+    {
+        var codes = StockService.PostHot100Codes();
+
+        var codeFormat = new StringBuilder();
+
+        await foreach (var code in codes)
+        {
+            if (!string.IsNullOrEmpty(code) && code.Length == 8)
+            {
+                codeFormat.Append(code[2..]).Append(",");
+            }
+        }
+
+        CodeInput = codeFormat.ToString();
     }
 
     private async Task RedirectToAnalyzeDetail(object obj)

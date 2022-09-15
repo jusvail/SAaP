@@ -29,28 +29,5 @@ namespace SAaP.Views
         {
             NavigationFrame.Navigate(typeof(MainPage));
         }
-
-        private void OnUnloaded(object sender, RoutedEventArgs e)
-        {
-        }
-        private void ShellMenuBarSettingsButton_PointerEntered(object sender, PointerRoutedEventArgs e)
-        {
-            AnimatedIcon.SetState((UIElement)sender, "PointerOver");
-        }
-
-        private void ShellMenuBarSettingsButton_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            AnimatedIcon.SetState((UIElement)sender, "Pressed");
-        }
-
-        private void ShellMenuBarSettingsButton_PointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            AnimatedIcon.SetState((UIElement)sender, "Normal");
-        }
-
-        private void ShellMenuBarSettingsButton_PointerExited(object sender, PointerRoutedEventArgs e)
-        {
-            AnimatedIcon.SetState((UIElement)sender, "Normal");
-        }
     }
 }

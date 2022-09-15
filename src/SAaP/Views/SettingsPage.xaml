@@ -19,8 +19,7 @@
             Style="{StaticResource PageTitleStyle}" />
         <StackPanel
             Grid.Row="1" 
-            Padding="5"
-            x:Name="ContentArea">
+            Padding="5">
             <Grid Padding="10" HorizontalAlignment="Left"
                   MinWidth="540">
                 <Grid.RowDefinitions>

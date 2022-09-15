@@ -9,7 +9,7 @@
   <Identity
     Name="c9800efd-b3c9-487d-b71d-fb5f106286dd"
     Publisher="CN=yuki"
-    Version="0.0.18.0" />
+    Version="0.0.20.0" />
 
   <Properties>
     <DisplayName>SAaP</DisplayName>

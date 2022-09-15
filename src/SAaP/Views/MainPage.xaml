@@ -212,11 +212,15 @@
                                     </Grid.RowDefinitions>
                                     <StackPanel>
                                         <TextBlock Text="输入股票代码："/>
-                                        <CheckBox Grid.Row="1" x:Name="QueryAll" Content="查询所有" 
+                                        <CheckBox  x:Name="QueryAll" Content="查询所有" 
                                               IsChecked="{x:Bind ViewModel.IsQueryAllChecked, Mode=TwoWay}"
                                               Checked="QueryAll_OnChecked"
                                               Unchecked="QueryAll_OnUnchecked">
                                         </CheckBox>
+                                        <HyperlinkButton x:Name="QueryHot100" Content="查询人气T100"
+                                                         Margin="-10 -5 0 0"
+                                                         Command="{x:Bind ViewModel.QueryHot100CodesCommand}">
+                                        </HyperlinkButton>
                                     </StackPanel>
                                     <AppBarButton Grid.Row="2"
                                                   Width="42"
