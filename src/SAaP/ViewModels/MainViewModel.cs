@@ -10,6 +10,7 @@ using SAaP.Constant;
 using System.Collections.ObjectModel;
 using System.Text;
 using Windows.Storage;
+using Microsoft.UI.Dispatching;
 using SAaP.Extensions;
 using SAaP.Views;
 
@@ -149,15 +150,19 @@ public class MainViewModel : ObservableRecipient
 
         if (string.IsNullOrEmpty(codeName)) return;
 
-        var window = _windowManageService.CreateWindow();
-
         var companyName = await StockService.FetchCompanyNameByCode(codeName);
+
+        var window = _windowManageService.CreateWindow();
 
         window.Title = "AnalyzeDetailPageTitle".GetLocalized() + $": [{codeName} {companyName}]";
 
         window.Content = new AnalyzeDetailPage(codeName);
 
         window.Activate();
+
+        var context = new DispatcherQueueSynchronizationContext(window.DispatcherQueue);
+
+        SynchronizationContext.SetSynchronizationContext(context);
     }
 
     private void OnMenuSettingsPressed()
@@ -330,7 +335,10 @@ public class MainViewModel : ObservableRecipient
         SetCurrentStatus("py脚本执行完毕，开始将数据导入至本地数据库");
 
         // write to sqlite database
-        await _dbTransferService.TransferCsvDataToDb(accuracyCodes, IsQueryAllChecked);
+        await Task.Run(async () =>
+        {
+            await _dbTransferService.TransferCsvDataToDb(accuracyCodes, IsQueryAllChecked);
+        });
 
         //store last queried  codes
         LastQueriedCodes = accuracyCodes;
@@ -338,7 +346,10 @@ public class MainViewModel : ObservableRecipient
         SetCurrentStatus("保存历史查询数据。。。");
 
         // store this activity
-        await _dbTransferService.StoreActivityDataToDb(DateTime.Now, pyArg, string.Empty);
+        await Task.Run(async () =>
+        {
+            await _dbTransferService.StoreActivityDataToDb(DateTime.Now, pyArg, string.Empty);
+        });
 
         SetCurrentStatus("开始分析数据。。。");
 
