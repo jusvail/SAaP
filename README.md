@@ -1,13 +1,15 @@
 # SAaP
 
-股票每日溢价跟踪&分析
+[WinUI3项目]
+股票每日溢价跟踪&分析程序
+需要Win10/Win11版本10.0.17763.0以上
 
 ## 依赖项
 
 - python运行环境
-- TDX
-- .NET运行环境
+- TDX（需每天更新日线数据）
+- .NET 6.0运行环境
 
-## 程序截图
+## 截图
 
-![屏幕截图](/src/Assets/overview.png)
+![屏幕截图](/Assets/overview.png)
