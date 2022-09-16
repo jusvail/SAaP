@@ -1,7 +1,10 @@
 ﻿using CommunityToolkit.WinUI.UI.Controls;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Navigation;
 using SAaP.ViewModels;
 using System.Linq.Dynamic.Core;
+using Windows.ApplicationModel.Activation;
 
 namespace SAaP.Views;
 

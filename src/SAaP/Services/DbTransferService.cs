@@ -195,15 +195,6 @@ public class DbTransferService : IDbTransferService
             // should be 6
             if (lineObj.Length != 6) continue;
 
-            // using insertOrReplace so remove
-            // query for exist
-            // var query = from o in db.OriginalData
-            //             where o.CodeName == codeName && o.Day == lineObj[0] // day column
-            //             select o;
-            //
-            // // when exist in db, continue
-            // if (query.Any()) continue;
-
             // initialize field
             var originalData = new OriginalData
             {
