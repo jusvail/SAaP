@@ -1,33 +1,29 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
-using SAaP.Constant;
-using SAaP.Extensions;
 using SAaP.ViewModels;
 
 namespace SAaP.Views
 {
     /// <summary>
-    /// 
+    /// main shell page
     /// </summary>
-    public sealed partial class ShellPage : Page
+    public sealed partial class ShellPage
     {
-
         public ShellViewModel ViewModel { get; }
 
         public ShellPage()
         {
             ViewModel = App.GetService<ShellViewModel>();
             InitializeComponent();
-
-            App.MainWindow.ExtendsContentIntoTitleBar = true;
-            App.MainWindow.SetTitleBar(AppTitleBar);
-            AppTitleBarText.Text = PjConstant.AppTitle.GetLocalized();
         }
 
-        private void OnLoaded(object sender, RoutedEventArgs e)
+        public void ReadyToNavigate<T>(Window window, string title) where T : Page
         {
-            NavigationFrame.Navigate(typeof(MainPage));
+            window.ExtendsContentIntoTitleBar = true;
+            window.SetTitleBar(AppTitleBar);
+            AppTitleBarText.Text = title;
+            // frame navigate to
+            NavigationFrame.Navigate(typeof(T));
         }
     }
 }

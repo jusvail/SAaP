@@ -154,10 +154,12 @@ public class MainViewModel : ObservableRecipient
 
         var window = _windowManageService.CreateWindow();
 
-        window.Title = "AnalyzeDetailPageTitle".GetLocalized() + $": [{codeName} {companyName}]";
+        var shellPage = App.GetService<ShellPage>();
 
-        window.Content = new AnalyzeDetailPage(codeName);
+        var title = "AnalyzeDetailPageTitle".GetLocalized() + $": [{codeName} {companyName}]";
+        shellPage.ReadyToNavigate<AnalyzeDetailPage>(window, title);
 
+        window.Content = shellPage;
         window.Activate();
 
         var context = new DispatcherQueueSynchronizationContext(window.DispatcherQueue);

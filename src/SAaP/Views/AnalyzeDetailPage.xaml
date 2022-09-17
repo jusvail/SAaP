@@ -2,25 +2,19 @@
     x:Class="SAaP.Views.AnalyzeDetailPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:SAaP.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:helper="using:SAaP.Helper"
-    xmlns:models="using:SAaP.Core.Models"
-    xmlns:db="using:SAaP.Core.Models.DB"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
-        <helper:ReverseBooleanConverter x:Key="ReverseBooleanConverter" />
-        <helper:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <helper:ProfitColorConverter x:Key="ProfitColorConverter" />
         <helper:ProfitPercentColorConverter x:Key="ProfitPercentColorConverter" />
         <helper:OverpriceColorConverter x:Key="OverpriceColorConverter" />
         <helper:ProfitWeightConverter x:Key="ProfitWeightConverter" />
         <helper:ProfitPercentWeightConverter x:Key="ProfitPercentWeightConverter" />
-        <helper:SimplifySearchStringConverter x:Key="SimplifySearchStringConverter" />
     </Page.Resources>
 
     <Grid Margin="5" CornerRadius="5" BorderThickness="1" BorderBrush="LightGray">
@@ -29,7 +23,36 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid>
-
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="0">
+            </Grid>
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid>
+                    <TextBlock Text="同期大盘关联度"/>
+                </Grid>
+                <Canvas Grid.Row="1" 
+                        x:Name="MainCanv" Height="360" Width="540" Background="AliceBlue">
+                    <Canvas.Resources>
+                        <Style TargetType="Rectangle">
+                            <Setter Property="Width" Value="40" />
+                        </Style>
+                    </Canvas.Resources>
+                    <TextBlock  Canvas.Left="200" Text="adfadsfasd"></TextBlock>
+                    <Rectangle  Fill="Red" Width="20" Height="30" Canvas.Left="0" Canvas.Top="0" Canvas.ZIndex="2" />
+                    <Rectangle Fill="Blue" Canvas.Left="20" Canvas.Top="20" Canvas.ZIndex="1" />
+                    <Rectangle Fill="Green" Canvas.Left="40" Canvas.Top="40" Canvas.ZIndex="2" />
+                    <Rectangle Fill="Yellow"  Height="30" Canvas.Left="60" Canvas.Top="60" Canvas.ZIndex="3" />
+                    <Line Stroke="Red" StrokeThickness="2" X1="0" Y1="320" X2="0" Y2="0"></Line>
+                    <Line Stroke="Black" StrokeThickness="2" X1="0" Y1="320" X2="500" Y2="320"></Line>
+                </Canvas>
+            </Grid>
         </Grid>
         <Grid Grid.Row="1">
             <controls:DataGrid x:Name="AnalyzeResultGrid"
