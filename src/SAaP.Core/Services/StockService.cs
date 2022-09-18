@@ -20,7 +20,10 @@ public static class StockService
 	public const string Sh = "sh";
 	public const string Sz = "sz";
 
-	public const int ShFlag = 1;
+    public const string ShZs = "000001";
+    public const string SzCz = "399001";
+
+    public const int ShFlag = 1;
 	public const int SzFlag = 0;
 
 	public static string GetLocByFlag(int flag) => flag switch

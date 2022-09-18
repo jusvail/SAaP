@@ -55,7 +55,7 @@
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
     <PackageReference Include="Mapster" Version="7.3.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.4" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.5" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.1" />
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.20" />
     <Manifest Include="$(ApplicationManifest)" />
@@ -70,6 +70,7 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\SAaP.Chart\SAaP.Chart.csproj" />
     <ProjectReference Include="..\SAaP.Core\SAaP.Core.csproj" />
   </ItemGroup>
   <ItemGroup>

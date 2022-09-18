@@ -9,8 +9,6 @@ using SAaP.Core.Services;
 using SAaP.Constant;
 using System.Collections.ObjectModel;
 using System.Text;
-using Windows.Storage;
-using Microsoft.UI.Dispatching;
 using SAaP.Extensions;
 using SAaP.Views;
 
@@ -26,8 +24,8 @@ public class MainViewModel : ObservableRecipient
     private readonly IRestoreSettingsService _restoreSettingsService;
     // window Manager
     private readonly IWindowManageService _windowManageService;
-    // settings service
-    private readonly ILocalSettingsService _localSettingsService;
+    // fetch data
+    private readonly IFetchStockDataService _fetchStockDataService;
 
     private bool _isQueryAllChecked;
     private int _selectedFavGroupIndex;
@@ -108,13 +106,13 @@ public class MainViewModel : ObservableRecipient
         , IStockAnalyzeService stockAnalyzeService
         , IRestoreSettingsService restoreSettingsService
         , IWindowManageService windowManageService
-        , ILocalSettingsService localSettingsService)
+        , IFetchStockDataService fetchStockDataService)
     {
         _dbTransferService = dbTransferService;
         _stockAnalyzeService = stockAnalyzeService;
         _restoreSettingsService = restoreSettingsService;
         _windowManageService = windowManageService;
-        _localSettingsService = localSettingsService;
+        _fetchStockDataService = fetchStockDataService;
 
         AnalysisPressedCommand = new AsyncRelayCommand(OnAnalysisPressed);
         ClearDataGridCommand = new RelayCommand(OnClearDataGrid);
@@ -137,7 +135,7 @@ public class MainViewModel : ObservableRecipient
         {
             if (!string.IsNullOrEmpty(code) && code.Length == 8)
             {
-                codeFormat.Append(code[2..]).Append(",");
+                codeFormat.Append(code[2..]).Append(',');
             }
         }
 
@@ -152,22 +150,14 @@ public class MainViewModel : ObservableRecipient
 
         var companyName = await StockService.FetchCompanyNameByCode(codeName);
 
-        var window = _windowManageService.CreateWindow();
+        var title = "AnalyzeDetailPageTitle".GetLocalized() + $": [{codeName} {companyName}]";
 
-        window.Title = "AnalyzeDetailPageTitle".GetLocalized() + $": [{codeName} {companyName}]";
-
-        window.Content = new AnalyzeDetailPage(codeName);
-
-        window.Activate();
-
-        var context = new DispatcherQueueSynchronizationContext(window.DispatcherQueue);
-
-        SynchronizationContext.SetSynchronizationContext(context);
+        _windowManageService.CreateWindowAndNavigateTo<AnalyzeDetailPage>(typeof(AnalyzeDetailViewModel).FullName!, title, obj);
     }
 
     private void OnMenuSettingsPressed()
     {
-        _windowManageService.CreateWindowAndNavigateTo(typeof(SettingsViewModel).FullName!);
+        _windowManageService.CreateWindowAndNavigateTo<SettingsPage>(typeof(SettingsViewModel).FullName!, null!, null!);
     }
 
     public void AddToQuerying(object listView)
@@ -178,8 +168,9 @@ public class MainViewModel : ObservableRecipient
 
         var accuracyCodes = StringHelper.FormatInputCode(CodeInput) ?? new List<string>();
 
-        foreach (FavoriteDetail select in lv.SelectedItems)
+        for (var i = 0; i < lv.SelectedItems.Count; i++)
         {
+            var select = (FavoriteDetail)lv.SelectedItems[i];
             if (!accuracyCodes.Contains(select.CodeName)) accuracyCodes.Add(select.CodeName);
         }
 
@@ -212,8 +203,9 @@ public class MainViewModel : ObservableRecipient
     {
         if (!selectedItems.Any()) return;
 
-        foreach (string group in selectedItems)
+        for (var i = 0; i < selectedItems.Count; i++)
         {
+            var group = (string)selectedItems[i];
             await _dbTransferService.DeleteFavoriteGroups(group);
         }
 
@@ -225,8 +217,9 @@ public class MainViewModel : ObservableRecipient
     {
         if (!selectedItems.Any()) return;
 
-        foreach (string group in selectedItems)
+        for (var i = 0; i < selectedItems.Count; i++)
         {
+            var group = (string)selectedItems[i];
             await _dbTransferService.DeleteActivity(group);
         }
 
@@ -291,50 +284,12 @@ public class MainViewModel : ObservableRecipient
         // formatted code resetting
         CodeInput = pyArg;
 
-        var pyPath = await _localSettingsService.ReadSettingAsync<string>(PjConstant.PythonInstallationPath);
-
-        if (string.IsNullOrEmpty(pyPath))
-        {
-            SetCurrentStatus("ERROR=>python路径未设置，任务终止");
-            return;
-        }
-
-        var tdxPath = await _localSettingsService.ReadSettingAsync<string>(PjConstant.TdxInstallationPath);
-
-        if (string.IsNullOrEmpty(tdxPath))
-        {
-            SetCurrentStatus("ERROR=>tdx路径未设置，任务终止");
-            return;
-        }
-
-        var pyExecPath = Path.Combine(pyPath, PythonService.PyName);
-
-        //const string pyScriptPath = "C:\\Workspace\\WK\\blk test\\tdx_reader.py";
-        var pyScriptPath = Path.Combine(AppDomain.CurrentDomain.SetupInformation.ApplicationBase!, PythonService.PyFolder, PythonService.TdxReader);
-
-        var f = await StorageFile.GetFileFromPathAsync(pyScriptPath);
-
-        if (f == null)
-        {
-            SetCurrentStatus("无法找到python脚本。。。");
-            return;
-        }
-
-        SetCurrentStatus("开始执行python脚本。。。");
-
-        // python script execution
-        await PythonService.RunPythonScript(pyExecPath
-             , pyScriptPath
-             , tdxPath
-             , StartupService.PyDataPath
-             , IsQueryAllChecked ? string.Empty : pyArg);
-
-        // TODO remove this after release
-        // await Launcher.LaunchFolderAsync(await StorageFolder.GetFolderFromPathAsync(StartupService.PyDataPath));
+        // fetch stock data from tdx, then store to csv file
+        await _fetchStockDataService.FetchStockData(pyArg, IsQueryAllChecked);
 
         SetCurrentStatus("py脚本执行完毕，开始将数据导入至本地数据库");
 
-        // write to sqlite database
+        // transfer stock data to sqlite database
         await Task.Run(async () =>
         {
             await _dbTransferService.TransferCsvDataToDb(accuracyCodes, IsQueryAllChecked);
@@ -360,6 +315,8 @@ public class MainViewModel : ObservableRecipient
 
         // query history update
         await BackupCurrentSelectActivityListAndRestoreSelected();
+        // bring window back
+        _windowManageService.SetWindowForeground(App.MainWindow);
     }
 
     public async Task OnLastingDaysValueChanged()
@@ -387,7 +344,7 @@ public class MainViewModel : ObservableRecipient
     /// when analyze finished, pass result to ui
     /// </summary>
     /// <param name="data"></param>
-    private void OnStockAnalyzeFinishedCallBack(AnalysisResult data)
+    private void OnStockAnalyzeFinishedCallBack(AnalysisResultDetail data)
     {
         AnalyzedResults.Add(data);
     }
@@ -494,7 +451,7 @@ public class MainViewModel : ObservableRecipient
         await RefreshFavoriteGroup(FavoriteGroups[SelectedFavGroupIndex]);
     }
 
-    public async Task QueryHistorySelectionChanged(object sender, SelectionChangedEventArgs e)
+    public async void QueryHistorySelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (SelectedActivityDate == -1) return;
         await RefreshActivityList(ActivityDateList[SelectedActivityDate]);

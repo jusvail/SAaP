@@ -13,42 +13,40 @@ namespace SAaP.Core.Services.Analyze
 
         private int _actualCount;
 
-        private IList<double> _overpricedList;
+        public IList<double> OverpricedList;
 
-        // temp unusable so remove
-        // private IList<double> _ttm;
+        public IList<double> Ttm;
 
         public AnalyzeBot(IList<OriginalData> originalData)
         {
             _originalData = originalData;
             InitialCalc();
+            InitialList();
         }
 
         private void InitialCalc()
         {
-            _count = _originalData.Count();
+            _count = _originalData.Count;
             // first day's data is only for calculation so -1
             _actualCount = _count - 1;
-            // initialize overprice list
-            InitialOverpricedList();
         }
 
-        private void InitialOverpricedList()
+        private void InitialList()
         {
             // overpriced list
-            _overpricedList = new List<double>(_actualCount);
+            OverpricedList = new List<double>(_actualCount);
             // ttm list
-            //_ttm = new List<double>(_actualCount);
+            Ttm = new List<double>(_actualCount);
 
             for (var i = _count - 1; i > 0; i--)
             {
                 //calc overprice
                 var overprice = CalculationService.CalcOverprice(_originalData[i], _originalData[i - 1]);
-                _overpricedList.Add(overprice);
+                OverpricedList.Add(overprice);
 
                 //calc ttm
-                //var ttm = CalculationService.CalcTtm(_originalData[i].Ending, _originalData[i - 1].Ending);
-                //_ttm.Add(ttm);
+                var ttm = CalculationService.CalcTtm(_originalData[i].Ending, _originalData[i - 1].Ending);
+                Ttm.Add(ttm);
             }
         }
 
@@ -60,7 +58,7 @@ namespace SAaP.Core.Services.Analyze
 
         public int CalcOverPricedDays()
         {
-            return _overpricedList.Count(overprice => overprice > 0);
+            return OverpricedList.Count(overprice => overprice > 0);
         }
 
         public double CalcOverPricedPercentHigherThan1P()
@@ -71,14 +69,14 @@ namespace SAaP.Core.Services.Analyze
 
         public int CalcOverPricedDaysHigherThan1P()
         {
-            return _overpricedList.Count(overprice => overprice > 1);
+            return OverpricedList.Count(overprice => overprice > 1);
         }
 
         public int CalcMaxContinueOverPricedDay()
         {
             var days = 0;
             var maxDays = 0;
-            foreach (var overprice in _overpricedList)
+            foreach (var overprice in OverpricedList)
             {
                 if (overprice > 0)
                 {
@@ -97,7 +95,7 @@ namespace SAaP.Core.Services.Analyze
         {
             var days = 0;
             var maxDays = 0;
-            foreach (var overprice in _overpricedList)
+            foreach (var overprice in OverpricedList)
             {
                 if (overprice < 0)
                 {
@@ -114,13 +112,13 @@ namespace SAaP.Core.Services.Analyze
 
         public double CalcAverageOverPricedPercent()
         {
-            var sl = _overpricedList.Where(overprice => overprice > 0).ToList();
+            var sl = OverpricedList.Where(overprice => overprice > 0).ToList();
             return sl.Any() ? CalculationService.Round2(sl.Average()) : 0.0;
         }
 
         public double CalcAverageOverPricedPercentHigherThan1P()
         {
-            var sl = _overpricedList.Where(overprice => overprice > 1).ToList();
+            var sl = OverpricedList.Where(overprice => overprice > 1).ToList();
             return sl.Any() ? CalculationService.Round2(sl.Average()) : 0.0;
         }
 
@@ -149,7 +147,7 @@ namespace SAaP.Core.Services.Analyze
                 var yesterdaysEnding = _originalData[i + 1].Ending;
 
                 // if overprice higher than stop profit, add stop profit only
-                if (_overpricedList[_originalData.Count - i - 2] >= stopProfit)
+                if (OverpricedList[_originalData.Count - i - 2] >= stopProfit)
                 {
                     // sold all stock
                     var sold = yesterdaysEnding * (1 + stopProfit / 100) * holdHand * 100;
@@ -158,7 +156,7 @@ namespace SAaP.Core.Services.Analyze
                     principal = remind + sold;
 
                     // not last of analyze day
-                    if (i == _overpricedList.Count - 1) break;
+                    if (i == OverpricedList.Count - 1) break;
 
                     // today's ending, we buy again
                     holdHand = Math.Floor(principal / (_originalData[i].Ending * 100));

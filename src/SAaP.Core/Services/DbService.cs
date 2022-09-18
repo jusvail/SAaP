@@ -59,7 +59,7 @@ public static class DbService
 
         return await groupBy.ToDictionaryAsync(g => g.Key, g => g.ToList());
     }
-    
+
     public static async Task AddToFavorite(string codeName, string groupName)
     {
         await using var db = new DbSaap(StartupService.DbConnectionString);
@@ -83,7 +83,7 @@ public static class DbService
             id = db.Favorite.Where(f => f.GroupName == groupName).Select(f => f.Id).ToList()[0];
         }
 
-        var favorite = new FavoriteData()
+        var favorite = new FavoriteData
         {
             Code = codeName,
             GroupName = groupName,
@@ -91,5 +91,16 @@ public static class DbService
         };
 
         await db.InsertAsync(favorite);
+    }
+
+    public static async Task<List<OriginalData>> TakeOriginalData(string codeName, int duration)
+    {
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+
+        // query original data recently [duration]
+        return await db.OriginalData
+                .Where(data => data.CodeName == codeName)
+                .OrderByDescending(data => data.Day)
+                .Take(duration + 1).ToListAsync(); // +1 cause ... u know y
     }
 }

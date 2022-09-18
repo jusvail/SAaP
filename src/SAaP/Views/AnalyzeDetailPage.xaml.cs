@@ -1,15 +1,14 @@
 ﻿using CommunityToolkit.WinUI.UI.Controls;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Navigation;
 using SAaP.ViewModels;
 using System.Linq.Dynamic.Core;
-using Windows.ApplicationModel.Activation;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace SAaP.Views;
 
 /// <summary>
-/// An empty page that can be used on its own or navigated to within a Frame.
+/// Analyze Detail Page
 /// </summary>
 public sealed partial class AnalyzeDetailPage
 {
@@ -21,10 +20,13 @@ public sealed partial class AnalyzeDetailPage
         this.InitializeComponent();
     }
 
-    public AnalyzeDetailPage(string codeName) :this()
+    protected override void OnNavigatedTo(NavigationEventArgs e)
     {
-        ViewModel.CodeName = codeName;
+        var codeName = e.Parameter as string;
 
+        if (string.IsNullOrEmpty(codeName)) return;
+
+        ViewModel.CodeName = codeName;
         ViewModel.Initialize();
     }
 
@@ -58,5 +60,10 @@ public sealed partial class AnalyzeDetailPage
 
         // sort using linq dynamic && update item source
         AnalyzeResultGrid.ItemsSource = ViewModel.AnalyzedResults.AsQueryable().OrderBy(args);
+    }
+
+    private void CompareRelation_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+
     }
 }

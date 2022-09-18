@@ -88,7 +88,6 @@ public class SettingsViewModel : ObservableRecipient
         await _localSettingsService.SaveSettingAsync(nameof(PythonInstallationPath), PythonInstallationPath);
     }
 
-
     private async Task OnTdxInstallationPath(object xamlRoot)
     {
         var folder = await PickFromFileDirectory(xamlRoot as XamlRoot);
@@ -102,7 +101,7 @@ public class SettingsViewModel : ObservableRecipient
 
     private async Task<string> PickFromFileDirectory(XamlRoot element)
     {
-        var window = _windowManageService.GetWindowForElement(element);
+        var window = _windowManageService.GetWindowForElement(element, typeof(SettingsViewModel).FullName!);
 
         var folderPicker = new FolderPicker();
 
