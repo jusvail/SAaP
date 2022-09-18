@@ -22,7 +22,7 @@ public class ActivationService : IActivationService
         {
             var shellPage = App.GetService<ShellPage>();
 
-            shellPage.ReadyToNavigate<MainPage>(App.MainWindow, PjConstant.AppTitle.GetLocalized());
+            shellPage.ReadyToNavigate<MainPage>(App.MainWindow, PjConstant.AppTitle.GetLocalized(), null);
 
             _main = shellPage;
             App.MainWindow.Content = _main ?? new Frame();

@@ -1,6 +1,7 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SAaP.Chart.Contracts.Services;
 using SAaP.Contracts.Services;
 using SAaP.Core.Contracts.Services;
 using SAaP.Core.Services;
@@ -9,6 +10,7 @@ using SAaP.Models;
 using SAaP.Services;
 using SAaP.Views;
 using SAaP.ViewModels;
+using SAaP.Chart.Services;
 
 namespace SAaP;
 
@@ -32,6 +34,8 @@ public partial class App
 
     public static Window MainWindow { get; set; } = new() { Title = "AppTitle".GetLocalized() };
 
+    public static string MainWindowKey = nameof(MainWindow);
+
     /// <summary>
     /// Initializes the singleton application object.  This is the first line of authored code
     /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -53,6 +57,7 @@ public partial class App
                     services.AddSingleton<IRestoreSettingsService, RestoreSettingsService>();
                     services.AddSingleton<IStockAnalyzeService, StockAnalyzeService>();
                     services.AddSingleton<IWindowManageService, WindowManageService>();
+                    services.AddSingleton<IChartService, ChartService>();
 
                     services.AddSingleton<IFileService, FileService>();
 
@@ -88,7 +93,7 @@ public partial class App
     {
         base.OnLaunched(args);
 
-        await App.GetService<IActivationService>().ActivateAsync(args);
+        await GetService<IActivationService>().ActivateAsync(args);
+        GetService<IWindowManageService>().TrackWindow(MainWindow, MainWindowKey);
     }
-
 }

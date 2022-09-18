@@ -10,7 +10,6 @@ using SAaP.Constant;
 using System.Collections.ObjectModel;
 using System.Text;
 using Windows.Storage;
-using Microsoft.UI.Dispatching;
 using SAaP.Extensions;
 using SAaP.Views;
 
@@ -152,24 +151,14 @@ public class MainViewModel : ObservableRecipient
 
         var companyName = await StockService.FetchCompanyNameByCode(codeName);
 
-        var window = _windowManageService.CreateWindow();
-
-        var shellPage = App.GetService<ShellPage>();
-
         var title = "AnalyzeDetailPageTitle".GetLocalized() + $": [{codeName} {companyName}]";
-        shellPage.ReadyToNavigate<AnalyzeDetailPage>(window, title);
 
-        window.Content = shellPage;
-        window.Activate();
-
-        var context = new DispatcherQueueSynchronizationContext(window.DispatcherQueue);
-
-        SynchronizationContext.SetSynchronizationContext(context);
+        _windowManageService.CreateWindowAndNavigateTo<AnalyzeDetailPage>(typeof(AnalyzeDetailViewModel).FullName!, title, obj);
     }
 
     private void OnMenuSettingsPressed()
     {
-        _windowManageService.CreateWindowAndNavigateTo(typeof(SettingsViewModel).FullName!);
+        _windowManageService.CreateWindowAndNavigateTo<SettingsPage>(typeof(SettingsViewModel).FullName!, null!, null!);
     }
 
     public void AddToQuerying(object listView)

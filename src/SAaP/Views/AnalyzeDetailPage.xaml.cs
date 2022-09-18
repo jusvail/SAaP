@@ -1,6 +1,9 @@
 ﻿using CommunityToolkit.WinUI.UI.Controls;
 using SAaP.ViewModels;
 using System.Linq.Dynamic.Core;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace SAaP.Views;
 
@@ -17,10 +20,13 @@ public sealed partial class AnalyzeDetailPage
         this.InitializeComponent();
     }
 
-    public AnalyzeDetailPage(string codeName) :this()
+    protected override void OnNavigatedTo(NavigationEventArgs e)
     {
-        ViewModel.CodeName = codeName;
+        var codeName = e.Parameter as string;
 
+        if (string.IsNullOrEmpty(codeName)) return;
+
+        ViewModel.CodeName = codeName;
         ViewModel.Initialize();
     }
 
@@ -56,7 +62,8 @@ public sealed partial class AnalyzeDetailPage
         AnalyzeResultGrid.ItemsSource = ViewModel.AnalyzedResults.AsQueryable().OrderBy(args);
     }
 
+    private void CompareRelation_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
 
-
-
+    }
 }

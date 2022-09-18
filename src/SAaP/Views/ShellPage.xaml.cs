@@ -17,13 +17,13 @@ namespace SAaP.Views
             InitializeComponent();
         }
 
-        public void ReadyToNavigate<T>(Window window, string title) where T : Page
+        public void ReadyToNavigate<T>(Window window, string title, object arg) where T : Page
         {
             window.ExtendsContentIntoTitleBar = true;
             window.SetTitleBar(AppTitleBar);
             AppTitleBarText.Text = title;
             // frame navigate to
-            NavigationFrame.Navigate(typeof(T));
+            NavigationFrame.Navigate(typeof(T), arg);
         }
     }
 }

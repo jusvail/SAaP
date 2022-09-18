@@ -6,7 +6,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:helpers="using:SAaP.Helper"
-    x:Name="ThisPage"
     xmlns:models="using:SAaP.Core.Models"
     xmlns:db="using:SAaP.Core.Models.DB"
     xmlns:animatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
@@ -243,11 +242,12 @@
                                 </Grid>
                                 <StackPanel Grid.Column="1">
                                     <TextBox x:Name="CodeInput" AutomationProperties.Name="multi-line TextBox"
-                                             TextWrapping="Wrap" AcceptsReturn="True" IsSpellCheckEnabled="True"
+                                             TextWrapping="Wrap" AcceptsReturn="True"
                                              Text="{x:Bind ViewModel.CodeInput,Mode=TwoWay}"
                                              SelectionHighlightColor="Green" MinHeight="150"
                                              AllowFocusOnInteraction="True"
                                              LostFocus="OnCodeInputLostFocusEventHandler"
+                                             Language="zh-CN"
                                              PlaceholderText="多个代码请用空格或逗号分隔"/>
                                     <Grid Margin="0 2 0 0">
                                         <Grid.ColumnDefinitions>
@@ -386,12 +386,14 @@
                                     <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor" Color="Transparent" />
                                 </controls:DataGrid.Resources>
                                 <controls:DataGrid.Columns>
-                                    <controls:DataGridTemplateColumn Header="代码" Tag="CodeName" >
+                                    <controls:DataGridTemplateColumn Header="代码" Tag="CodeName">
                                         <controls:DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <HyperlinkButton x:Name="CodeNameCell"
-                                                             Content="{Binding CodeName}"
-                                                             Click="CodeNameCell_OnClick"/>
+                                            <DataTemplate x:DataType="models:AnalysisResult">
+                                                <Grid>
+                                                    <HyperlinkButton x:Name="CodeNameCell"
+                                                                     Content="{x:Bind CodeName}"
+                                                                     Click="CodeNameCell_OnClick"/>
+                                                </Grid>
                                             </DataTemplate>
                                         </controls:DataGridTemplateColumn.CellTemplate>
                                     </controls:DataGridTemplateColumn>

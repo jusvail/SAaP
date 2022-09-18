@@ -10,6 +10,8 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
+        <helper:CheckedToEnabledConverter x:Key="CheckedToEnabledConverter"/>
+        <helper:ComparerCheckConverter x:Key="ComparerCheckConverter"/>
         <helper:ProfitColorConverter x:Key="ProfitColorConverter" />
         <helper:ProfitPercentColorConverter x:Key="ProfitPercentColorConverter" />
         <helper:OverpriceColorConverter x:Key="OverpriceColorConverter" />
@@ -19,39 +21,91 @@
 
     <Grid Margin="5" CornerRadius="5" BorderThickness="1" BorderBrush="LightGray">
         <Grid.RowDefinitions>
-            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto"/>
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid>
+        <Grid Margin="2" CornerRadius="5" BorderThickness="1" BorderBrush="LightGray">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" MinWidth="200"/>
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <Grid Grid.Column="0">
-            </Grid>
-            <Grid Grid.Column="1">
+            <StackPanel Grid.Column="0" Margin="10" Padding="10"
+                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                         CornerRadius="5" BorderThickness="1" BorderBrush="LightGray">
+                <StackPanel.Resources>
+                    <Style TargetType="RadioButton">
+                        <Setter Property="Margin" Value="15 0 -20  0" />
+                    </Style>
+                </StackPanel.Resources>
+                <StackPanel Margin="10">
+                    <TextBlock Text="比较对象："  Margin="5">
+                    </TextBlock>
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton x:Name="ShComparer" Content="上证指数" Tag="1" 
+                                     IsChecked="{x:Bind ViewModel.ComparerCheck,
+                                     Converter={StaticResource ComparerCheckConverter},
+                                     ConverterParameter=1, Mode=TwoWay}"/>
+                        <RadioButton x:Name="SzComparer" Content="深圳指数" Tag="0" 
+                                     IsChecked="{x:Bind ViewModel.ComparerCheck,
+                                     Converter={StaticResource ComparerCheckConverter},
+                                     ConverterParameter=0, Mode=TwoWay}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton x:Name="OtherCk" Content="其他" Tag="2"
+                                     IsChecked="{x:Bind ViewModel.ComparerCheck,
+                                     Converter={StaticResource ComparerCheckConverter},
+                                     ConverterParameter=2, Mode=TwoWay}"/>
+                        <TextBox x:Name="OtherComparer" Margin="-10 0 0 0"
+                                 MinWidth="110" IsEnabled="{x:Bind OtherCk.IsChecked, 
+                                 Converter={StaticResource CheckedToEnabledConverter}, Mode=OneWay}"></TextBox>
+                    </StackPanel>
+                    <TextBlock Text="比较项目：" Margin="5">
+                    </TextBlock>
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton Content="涨跌"
+                                     IsChecked="{x:Bind ViewModel.ComparerModeCheck,
+                                     Converter={StaticResource ComparerCheckConverter},
+                                     ConverterParameter=0, Mode=TwoWay}"/>
+                        <RadioButton Content="溢价"
+                                     IsChecked="{x:Bind ViewModel.ComparerModeCheck,
+                                     Converter={StaticResource ComparerCheckConverter},
+                                     ConverterParameter=1, Mode=TwoWay}"/>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+            <Grid Grid.Column="1" Margin="10">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <Grid>
-                    <TextBlock Text="同期大盘关联度"/>
+                <Grid Grid.Row="0" Margin="0 5 0 10">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="近" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="CompareRelation" IsEditable="False" Margin="2"
+                                  ItemsSource="{x:Bind ViewModel.DefaultDuration}" SelectedIndex="{x:Bind ViewModel.SelectedCompareRelationIndex,Mode=TwoWay}"
+                                  SelectionChanged="CompareRelation_OnSelectionChanged"/>
+                        <TextBlock Text="天同期正关联度:" VerticalAlignment="Center"/>
+                        <HyperlinkButton Content="查询" 
+                                         Command="{x:Bind ViewModel.DrawStartCommand}"
+                                         CommandParameter="{x:Bind MainCan}" />
+                    </StackPanel>
                 </Grid>
-                <Canvas Grid.Row="1" 
-                        x:Name="MainCanv" Height="360" Width="540" Background="AliceBlue">
-                    <Canvas.Resources>
-                        <Style TargetType="Rectangle">
-                            <Setter Property="Width" Value="40" />
-                        </Style>
-                    </Canvas.Resources>
-                    <TextBlock  Canvas.Left="200" Text="adfadsfasd"></TextBlock>
-                    <Rectangle  Fill="Red" Width="20" Height="30" Canvas.Left="0" Canvas.Top="0" Canvas.ZIndex="2" />
-                    <Rectangle Fill="Blue" Canvas.Left="20" Canvas.Top="20" Canvas.ZIndex="1" />
-                    <Rectangle Fill="Green" Canvas.Left="40" Canvas.Top="40" Canvas.ZIndex="2" />
-                    <Rectangle Fill="Yellow"  Height="30" Canvas.Left="60" Canvas.Top="60" Canvas.ZIndex="3" />
-                    <Line Stroke="Red" StrokeThickness="2" X1="0" Y1="320" X2="0" Y2="0"></Line>
-                    <Line Stroke="Black" StrokeThickness="2" X1="0" Y1="320" X2="500" Y2="320"></Line>
-                </Canvas>
+                <Grid Grid.Row="1" HorizontalAlignment="Left">
+                    <Canvas x:Name="MainCan" Height="250" Width="540" Background="AliceBlue">
+                        <Canvas.Resources>
+                            <Style TargetType="Rectangle">
+                                <Setter Property="Width" Value="40" />
+                            </Style>
+                        </Canvas.Resources>
+                        <TextBlock  Canvas.Left="200" Text="adfadsfasd"></TextBlock>
+                        <Rectangle  Fill="Red" Width="20" Height="30" Canvas.Left="0" Canvas.Top="0" Canvas.ZIndex="2" />
+                        <Rectangle Fill="Blue" Canvas.Left="20" Canvas.Top="20" Canvas.ZIndex="1" />
+                        <Rectangle Fill="Green" Canvas.Left="40" Canvas.Top="40" Canvas.ZIndex="2" />
+                        <Rectangle Fill="Yellow"  Height="30" Canvas.Left="60" Canvas.Top="60" Canvas.ZIndex="3" />
+                        <Line Stroke="Red" StrokeThickness="2" X1="0" Y1="250" X2="0" Y2="0"></Line>
+                        <Line Stroke="Black" StrokeThickness="2" X1="0" Y1="250" X2="500" Y2="250"></Line>
+                    </Canvas>
+                </Grid>
             </Grid>
         </Grid>
         <Grid Grid.Row="1">

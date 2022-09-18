@@ -102,7 +102,7 @@ public class SettingsViewModel : ObservableRecipient
 
     private async Task<string> PickFromFileDirectory(XamlRoot element)
     {
-        var window = _windowManageService.GetWindowForElement(element);
+        var window = _windowManageService.GetWindowForElement(element, typeof(SettingsViewModel).FullName!);
 
         var folderPicker = new FolderPicker();
 
