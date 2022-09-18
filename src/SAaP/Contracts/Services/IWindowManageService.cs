@@ -10,6 +10,8 @@ public interface IWindowManageService
 
     Window CreateWindow(string key );
 
+    void SetWindowForeground(Window window);
+
     void TrackWindow(Window window, string key);
 
     Window GetWindowForElement(UIElement element, string key);

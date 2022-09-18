@@ -1,4 +1,5 @@
-﻿namespace SAaP.Contracts.Services;
+﻿#nullable enable
+namespace SAaP.Contracts.Services;
 
 public interface ILocalSettingsService
 {

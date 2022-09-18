@@ -34,7 +34,7 @@ public partial class App
 
     public static Window MainWindow { get; set; } = new() { Title = "AppTitle".GetLocalized() };
 
-    public static string MainWindowKey = nameof(MainWindow);
+    private const string MainWindowKey = nameof(MainWindow);
 
     /// <summary>
     /// Initializes the singleton application object.  This is the first line of authored code
@@ -93,7 +93,7 @@ public partial class App
     {
         base.OnLaunched(args);
 
-        await GetService<IActivationService>().ActivateAsync(args);
         GetService<IWindowManageService>().TrackWindow(MainWindow, MainWindowKey);
+        await GetService<IActivationService>().ActivateAsync(args);
     }
 }

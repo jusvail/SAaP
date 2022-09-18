@@ -24,7 +24,7 @@
             <RowDefinition Height="auto"/>
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid Margin="2" CornerRadius="5" BorderThickness="1" BorderBrush="LightGray">
+        <Grid Margin="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" MinWidth="200"/>
                 <ColumnDefinition Width="*" />
@@ -56,6 +56,7 @@
                                      Converter={StaticResource ComparerCheckConverter},
                                      ConverterParameter=2, Mode=TwoWay}"/>
                         <TextBox x:Name="OtherComparer" Margin="-10 0 0 0"
+                                 Text="{x:Bind ViewModel.OtherComparer, Mode=TwoWay}"
                                  MinWidth="110" IsEnabled="{x:Bind OtherCk.IsChecked, 
                                  Converter={StaticResource CheckedToEnabledConverter}, Mode=OneWay}"></TextBox>
                     </StackPanel>
@@ -73,7 +74,8 @@
                     </StackPanel>
                 </StackPanel>
             </StackPanel>
-            <Grid Grid.Column="1" Margin="10">
+            <Grid Grid.Column="1" Padding="10" Margin="0 5 5 5 " 
+                  CornerRadius="5" BorderThickness="1" BorderBrush="LightGray">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto" />
                     <RowDefinition Height="*" />
@@ -91,24 +93,12 @@
                     </StackPanel>
                 </Grid>
                 <Grid Grid.Row="1" HorizontalAlignment="Left">
-                    <Canvas x:Name="MainCan" Height="250" Width="540" Background="AliceBlue">
-                        <Canvas.Resources>
-                            <Style TargetType="Rectangle">
-                                <Setter Property="Width" Value="40" />
-                            </Style>
-                        </Canvas.Resources>
-                        <TextBlock  Canvas.Left="200" Text="adfadsfasd"></TextBlock>
-                        <Rectangle  Fill="Red" Width="20" Height="30" Canvas.Left="0" Canvas.Top="0" Canvas.ZIndex="2" />
-                        <Rectangle Fill="Blue" Canvas.Left="20" Canvas.Top="20" Canvas.ZIndex="1" />
-                        <Rectangle Fill="Green" Canvas.Left="40" Canvas.Top="40" Canvas.ZIndex="2" />
-                        <Rectangle Fill="Yellow"  Height="30" Canvas.Left="60" Canvas.Top="60" Canvas.ZIndex="3" />
-                        <Line Stroke="Red" StrokeThickness="2" X1="0" Y1="250" X2="0" Y2="0"></Line>
-                        <Line Stroke="Black" StrokeThickness="2" X1="0" Y1="250" X2="500" Y2="250"></Line>
+                    <Canvas x:Name="MainCan" Height="280" Width="640" Background="AliceBlue">
                     </Canvas>
                 </Grid>
             </Grid>
         </Grid>
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" >
             <controls:DataGrid x:Name="AnalyzeResultGrid"
                                            Margin="0 5"
                                            VerticalAlignment="Stretch" HorizontalAlignment="Stretch"

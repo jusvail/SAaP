@@ -88,7 +88,6 @@ public class SettingsViewModel : ObservableRecipient
         await _localSettingsService.SaveSettingAsync(nameof(PythonInstallationPath), PythonInstallationPath);
     }
 
-
     private async Task OnTdxInstallationPath(object xamlRoot)
     {
         var folder = await PickFromFileDirectory(xamlRoot as XamlRoot);

@@ -1,6 +1,6 @@
 ﻿namespace SAaP.Contracts.Services;
 
-interface IFetchStockDataService
+public interface IFetchStockDataService
 {
-
+    Task FetchStockData(string pyArg, bool isCheckAll = false);
 }

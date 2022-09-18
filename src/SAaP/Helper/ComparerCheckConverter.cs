@@ -15,8 +15,6 @@ internal class ComparerCheckConverter : IValueConverter
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)
     {
-        var rr = (bool)value;
-
         return (bool)value ? parameter : null;
     }
 }

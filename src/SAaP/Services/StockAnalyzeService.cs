@@ -11,6 +11,7 @@ namespace SAaP.Services;
 /// </summary>
 public class StockAnalyzeService : IStockAnalyzeService
 {
+
     /// <summary>
     /// main analyze method
     /// </summary>
@@ -18,16 +19,10 @@ public class StockAnalyzeService : IStockAnalyzeService
     /// <param name="duration">duration(from last trading day)</param>
     /// <param name="callback">callback method</param>
     /// <returns></returns>
-    public async Task Analyze(string codeName, int duration, Action<AnalysisResult> callback)
+    public async Task Analyze(string codeName, int duration, Action<AnalysisResultDetail> callback)
     {
-        // initial db connection
-        await using var db = new DbSaap(StartupService.DbConnectionString);
-
-        // query original data recently [duration]
-        var originalData = (from data in db.OriginalData
-            where data.CodeName == codeName
-            orderby data.Day descending
-            select data).Take(duration + 1).ToList(); // +1 cause ... u know y
+        // query original data recently
+        var originalData = await DbService.TakeOriginalData(codeName, duration);
 
         // return if no any record
         if (!originalData.Any()) return;
@@ -43,8 +38,9 @@ public class StockAnalyzeService : IStockAnalyzeService
         var companyName = await DbService.SelectCompanyNameByCode(codeName);
 
         // analyze result store into object
-        var analyzeResult = new AnalysisResult
+        var analyzeResult = new AnalysisResultDetail
         {
+            Duration = duration,
             CodeName = codeName,
             CompanyName = companyName,
             OverPricedPercent = bot.CalcOverPricedPercent(),
@@ -68,5 +64,19 @@ public class StockAnalyzeService : IStockAnalyzeService
 
         // callback invocation
         callback?.Invoke(analyzeResult);
+    }
+
+    public async Task GetTtm(string codeName, int duration, Action<AnalyzeBot> callback)
+    {
+        // query original data recently
+        var originalData = (await DbService.TakeOriginalData(codeName, duration)).ToList();
+
+        // return if no any record
+        if (!originalData.Any()) return;
+
+        // main analyze process
+        var bot = new AnalyzeBot(originalData);
+
+        callback?.Invoke(bot);
     }
 }

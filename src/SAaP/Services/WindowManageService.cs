@@ -19,16 +19,12 @@ public class WindowManageService : IWindowManageService
     [DllImport("User32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     public static extern bool BringWindowToTop(IntPtr hWnd);
 
-    [DllImport("user32.dll")]
-    static extern IntPtr SetActiveWindow(IntPtr hWnd);
-
-
     public WindowManageService(IPageService pageService)
     {
         _pageService = pageService;
     }
 
-    private static void SetWindowForeground(Window window)
+    public void SetWindowForeground(Window window)
     {
         var hwnd = WindowNative.GetWindowHandle(window);
 
@@ -66,9 +62,6 @@ public class WindowManageService : IWindowManageService
         window.Content = shellPage;
 
         window.Activate();
-
-        var hwnd = WindowNative.GetWindowHandle(window);
-        SetActiveWindow(hwnd);
 
         var context = new DispatcherQueueSynchronizationContext(window.DispatcherQueue);
 

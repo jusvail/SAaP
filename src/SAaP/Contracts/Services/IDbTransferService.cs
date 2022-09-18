@@ -4,7 +4,7 @@ namespace SAaP.Contracts.Services;
 
 public interface IDbTransferService
 {
-    Task TransferCsvDataToDb(IEnumerable<string> codeNames, bool isQueryAll);
+    Task TransferCsvDataToDb(IEnumerable<string> codeNames, bool isQueryAll = false);
 
     Task StoreActivityDataToDb(ActivityData activity);
 
