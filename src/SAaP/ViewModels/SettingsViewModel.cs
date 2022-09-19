@@ -108,6 +108,7 @@ public class SettingsViewModel : ObservableRecipient
         var hwnd = WindowNative.GetWindowHandle(window);
         InitializeWithWindow.Initialize(folderPicker, hwnd);
 
+        folderPicker.FileTypeFilter.Add("*");
         var folder = await folderPicker.PickSingleFolderAsync();
 
         return folder == null ? string.Empty : folder.Path;
