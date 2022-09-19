@@ -9,13 +9,11 @@
     xmlns:models="using:SAaP.Core.Models"
     xmlns:db="using:SAaP.Core.Models.DB"
     xmlns:animatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
-    xmlns:system="using:System"
     mc:Ignorable="d"
     Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}">
 
     <Page.Resources>
         <helpers:ReverseBooleanConverter x:Key="ReverseBooleanConverter" />
-        <helpers:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <helpers:ProfitColorConverter x:Key="ProfitColorConverter" />
         <helpers:ProfitPercentColorConverter x:Key="ProfitPercentColorConverter" />
         <helpers:OverpriceColorConverter x:Key="OverpriceColorConverter" />
@@ -71,7 +69,7 @@
             <ColumnDefinition MaxWidth="150"/>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <Grid Grid.Column="0" Background="LightBlue" 
+        <Grid Grid.Column="0" Background="SkyBlue" 
               CornerRadius="5" BorderThickness="1" BorderBrush="LightGray">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -265,9 +263,7 @@
                                                 <ProgressRing HorizontalAlignment="Left"
                                                               IsActive="{x:Bind ViewModel.AnalysisPressedCommand.IsRunning, Mode=OneWay}" Margin="2"/>
                                             </Grid>
-                                            <Grid Visibility="{x:Bind ViewModel.AnalysisPressedCommand.IsRunning
-                                                    ,Converter={StaticResource BooleanToVisibilityConverter}
-                                                    , Mode=OneWay}">
+                                            <Grid>
                                                 <TextBlock HorizontalAlignment="Left"
                                                                     VerticalAlignment="Center"
                                                                     Text="{x:Bind ViewModel.CurrentStatus,Mode=OneWay}" />
