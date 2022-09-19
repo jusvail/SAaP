@@ -25,7 +25,8 @@ public class StockAnalyzeService : IStockAnalyzeService
         var originalData = await DbService.TakeOriginalData(codeName, duration);
 
         // return if no any record
-        if (!originalData.Any()) return;
+        // New stock cannot analyze
+        if (!originalData.Any() || originalData.Count < 2) return;
 
         // main analyze process
         var bot = new AnalyzeBot(originalData);
@@ -37,33 +38,42 @@ public class StockAnalyzeService : IStockAnalyzeService
         // select company Name
         var companyName = await DbService.SelectCompanyNameByCode(codeName);
 
-        // analyze result store into object
-        var analyzeResult = new AnalysisResultDetail
+        try
         {
-            Duration = duration,
-            CodeName = codeName,
-            CompanyName = companyName,
-            OverPricedPercent = bot.CalcOverPricedPercent(),
-            OverPricedDays = bot.CalcOverPricedDays(),
-            OverPricedPercentHigherThan1P = bot.CalcOverPricedPercentHigherThan1P(),
-            OverPricedDaysHigherThan1P = bot.CalcOverPricedDaysHigherThan1P(),
-            MaxContinueOverPricedDay = bot.CalcMaxContinueOverPricedDay(),
-            MaxContinueMinusOverPricedDay = bot.CalcMaxContinueMinusOverPricedDay(),
-            AverageOverPricedPercent = bot.CalcAverageOverPricedPercent(),
-            AverageOverPricedPercentHigherThan1P = bot.CalcAverageOverPricedPercentHigherThan1P(),
-            StopProfitWith1P = bot.CalcStopProfitCompoundInterest(1),
-            StopProfitWith2P = bot.CalcStopProfitCompoundInterest(2),
-            StopProfitWith3P = bot.CalcStopProfitCompoundInterest(3),
-            NoActionProfit = bot.CalcNoActionProfit(),
-            BestStopProfit = best[0],
-            BestEarnings = best[1],
-            FirstTradingDay = originalData[^2].Day,
-            LastTradingDay = originalData[0].Day,
-            Evaluate = bot.CalcEvaluate()
-        };
+            // analyze result store into object
+            var analyzeResult = new AnalysisResultDetail
+            {
+                Duration = duration,
+                CodeName = codeName,
+                CompanyName = companyName,
+                OverPricedPercent = bot.CalcOverPricedPercent(),
+                OverPricedDays = bot.CalcOverPricedDays(),
+                OverPricedPercentHigherThan1P = bot.CalcOverPricedPercentHigherThan1P(),
+                OverPricedDaysHigherThan1P = bot.CalcOverPricedDaysHigherThan1P(),
+                MaxContinueOverPricedDay = bot.CalcMaxContinueOverPricedDay(),
+                MaxContinueMinusOverPricedDay = bot.CalcMaxContinueMinusOverPricedDay(),
+                AverageOverPricedPercent = bot.CalcAverageOverPricedPercent(),
+                AverageOverPricedPercentHigherThan1P = bot.CalcAverageOverPricedPercentHigherThan1P(),
+                StopProfitWith1P = bot.CalcStopProfitCompoundInterest(1),
+                StopProfitWith2P = bot.CalcStopProfitCompoundInterest(2),
+                StopProfitWith3P = bot.CalcStopProfitCompoundInterest(3),
+                NoActionProfit = bot.CalcNoActionProfit(),
+                BestStopProfit = best[0],
+                BestEarnings = best[1],
+                FirstTradingDay = originalData[^2].Day,
+                LastTradingDay = originalData[0].Day,
+                Evaluate = bot.CalcEvaluate()
+            };
 
-        // callback invocation
-        callback?.Invoke(analyzeResult);
+            // callback invocation
+            callback?.Invoke(analyzeResult);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+
     }
 
     public async Task GetTtm(string codeName, int duration, Action<AnalyzeBot> callback)
