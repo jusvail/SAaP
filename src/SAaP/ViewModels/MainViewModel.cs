@@ -317,6 +317,9 @@ public class MainViewModel : ObservableRecipient
         await BackupCurrentSelectActivityListAndRestoreSelected();
         // bring window back
         _windowManageService.SetWindowForeground(App.MainWindow);
+
+        await Task.Delay(2000);
+        SetCurrentStatus("");
     }
 
     public async Task OnLastingDaysValueChanged()
