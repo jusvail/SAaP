@@ -133,9 +133,9 @@ public class MainViewModel : ObservableRecipient
 
         await foreach (var code in codes)
         {
-            if (!string.IsNullOrEmpty(code) && code.Length == 8)
+            if (!string.IsNullOrEmpty(code))
             {
-                codeFormat.Append(code[2..]).Append(',');
+                codeFormat.Append(StockService.ReplaceLocStringToFlag(code.ToLower())).Append(',');
             }
         }
 
@@ -148,8 +148,7 @@ public class MainViewModel : ObservableRecipient
 
         if (string.IsNullOrEmpty(codeName)) return;
 
-        codeName = codeName.Replace(StockService.Sh, StockService.ShFlag.ToString());
-        codeName = codeName.Replace(StockService.Sz, StockService.SzFlag.ToString());
+        codeName = StockService.ReplaceLocStringToFlag(codeName);
 
         var companyName = await StockService.FetchCompanyNameByCode(codeName);
 
@@ -195,7 +194,8 @@ public class MainViewModel : ObservableRecipient
             {
                 Id = favorite.GroupId,
                 GroupName = favorite.GroupName,
-                Code = favorite.CodeName
+                BelongTo = Convert.ToInt32(favorite.CodeName[..1]),
+                Code = favorite.CodeName[1..]
             });
         }
         // reload group
