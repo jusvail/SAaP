@@ -148,11 +148,14 @@ public class MainViewModel : ObservableRecipient
 
         if (string.IsNullOrEmpty(codeName)) return;
 
+        codeName = codeName.Replace(StockService.Sh, StockService.ShFlag.ToString());
+        codeName = codeName.Replace(StockService.Sz, StockService.SzFlag.ToString());
+
         var companyName = await StockService.FetchCompanyNameByCode(codeName);
 
         var title = "AnalyzeDetailPageTitle".GetLocalized() + $": [{codeName} {companyName}]";
 
-        _windowManageService.CreateWindowAndNavigateTo<AnalyzeDetailPage>(typeof(AnalyzeDetailViewModel).FullName!, title, obj);
+        _windowManageService.CreateWindowAndNavigateTo<AnalyzeDetailPage>(typeof(AnalyzeDetailViewModel).FullName!, title, codeName);
     }
 
     private void OnMenuSettingsPressed()
@@ -318,7 +321,7 @@ public class MainViewModel : ObservableRecipient
         // bring window back
         _windowManageService.SetWindowForeground(App.MainWindow);
 
-        await Task.Delay(2000);
+        await Task.Delay(1000);
         SetCurrentStatus("");
     }
 
@@ -339,17 +342,12 @@ public class MainViewModel : ObservableRecipient
         foreach (var code in LastQueriedCodes)
         {
             // analyze data
-            await _stockAnalyzeService.Analyze(code, duration, OnStockAnalyzeFinishedCallBack);
+            var data = await _stockAnalyzeService.Analyze(code, duration);
+            if (data != null)
+            {
+                AnalyzedResults.Add(data);
+            }
         }
-    }
-
-    /// <summary>
-    /// when analyze finished, pass result to ui
-    /// </summary>
-    /// <param name="data"></param>
-    private void OnStockAnalyzeFinishedCallBack(AnalysisResultDetail data)
-    {
-        AnalyzedResults.Add(data);
     }
 
     public async Task RestoreFavoriteGroups()
@@ -470,5 +468,40 @@ public class MainViewModel : ObservableRecipient
     private void SetCurrentStatus(string status)
     {
         CurrentStatus = status;
+    }
+
+    public async void FormatCodeInput(string input)
+    {
+        // check code accuracy
+        var accuracyCodes = StringHelper.FormatInputCode(input);
+        // check null input
+        if (accuracyCodes == null) return;
+
+        var allCodes = new List<string>();
+
+        foreach (var accuracyCode in accuracyCodes)
+        {
+            if (accuracyCode.Length == StockService.TdxCodeLength) allCodes.Add(accuracyCode);
+            if (accuracyCode.Length != StockService.StandardCodeLength) continue;
+
+            var belong = await _fetchStockDataService.TryGetBelongByCode(accuracyCode);
+
+            switch (belong)
+            {
+                case StockService.MultiFlg:
+                    allCodes.Add(StockService.ShFlag + accuracyCode);
+                    allCodes.Add(StockService.SzFlag + accuracyCode);
+                    break;
+                case StockService.ShFlag:
+                case StockService.SzFlag:
+                    allCodes.Add(belong + accuracyCode);
+                    break;
+                case StockService.NotExistFlg:
+                    break;
+            }
+        }
+
+        // add comma
+        CodeInput = StockService.FormatPyArgument(allCodes);
     }
 }

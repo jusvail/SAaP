@@ -1,11 +1,11 @@
 ﻿using SAaP.Core.Models;
-using SAaP.Core.Services.Analyze;
+using SAaP.Core.Models.DB;
 
 namespace SAaP.Contracts.Services;
 
 public interface IStockAnalyzeService
 {
-    Task Analyze(string codeName, int duration, Action<AnalysisResultDetail> callback);
+    Task<AnalysisResultDetail> Analyze(string codeName, int duration);
 
-    Task GetTtm(string codeName, int duration, Action<AnalyzeBot> callback);
+    string CalcRelationPercent(IList<IList<double>> compare);
 }

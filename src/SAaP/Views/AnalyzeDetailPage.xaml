@@ -10,6 +10,7 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
+        <helper:ReverseBooleanConverter x:Key="ReverseBooleanConverter" />
         <helper:CheckedToEnabledConverter x:Key="CheckedToEnabledConverter"/>
         <helper:ComparerCheckConverter x:Key="ComparerCheckConverter"/>
         <helper:ProfitColorConverter x:Key="ProfitColorConverter" />
@@ -87,9 +88,11 @@
                                   ItemsSource="{x:Bind ViewModel.DefaultDuration}" SelectedIndex="{x:Bind ViewModel.SelectedCompareRelationIndex,Mode=TwoWay}"
                                   SelectionChanged="CompareRelation_OnSelectionChanged"/>
                         <TextBlock Text="天同期正关联度:" VerticalAlignment="Center"/>
-                        <HyperlinkButton Content="查询" 
+                        <HyperlinkButton Content="查询"
+                                         IsEnabled="{x:Bind ViewModel.DrawStartCommand.IsRunning, Converter={StaticResource ReverseBooleanConverter}, Mode=OneWay}"
                                          Command="{x:Bind ViewModel.DrawStartCommand}"
                                          CommandParameter="{x:Bind MainCan}" />
+                        <TextBlock Text="{x:Bind ViewModel.RelationPercent, Mode=OneWay}" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Grid>
                 <Grid Grid.Row="1" HorizontalAlignment="Left">

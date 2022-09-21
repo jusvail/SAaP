@@ -14,14 +14,17 @@
     <ImplicitUsings>enable</ImplicitUsings>
 	<EnableWindowsTargeting>true</EnableWindowsTargeting>
 	<GenerateAppInstallerFile>False</GenerateAppInstallerFile>
-	<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
-	<PackageCertificateKeyFile>SAaP_TemporaryKey.pfx</PackageCertificateKeyFile>
-	<AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
 	<AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
-	<AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
+	<AppxSymbolPackageEnabled>True</AppxSymbolPackageEnabled>
 	<GenerateTestArtifacts>True</GenerateTestArtifacts>
-	<AppxBundle>Never</AppxBundle>
+	<AppxBundle>Auto</AppxBundle>
 	<HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+	  <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+	<GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
+	<AppxBundlePlatforms>x64</AppxBundlePlatforms>
+	<PackageCertificateKeyFile>SAaP_TemporaryKey.pfx</PackageCertificateKeyFile>
+	<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+	<AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="Assets\BadgeLogo.scale-100.png" />
@@ -29,13 +32,9 @@
     <Content Remove="Assets\BadgeLogo.scale-150.png" />
     <Content Remove="Assets\BadgeLogo.scale-200.png" />
     <Content Remove="Assets\BadgeLogo.scale-400.png" />
-    <Content Remove="Assets\Square400x400Logo.scale-200.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="ControlPages\AddFavoriteGroupDialog.xaml" />
-    <None Remove="Views\AnalyzeDetailPage.xaml" />
-    <None Remove="Views\MainPage.xaml" />
-    <None Remove="Views\SettingsPage.xaml" />
+    <None Remove="Assets\BadgeLogo.scale-24.scale-100.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,7 +43,7 @@
     <Content Include="Assets\Square150x150Logo.scale-200.png" />
     <Content Include="Assets\Square44x44Logo.scale-200.png" />
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Content Include="Assets\StoreLogo.png" />
+	  <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
 

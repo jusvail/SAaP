@@ -13,8 +13,11 @@ public class Stock
     public string CompanyName { get; set; }
 
     [Column]
+    [PrimaryKey]
     public int BelongTo { get; set; }
 
     [Column]
     public int GroupId { get; set; }
+
+    public string CodeNameFull => BelongTo + CodeName;
 }

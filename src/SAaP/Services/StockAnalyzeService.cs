@@ -1,6 +1,6 @@
 ﻿using SAaP.Contracts.Services;
-using SAaP.Core.DataModels;
 using SAaP.Core.Models;
+using SAaP.Core.Models.DB;
 using SAaP.Core.Services;
 using SAaP.Core.Services.Analyze;
 
@@ -19,14 +19,19 @@ public class StockAnalyzeService : IStockAnalyzeService
     /// <param name="duration">duration(from last trading day)</param>
     /// <param name="callback">callback method</param>
     /// <returns></returns>
-    public async Task Analyze(string codeName, int duration, Action<AnalysisResultDetail> callback)
+    public async Task<AnalysisResultDetail> Analyze(string codeName, int duration)
     {
+        var fetchStockDataService = App.GetService<IFetchStockDataService>();
+        var belong = await fetchStockDataService.TryGetBelongByCode(codeName);
+
+        var codeMain = StockService.CutStockCodeToSix(codeName);
+
         // query original data recently
-        var originalData = await DbService.TakeOriginalData(codeName, duration);
+        var originalData = await DbService.TakeOriginalData(codeMain, belong, duration);
 
         // return if no any record
         // New stock cannot analyze
-        if (!originalData.Any() || originalData.Count < 2) return;
+        if (!originalData.Any() || originalData.Count < 2) return null;
 
         // main analyze process
         var bot = new AnalyzeBot(originalData);
@@ -36,7 +41,7 @@ public class StockAnalyzeService : IStockAnalyzeService
         var best = bot.CalcBestStopProfitPoint(7.0);
 
         // select company Name
-        var companyName = await DbService.SelectCompanyNameByCode(codeName);
+        var companyName = await DbService.SelectCompanyNameByCode(codeMain, belong);
 
         try
         {
@@ -44,7 +49,7 @@ public class StockAnalyzeService : IStockAnalyzeService
             var analyzeResult = new AnalysisResultDetail
             {
                 Duration = duration,
-                CodeName = codeName,
+                CodeName = codeMain,
                 CompanyName = companyName,
                 OverPricedPercent = bot.CalcOverPricedPercent(),
                 OverPricedDays = bot.CalcOverPricedDays(),
@@ -66,27 +71,35 @@ public class StockAnalyzeService : IStockAnalyzeService
             };
 
             // callback invocation
-            callback?.Invoke(analyzeResult);
+            return analyzeResult;
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
             throw;
         }
-
     }
 
-    public async Task GetTtm(string codeName, int duration, Action<AnalyzeBot> callback)
+    public string CalcRelationPercent(IList<IList<double>> compare)
     {
-        // query original data recently
-        var originalData = (await DbService.TakeOriginalData(codeName, duration)).ToList();
+        if (compare.Count != 2) return string.Empty;
 
-        // return if no any record
-        if (!originalData.Any()) return;
+        var l = compare[0];
+        var r = compare[1];
 
-        // main analyze process
-        var bot = new AnalyzeBot(originalData);
+        if (l.Count != r.Count) return string.Empty;
 
-        callback?.Invoke(bot);
+        double c = l.Count;
+        var d = 0.0;
+
+        for (var i = 0; i < l.Count; i++)
+        {
+            if (l[i] * r[i] > 0)
+            {
+                d++;
+            }
+        }
+
+        return $"正相关性： {Math.Round(d * 100.0 / c, 2)}%";
     }
 }

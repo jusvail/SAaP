@@ -7,13 +7,13 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="c9800efd-b3c9-487d-b71d-fb5f106286dd"
-    Publisher="CN=yuki"
-    Version="0.1.1.0" />
+    Name="64853FutureLabs.223396D9A159E"
+    Publisher="CN=719F3C23-0383-4AD8-96B2-6754FF308155"
+    Version="0.1.33.0" />
 
   <Properties>
-    <DisplayName>SAaP</DisplayName>
-    <PublisherDisplayName>yuki</PublisherDisplayName>
+    <DisplayName>SAaP - 股票溢价分析</DisplayName>
+    <PublisherDisplayName>Future Labs</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
@@ -38,7 +38,7 @@
         Square44x44Logo="Assets\Square44x44Logo.png">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
-        <uap:LockScreen BadgeLogo="Assets\BadgeLogo.png" Notification="badge"/>
+        <uap:LockScreen BadgeLogo="Assets\BadgeLogo.png"  Notification="badge"/>
       </uap:VisualElements>
     </Application>
   </Applications>

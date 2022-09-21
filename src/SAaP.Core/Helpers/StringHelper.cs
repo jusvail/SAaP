@@ -30,13 +30,14 @@ public static class StringHelper
         if (codes == null) return null;
 
         // check code accuracy
-        var accuracyCodes = StockService.CheckStockCodeAccuracy(codes).ToList();
+        // no need to cut tdx 7 length to  6 length right now
+        var accuracyCodes = codes.ToList(); // StockService.CheckStockCodeAccuracy(codes).ToList();
         // check null code
         if (accuracyCodes.Count == 0) return null;
 
         // delete repeat code
         accuracyCodes = accuracyCodes.GroupBy(a => a).Select(s => s.First()).ToList();
-        
+
         return accuracyCodes;
     }
 }

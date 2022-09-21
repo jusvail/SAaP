@@ -6,5 +6,5 @@ namespace SAaP.Chart.Contracts.Services;
 
 public interface IChartService
 {
-    void DrawBar(Canvas canvas, IList<IList<double>> dataList);
+    void DrawBar(Canvas canvas, List<IList<double>> dataList, List<string> names, List<List<string>> nameInfo);
 }

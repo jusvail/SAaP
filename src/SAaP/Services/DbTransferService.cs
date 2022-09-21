@@ -46,8 +46,6 @@ public class DbTransferService : IDbTransferService
                 // last query codes store into db
                 var stock = new Stock { CodeName = codeName, BelongTo = -1 };
 
-                insertionList = GetInsertionListWhichNotExistInDb(file, codeName);
-
                 if (tmpName.StartsWith(StockService.Sh))
                 {
                     stock.BelongTo = StockService.ShFlag; // sh flag
@@ -56,6 +54,8 @@ public class DbTransferService : IDbTransferService
                 {
                     stock.BelongTo = StockService.SzFlag; //sz flag
                 }
+
+                insertionList = GetInsertionListWhichNotExistInDb(file, stock);
 
                 // get company name
                 var companyName = await StockService.FetchCompanyNameByCode(codeName, stock.BelongTo);
@@ -68,52 +68,100 @@ public class DbTransferService : IDbTransferService
                 }
 
                 // insert only not exist
-                if (!await DbService.CheckRecordExistInStock(codeName))
+                if (!await DbService.CheckRecordExistInStock(stock))
                     // query history store into db
                     await db.InsertAsync(stock);
             }
         }
         else
         {
+            var fetchStockDataService = App.GetService<IFetchStockDataService>();
             // loop file via code name
             foreach (var codeName in codeNames)
             {
-                // sh stock data
-                var issh = await pyDataFolder.TryGetItemAsync(StockService.GetOutputNameSh(codeName)) as StorageFile;
+                var belong = await fetchStockDataService.TryGetBelongByCode(codeName);
+                string codeMain;
 
-                // last query codes store into db
-                var stock = new Stock { CodeName = codeName, BelongTo = -1 };
-
-                if (issh != null)
+                switch (codeName.Length)
                 {
-                    insertionList = GetInsertionListWhichNotExistInDb(issh, codeName);
-                    stock.BelongTo = StockService.ShFlag; // sh flag
+                    case StockService.StandardCodeLength:
+                        codeMain = codeName;
+                        break;
+                    case StockService.TdxCodeLength:
+                        codeMain = codeName.Substring(1, 6);
+                        break;
+                    default:
+                        continue;
                 }
 
-                // sz stock data
-                var issz = await pyDataFolder.TryGetItemAsync(StockService.GetOutputNameSz(codeName)) as StorageFile;
+                // last query codes store into db
+                var stock = new Stock { CodeName = codeMain, BelongTo = belong };
 
-                if (issz != null)
+                // specific location sh / sz
+                if (belong >= 0)
                 {
-                    insertionList = GetInsertionListWhichNotExistInDb(issz, codeName);
-                    stock.BelongTo = StockService.SzFlag; //sz flag
+                    var fileName = belong switch
+                    {
+                        StockService.ShFlag => StockService.GetOutputNameSh(codeMain),
+                        StockService.SzFlag => StockService.GetOutputNameSz(codeMain),
+                        _ => string.Empty
+                    };
+
+                    if (!string.IsNullOrEmpty(fileName))
+                    {
+                        var file = await pyDataFolder.TryGetItemAsync(fileName) as StorageFile;
+
+                        if (file != null)
+                        {
+                            insertionList = GetInsertionListWhichNotExistInDb(file, stock);
+                        }
+                    }
+                }
+                else
+                {
+                    // sh stock data
+                    var issh = await pyDataFolder.TryGetItemAsync(StockService.GetOutputNameSh(codeMain)) as StorageFile;
+
+                    if (issh != null)
+                    {
+                        stock.BelongTo = StockService.ShFlag; // sh flag
+                        insertionList = GetInsertionListWhichNotExistInDb(issh, stock);
+                    }
+
+                    // sz stock data
+                    var issz = await pyDataFolder.TryGetItemAsync(StockService.GetOutputNameSz(codeMain)) as StorageFile;
+
+                    if (issz != null)
+                    {
+                        stock.BelongTo = StockService.SzFlag; //sz flag
+                        insertionList = GetInsertionListWhichNotExistInDb(issz, stock);
+                    }
                 }
 
                 // insert into db
                 if (insertionList != null)
+                {
                     await foreach (var original in insertionList)
                     {
                         await db.InsertOrReplaceAsync(original);
                     }
+                }
 
                 // get company name
-                var companyName = await StockService.FetchCompanyNameByCode(codeName, stock.BelongTo);
+                var companyName = await StockService.FetchCompanyNameByCode(codeMain, stock.BelongTo);
                 stock.CompanyName = companyName;
+                stock.BelongTo = belong;
 
-                // insert only not exist
-                if (!await DbService.CheckRecordExistInStock(codeName))
+                try
+                {
                     // query history store into db
-                    await db.InsertAsync(stock);
+                    await db.InsertOrReplaceAsync(stock);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
             }
         }
     }
@@ -185,7 +233,7 @@ public class DbTransferService : IDbTransferService
         await db.DeleteAsync(favorite);
     }
 
-    private static async IAsyncEnumerable<OriginalData> GetInsertionListWhichNotExistInDb(IStorageFile file, string codeName)
+    private static async IAsyncEnumerable<OriginalData> GetInsertionListWhichNotExistInDb(IStorageFile file, Stock stock)
     {
         // read per line
         foreach (var line in await FileIO.ReadLinesAsync(file))
@@ -198,7 +246,8 @@ public class DbTransferService : IDbTransferService
             // initialize field
             var originalData = new OriginalData
             {
-                CodeName = codeName,
+                CodeName = stock.CodeName,
+                BelongTo = stock.BelongTo,
                 Day = lineObj[0],
                 Opening = CalculationService.TryParseStringToDouble(lineObj[1]),
                 High = CalculationService.TryParseStringToDouble(lineObj[2]),
@@ -215,22 +264,19 @@ public class DbTransferService : IDbTransferService
     {
         await using var db = new DbSaap(StartupService.DbConnectionString);
 
-        var existInStock = db.Stock.Where(s => s.CodeName == codeName);
+        var fetchStockDataService = App.GetService<IFetchStockDataService>();
+        var belong = await fetchStockDataService.TryGetBelongByCode(codeName);
+        var codeMain = StockService.CutStockCodeToSix(codeName);
+
+        var belong1 = belong;
+        var existInStock = db.Stock.Where(s => s.CodeName == codeMain && s.BelongTo == belong1);
 
         // add if not exist in stock
         if (!existInStock.Any())
         {
-            var stock = new Stock { CodeName = codeName, BelongTo = -1 };
-            // try with sh
-            var belong = StockService.ShFlag;
+            var stock = new Stock { CodeName = codeMain, BelongTo = belong };
 
-            var companyName = await StockService.FetchCompanyNameByCode(codeName, belong);
-
-            if (string.IsNullOrEmpty(companyName))
-            {
-                belong = StockService.SzFlag;
-                companyName = await StockService.FetchCompanyNameByCode(codeName, belong);
-            }
+            var companyName = await StockService.FetchCompanyNameByCode(codeMain, belong);
 
             stock.BelongTo = belong;
             stock.CompanyName = companyName;
@@ -239,7 +285,7 @@ public class DbTransferService : IDbTransferService
         }
 
         // add to favorite table
-        await DbService.AddToFavorite(codeName, groupName);
+        await DbService.AddToFavorite(codeMain, belong, groupName);
     }
 
 }
