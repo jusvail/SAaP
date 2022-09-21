@@ -2,7 +2,6 @@
 using CommunityToolkit.WinUI.Helpers;
 using SAaP.Constant;
 using SAaP.Contracts.Services;
-using SAaP.Core.DataModels;
 using SAaP.Core.Services;
 
 namespace SAaP.Services;
@@ -54,15 +53,6 @@ public class FetchStockDataService : IFetchStockDataService
         {
             case StockService.StandardCodeLength:
                 {
-                    await using var db = new DbSaap(StartupService.DbConnectionString);
-
-                    var stocks = db.Stock.Where(s => s.CodeName == code);
-
-                    if (stocks.Any())
-                    {
-                        belongTo = stocks.First().BelongTo; break;
-                    }
-
                     var tdxPath = await _localSettingsService.ReadSettingAsync<string>(PjConstant.TdxInstallationPath);
 
                     var fileSh = StockService.GetInputNameSh(code);

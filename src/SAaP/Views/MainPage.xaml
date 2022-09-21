@@ -244,7 +244,7 @@
                                              AllowFocusOnInteraction="True"
                                              LostFocus="OnCodeInputLostFocusEventHandler"
                                              Language="zh-CN"
-                                             PlaceholderText="多个代码请用空格或逗号分隔\n"/>
+                                             PlaceholderText="多个代码请用空格或逗号分隔"/>
                                     <Grid Margin="0 2 0 0">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>

@@ -47,6 +47,14 @@ public static class StockService
     public static string GetOutputNameSh(string codeName) => string.Format(ShCsvName, codeName);
     public static string GetOutputNameSz(string codeName) => string.Format(SzCsvName, codeName);
 
+    public static string ReplaceLocStringToFlag(string codeName)
+    {
+        if (string.IsNullOrEmpty(codeName)) return string.Empty;
+
+        return codeName
+                .Replace(Sh, ShFlag.ToString())
+                .Replace(Sz, SzFlag.ToString());
+    }
 
     public static IEnumerable<string> CutStockCodeToSix(IEnumerable<string> inputs)
     {
