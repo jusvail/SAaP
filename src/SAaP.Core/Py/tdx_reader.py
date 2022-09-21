@@ -86,6 +86,7 @@ def store_stock_data_to_csv(filepath, name):
         file_object.close()
 
 
+
 data_sh = tdx_path + '/vipdoc/sh/lday/'
 data_sz = tdx_path + '/vipdoc/sz/lday/'
 
@@ -95,22 +96,37 @@ if 'quest_code' in globals():
 
     # exec specific code
     for i in quest_code.split(','):
-        if len(i) != 6:
-            break
+        if len(i) == 6:
+            code_name = 'sh' + i + '.day'
+            if os.path.exists(data_sh + code_name):
+                store_stock_data_to_csv(data_sh + code_name, 'sh' + i)
+                continue
 
-        code_name = 'sh' + i + '.day'
-        if os.path.exists(data_sh + code_name):
-            store_stock_data_to_csv(data_sh + code_name, 'sh' + i)
+            code_name = 'sz' + i + '.day'
+            if os.path.exists(data_sz + code_name):
+                store_stock_data_to_csv(data_sz + code_name, 'sz' + i)
+                continue
+
+        elif len(i) == 7:
+            flg = i[0:1]
+            code_name = i[1:7]
+            if flg == '0':
+                hd = 'sz'
+            elif flg == '1':
+                hd = 'sh'
+            else:
+                logging.info("neither shanghai or shenzhen =>" + i)
+                print('neither shanghai or shenzhen')
+                continue
+            f_name = hd + code_name + '.day'
+            f_path = tdx_path + '/vipdoc/' + hd + '/lday/' + f_name
+            if os.path.exists(f_path):
+                store_stock_data_to_csv(f_path, hd + code_name)
+                continue
+        else:
+            logging.info("neither shanghai or shenzhen =>" + i)
+            print('neither shanghai or shenzhen')
             continue
-
-        code_name = 'sz' + i + '.day'
-        if os.path.exists(data_sz + code_name):
-            store_stock_data_to_csv(data_sz + code_name, 'sz' + i)
-            continue
-
-        logging.info("neither shanghai or shenzhen =>" + i)
-        print('neither shanghai or shenzhen')
-        sys.exit()
 else:
     logging.info("exec all codes")
     # exec all code

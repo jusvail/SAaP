@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.WinUI.UI.Controls;
 using SAaP.ViewModels;
 using System.Linq.Dynamic.Core;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 
@@ -27,7 +26,9 @@ public sealed partial class AnalyzeDetailPage
         if (string.IsNullOrEmpty(codeName)) return;
 
         ViewModel.CodeName = codeName;
+
         ViewModel.Initialize();
+        ViewModel.DrawStartCommand.ExecuteAsync(MainCan);
     }
 
     private void DataGrid_OnSorting(object sender, DataGridColumnEventArgs e)

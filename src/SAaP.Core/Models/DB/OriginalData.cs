@@ -9,6 +9,9 @@ public class OriginalData
     public string CodeName { get; set; }
 
     [PrimaryKey]
+    public int BelongTo { get; set; }
+
+    [PrimaryKey]
     public string Day { get; set; }
 
     [Column]

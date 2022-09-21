@@ -31,12 +31,14 @@ public class RestoreSettingsService : IRestoreSettingsService
         await using var db = new DbSaap(StartupService.DbConnectionString);
 
         var result = from f in db.Favorite
-                     join s in db.Stock on f.Code equals s.CodeName
+                     join s in db.Stock
+                         on new { a = f.Code, b = f.BelongTo } equals new { a = s.CodeName, b = s.BelongTo }
                      where f.GroupName == groupName
                      orderby s.CodeName
                      select new FavoriteDetail()
                      {
-                         CodeName = f.Code,
+                         CodeName = f.BelongTo + f.Code,
+                         BelongTo = f.BelongTo,
                          CompanyName = s.CompanyName,
                          GroupId = f.Id,
                          GroupName = f.GroupName

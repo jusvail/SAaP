@@ -1,13 +1,14 @@
 ﻿using Windows.Storage;
+using CommunityToolkit.WinUI.Helpers;
 using SAaP.Constant;
 using SAaP.Contracts.Services;
+using SAaP.Core.DataModels;
 using SAaP.Core.Services;
 
 namespace SAaP.Services;
 
 public class FetchStockDataService : IFetchStockDataService
 {
-
     // settings service
     private readonly ILocalSettingsService _localSettingsService;
 
@@ -41,5 +42,67 @@ public class FetchStockDataService : IFetchStockDataService
             , tdxPath
             , StartupService.PyDataPath
             , isCheckAll ? string.Empty : pyArg);
+    }
+
+    public async Task<int> TryGetBelongByCode(string code)
+    {
+        var belongTo = -1;
+
+        if (string.IsNullOrEmpty(code)) return belongTo;
+
+        switch (code.Length)
+        {
+            case StockService.StandardCodeLength:
+                {
+                    await using var db = new DbSaap(StartupService.DbConnectionString);
+
+                    var stocks = db.Stock.Where(s => s.CodeName == code);
+
+                    if (stocks.Any())
+                    {
+                        belongTo = stocks.First().BelongTo; break;
+                    }
+
+                    var tdxPath = await _localSettingsService.ReadSettingAsync<string>(PjConstant.TdxInstallationPath);
+
+                    var fileSh = StockService.GetInputNameSh(code);
+
+                    if (tdxPath != null)
+                    {
+                        var folderSh = await StorageFolder.GetFolderFromPathAsync(tdxPath + StockService.ShPath);
+                        var shExist = false;
+                        var szExist = false;
+                        if (await folderSh.FileExistsAsync(fileSh))
+                        {
+                            shExist = true;
+                        }
+
+                        var folderSz = await StorageFolder.GetFolderFromPathAsync(tdxPath + StockService.SzPath);
+
+                        var fileSz = StockService.GetInputNameSz(code);
+
+                        if (await folderSz.FileExistsAsync(fileSz))
+                        {
+                            szExist = true;
+                        }
+
+                        return shExist switch
+                        {
+                            true when szExist => StockService.MultiFlg,
+                            false when !szExist => StockService.NotExistFlg,
+                            true => StockService.ShFlag,
+                            false => StockService.SzFlag
+                        };
+                    }
+
+                    break;
+                }
+            case StockService.TdxCodeLength:
+                var flg = code[..1];
+                int.TryParse(flg, out belongTo);
+                break;
+        }
+
+        return belongTo;
     }
 }

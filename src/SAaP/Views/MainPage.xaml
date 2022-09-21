@@ -13,6 +13,7 @@
     Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}">
 
     <Page.Resources>
+        <helpers:CodeNameFormatConverter x:Key="CodeNameFormatConverter" />
         <helpers:ReverseBooleanConverter x:Key="ReverseBooleanConverter" />
         <helpers:ProfitColorConverter x:Key="ProfitColorConverter" />
         <helpers:ProfitPercentColorConverter x:Key="ProfitPercentColorConverter" />
@@ -27,16 +28,13 @@
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
                 <TextBlock Grid.Row="0"
                            Text="{x:Bind CompanyName}"
                            x:Phase="1"
                            FontWeight="Bold"
                            Margin="5,2,0,0"/>
                 <HyperlinkButton Grid.Row="1"
-                                 Content="{x:Bind CodeName}"
+                                 Content="{x:Bind CodeName, Converter={StaticResource CodeNameFormatConverter}}"
                                  Click="CodeNameCell_OnClick"
                                  x:Phase="2"
                                  Margin="-5,-2,0,2"/>
@@ -246,7 +244,7 @@
                                              AllowFocusOnInteraction="True"
                                              LostFocus="OnCodeInputLostFocusEventHandler"
                                              Language="zh-CN"
-                                             PlaceholderText="多个代码请用空格或逗号分隔"/>
+                                             PlaceholderText="多个代码请用空格或逗号分隔\n"/>
                                     <Grid Margin="0 2 0 0">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>

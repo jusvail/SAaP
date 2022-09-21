@@ -13,6 +13,10 @@ public class FavoriteData
     [Column]
     public string Code { get; set; }
 
+    [PrimaryKey]
+    [Column]
+    public int BelongTo { get; set; }
+
     [Column]
     public string GroupName { get; set; }
 }

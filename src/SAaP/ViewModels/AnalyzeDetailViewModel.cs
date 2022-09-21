@@ -6,6 +6,7 @@ using SAaP.Contracts.Services;
 using SAaP.Core.Models;
 using SAaP.Core.Services;
 using SAaP.Chart.Contracts.Services;
+using SAaP.Core.Services.Analyze;
 
 namespace SAaP.ViewModels;
 
@@ -27,6 +28,7 @@ public class AnalyzeDetailViewModel : ObservableRecipient
     private string _comparerCheck;
     private string _comparerModeCheck;
     private string _otherComparer;
+    private string _relationPercent;
 
     public string CodeName
     {
@@ -70,7 +72,13 @@ public class AnalyzeDetailViewModel : ObservableRecipient
         set => SetProperty(ref _otherComparer, value);
     }
 
-    public IRelayCommand<object> DrawStartCommand { get; }
+    public string RelationPercent
+    {
+        get => _relationPercent;
+        set => SetProperty(ref _relationPercent, value);
+    }
+
+    public IAsyncRelayCommand<object> DrawStartCommand { get; }
 
     public AnalyzeDetailViewModel(IStockAnalyzeService stockAnalyzeService, IChartService chartService, IDbTransferService dbTransferService, IFetchStockDataService fetchStockDataService, IWindowManageService windowManageService)
     {
@@ -80,10 +88,10 @@ public class AnalyzeDetailViewModel : ObservableRecipient
         _fetchStockDataService = fetchStockDataService;
         _windowManageService = windowManageService;
 
-        DrawStartCommand = new RelayCommand<object>(StartingDraw);
+        DrawStartCommand = new AsyncRelayCommand<object>(StartingDraw);
     }
 
-    public async void StartingDraw(object canvas)
+    public async Task StartingDraw(object canvas)
     {
         var realCanvas = canvas as Canvas;
 
@@ -99,54 +107,53 @@ public class AnalyzeDetailViewModel : ObservableRecipient
             _ => throw new ArgumentOutOfRangeException(nameof(ComparerCheck))
         };
 
-        // get latest compareCode's data
-
         // fetch stock data from tdx, then store to csv file
         await _fetchStockDataService.FetchStockData(compareCode);
+
+        var codeList = new[] { CodeName, compareCode };
 
         // transfer stock data to sqlite database
         await Task.Run(async () =>
         {
-            await _dbTransferService.TransferCsvDataToDb(new List<string> { compareCode });
+            await _dbTransferService.TransferCsvDataToDb(codeList);
         });
 
-        var datas = await AnalyzeData(duration, CodeName, compareCode);
-
-        _chartService.DrawBar(realCanvas, datas.ToList());
-
-        // bring window back
-        var xamlRoot = _windowManageService.GetWindowForElement(realCanvas.XamlRoot, typeof(AnalyzeDetailViewModel).FullName!);
-        _windowManageService.SetWindowForeground(xamlRoot);
-    }
-
-    private async Task<IEnumerable<IList<double>>> AnalyzeData(int duration, params string[] codeNames)
-    {
         var col = new List<IList<double>>();
+        var names = new List<string>();
+        var days = new List<List<string>>();
 
-        foreach (var codeName in codeNames)
+        foreach (var codeName in codeList)
         {
             if (string.IsNullOrEmpty(codeName)) continue;
 
-            IList<double> data = null;
+            var belong = await _fetchStockDataService.TryGetBelongByCode(codeName);
 
-            await _stockAnalyzeService.GetTtm(codeName, duration, bot =>
+            // query original data recently
+            var originalData = await DbService.TakeOriginalData(StockService.CutStockCodeToSix(codeName), belong, duration);
+
+            if (!originalData.Any()) return;
+
+            names.Add(await DbService.SelectCompanyNameByCode(codeName));
+            days.Add(originalData.Select(o => o.Day).ToList());
+
+            var bot = new AnalyzeBot(originalData);
+            var data = ComparerModeCheck switch
             {
-                switch (ComparerModeCheck)
-                {
-                    case "0":
-                        data = bot.Ttm;
-                        return;
-                    case "1":
-                        data = bot.OverpricedList;
-                        return;
-                    default: throw new ArgumentOutOfRangeException(nameof(ComparerModeCheck));
-                }
-            });
+                "0" => bot.Ttm,
+                "1" => bot.OverpricedList,
+                _ => throw new ArgumentOutOfRangeException(nameof(ComparerModeCheck))
+            };
 
             if (data != null) col.Add(data);
         }
 
-        return col;
+        _chartService.DrawBar(realCanvas, col, names, days);
+
+        RelationPercent = _stockAnalyzeService.CalcRelationPercent(col);
+
+        // bring window back
+        var xamlRoot = _windowManageService.GetWindowForElement(realCanvas.XamlRoot, typeof(AnalyzeDetailViewModel).FullName!);
+        _windowManageService.SetWindowForeground(xamlRoot);
     }
 
     public async void Initialize()
@@ -157,7 +164,11 @@ public class AnalyzeDetailViewModel : ObservableRecipient
 
         foreach (var duration in DefaultDuration)
         {
-            await _stockAnalyzeService.Analyze(CodeName, duration, ana => AnalyzedResults.Add(ana));
+            var data = await _stockAnalyzeService.Analyze(CodeName, duration);
+            if (data != null)
+            {
+                AnalyzedResults.Add(data);
+            }
         }
 
         ComparerCheck = "1";

@@ -90,16 +90,9 @@ public sealed partial class MainPage
         AnalyzeResultGrid.ItemsSource = null;
     }
 
-    private void OnCodeInputLostFocusEventHandler(object sender, RoutedEventArgs e)
+    private  void OnCodeInputLostFocusEventHandler(object sender, RoutedEventArgs e)
     {
-        // return if is null
-        if (string.IsNullOrEmpty(CodeInput.Text)) return;
-
-        var formatted = StringHelper.FormatInputCode(CodeInput.Text);
-
-        if (formatted != null)
-            // format input code
-            CodeInput.Text = StockService.FormatPyArgument(formatted);
+         ViewModel.FormatCodeInput(CodeInput.Text);
     }
 
     private void QueryAll_OnChecked(object sender, RoutedEventArgs e)

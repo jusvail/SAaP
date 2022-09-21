@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.UI;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
@@ -13,7 +15,10 @@ namespace SAaP.Chart.Services;
 public class ChartService : IChartService
 {
     private const double ChartP = 12.0;
-    private const int DefaultLinesStrokeThickness = 2;
+    private const double DefaultLinesStrokeThickness = 0.8;
+
+    private static readonly SolidColorBrush HighLightStroke = new(Colors.WhiteSmoke);
+    private static readonly SolidColorBrush HighLightBackground = new(Colors.WhiteSmoke);
 
     private static readonly List<SolidColorBrush> DefaultColorBrushes = new()
     {
@@ -48,7 +53,7 @@ public class ChartService : IChartService
         };
     }
 
-    private static Rectangle NewRectangleFrom(double width, double height, SolidColorBrush brush)
+    private static Rectangle NewRectangleFrom(double width, double height, Brush brush)
     {
         return new Rectangle
         {
@@ -65,15 +70,14 @@ public class ChartService : IChartService
         return (canvasWidth - ChartP * 2) * 5 / (5 * recCount + (groupCount + 1));
     }
 
-    private static double CalcRecCellHeight(double canvasHeight, double dataHeight)
+    private static double CalcRecCellHeight(double canvasHeight, double dataHeight, double maxDataHeight)
     {
-        // canvasHeight / h = 10 / dh
-        return canvasHeight * Math.Abs(dataHeight) / 10;
+        // canvasHeight / h = maxDataHeight / dataHeight
+        return canvasHeight * Math.Abs(dataHeight) / maxDataHeight;
     }
 
-    public void DrawBar(Canvas canvas, IList<IList<double>> dataList)
+    public void DrawBar(Canvas canvas, List<IList<double>> dataList, List<string> names, List<List<string>> nameInfo)
     {
-
         if (canvas == null) return;
 
         if (!dataList.Any()) return;
@@ -82,6 +86,9 @@ public class ChartService : IChartService
         {
             canvas.Children.RemoveAt(0);
         }
+
+        //calc max data height
+        var maxDataHeight = dataList.Aggregate(0.0, (current, data) => data.Select(Math.Abs).Prepend(current).Max());
 
         var groupCount = dataList.Count;
         var columnCount = dataList[0].Count;
@@ -103,8 +110,8 @@ public class ChartService : IChartService
         var lineY = NewLineFrom(chartPInt, chartPInt, chartPInt, canvasHeightInt - chartPInt);
 
         // foreground display 
-        Canvas.SetZIndex(lineX,99);
-        Canvas.SetZIndex(lineY,99);
+        Canvas.SetZIndex(lineX, 98);
+        Canvas.SetZIndex(lineY, 98);
 
         canvas.Children.Add(lineX);
         canvas.Children.Add(lineY);
@@ -113,19 +120,61 @@ public class ChartService : IChartService
 
         var gap = recWidth / 5;
 
+        var grid = new Grid
+        {
+            Visibility = Visibility.Collapsed,
+            Background = HighLightBackground
+        };
+
+        var textBlock = new TextBlock
+        {
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        grid.Children.Add(textBlock);
+
+        Canvas.SetZIndex(grid, 99);
+        Canvas.SetZIndex(textBlock, 99);
+        canvas.Children.Add(grid);
+
         for (var i = 0; i < dataList.Count; i++)
         {
             var data = dataList[i];
             var leftStart = ChartP + gap + recWidth * i;
 
-            foreach (var t in data)
+            for (var j = 0; j < data.Count; j++)
             {
+                var t = data[j];
                 var dataHeight = t;
-                if (dataHeight > 10) dataHeight = 9.99;
-                var h = CalcRecCellHeight(absHeight, dataHeight);
+
+                var h = CalcRecCellHeight(absHeight, dataHeight, maxDataHeight);
 
                 var brush = dataHeight > 0 ? DefaultColorBrushes[i] : DefaultMinusColorBrushes[i];
                 var rec = NewRectangleFrom(recWidth, h, brush);
+
+                var i1 = i;
+                var j1 = j;
+                rec.PointerEntered += (sender, e) =>
+                {
+                    var point = e.GetCurrentPoint(canvas);
+                    textBlock.Text = $"[{names[i1]}][{nameInfo[i1][j1]}] =>{dataHeight.ToString(CultureInfo.InvariantCulture)}%";
+
+                    Canvas.SetLeft(grid, point.Position.X);
+                    Canvas.SetTop(grid, point.Position.Y - chartPInt);
+
+                    grid.Visibility = Visibility.Visible;
+                    var recThis = sender as Rectangle;
+
+                    if (recThis == null) return;
+
+                    rec.Stroke = HighLightStroke;
+                };
+
+                rec.PointerExited += (sender, e) =>
+                {
+                    grid.Visibility = Visibility.Collapsed;
+
+                    rec.Stroke = null;
+                };
 
                 Canvas.SetTop(rec, dataHeight > 0 ? absHeight - h : absHeight);
                 Canvas.SetLeft(rec, leftStart);
@@ -135,4 +184,5 @@ public class ChartService : IChartService
             }
         }
     }
+
 }
