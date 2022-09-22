@@ -15,3 +15,5 @@
 ## 截图
 
 ![屏幕截图](/Assets/overview.png)
+
+![详细](/Assets/detail.png)
