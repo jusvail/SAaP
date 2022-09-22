@@ -122,6 +122,25 @@ namespace SAaP.Core.Services.Analyze
             return sl.Any() ? CalculationService.Round2(sl.Average()) : 0.0;
         }
 
+        private void CalcReasonablePrincipal(out double principal, out double divisor)
+        {
+            switch (_originalData.Select(o => o.High).Max())
+            {
+                case > 10000:
+                    principal = 10000000.0;
+                    divisor = 100000;
+                    break;
+                case > 1000:
+                    principal = 1000000.0;
+                    divisor = 10000;
+                    break;
+                default:
+                    principal = 100000.0;
+                    divisor = 1000;
+                    break;
+            }
+        }
+
         /// <summary>
         /// calculate how much can we earnings if we set a stop profit
         /// </summary>
@@ -130,7 +149,7 @@ namespace SAaP.Core.Services.Analyze
         public double CalcStopProfitCompoundInterest(double stopProfit)
         {
             // start amount
-            var principal = 100000.0;
+            CalcReasonablePrincipal(out var principal, out var divider);
 
             // hold stock / how much we can buy at ending of first day's yesterday
             // 1 hand => 100 stock
@@ -177,7 +196,7 @@ namespace SAaP.Core.Services.Analyze
             }
 
             // how much can we earned....
-            return principal / 1000;
+            return principal / divider;
         }
 
         public double CalcNoActionProfit()
@@ -192,29 +211,24 @@ namespace SAaP.Core.Services.Analyze
         {
             // base point
             var stopProfit = 1.0;
-            // principal
-            var earnings = 100.0;
-
-            // [0]: stop profit
-            // [1]: earnings
-            var best = new double[2];
+            var bestSp = new List<double>();
+            var bestEarning = new List<double>();
 
             while (stopProfit <= upTo)
             {
-                var thisEarning = CalcStopProfitCompoundInterest(stopProfit);
-
-                if (thisEarning > earnings)
-                {
-                    earnings = thisEarning;
-                    best[0] = stopProfit;
-                    best[1] = thisEarning;
-                }
+                bestSp.Add(stopProfit);
+                bestEarning.Add(CalcStopProfitCompoundInterest(stopProfit));
 
                 // 0.1 each loop
                 stopProfit += 0.1;
             }
 
-            return best;
+            var max = bestEarning.Max();
+            var index = bestEarning.IndexOf(max);
+
+            // [0]: stop profit
+            // [1]: earnings
+            return new[] { bestSp[index], max };
         }
 
         public string CalcEvaluate()
