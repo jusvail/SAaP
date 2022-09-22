@@ -61,6 +61,9 @@ public class DbTransferService : IDbTransferService
                 var companyName = await StockService.FetchCompanyNameByCode(codeName, stock.BelongTo);
                 stock.CompanyName = companyName;
 
+                // transaction
+                await db.BeginTransactionAsync();
+
                 // insert into db
                 await foreach (var original in insertionList)
                 {
@@ -69,8 +72,12 @@ public class DbTransferService : IDbTransferService
 
                 // insert only not exist
                 if (!await DbService.CheckRecordExistInStock(stock))
+                {
                     // query history store into db
                     await db.InsertAsync(stock);
+                }
+
+                await db.CommitTransactionAsync();
             }
         }
         else
@@ -138,6 +145,9 @@ public class DbTransferService : IDbTransferService
                     }
                 }
 
+                // transaction
+                await db.BeginTransactionAsync();
+
                 // insert into db
                 if (insertionList != null)
                 {
@@ -152,16 +162,10 @@ public class DbTransferService : IDbTransferService
                 stock.CompanyName = companyName;
                 stock.BelongTo = belong;
 
-                try
-                {
-                    // query history store into db
-                    await db.InsertOrReplaceAsync(stock);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    throw;
-                }
+                // query history store into db
+                await db.InsertOrReplaceAsync(stock);
+
+                await db.CommitTransactionAsync();
             }
         }
     }
