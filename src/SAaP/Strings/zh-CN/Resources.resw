@@ -133,7 +133,10 @@
     <value>关于此程序</value>
   </data>
   <data name="Settings_AboutDescription.Text" xml:space="preserve">
-    <value>项目地址=&gt;</value>
+    <value>项目地址 =&gt;</value>
+  </data>
+  <data name="Settings_PrivacyPolicy.Text" xml:space="preserve">
+    <value>隐私策略 =&gt;</value>
   </data>
   <data name="Settings_Title.Text" xml:space="preserve">
     <value>设置</value>

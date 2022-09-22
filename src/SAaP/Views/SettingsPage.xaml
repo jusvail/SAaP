@@ -66,6 +66,18 @@
                     <HyperlinkButton Grid.Column="1" Content="https://github.com/ryoukou/SAaP" 
                                      NavigateUri="https://github.com/ryoukou/SAaP"></HyperlinkButton>
                 </Grid>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0"
+                               x:Uid="Settings_PrivacyPolicy"
+                               VerticalAlignment="Center"
+                               Style="{ThemeResource BodyTextBlockStyle}"/>
+                    <HyperlinkButton Grid.Column="1" Content="https://github.com/ryoukou/SAaP/blob/master/PrivacyPolicy.md" 
+                                     NavigateUri="https://github.com/ryoukou/SAaP/blob/master/PrivacyPolicy.md"></HyperlinkButton>
+                </Grid>
             </StackPanel>
         </StackPanel>
     </Grid>
