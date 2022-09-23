@@ -6,6 +6,8 @@
 
 需要Win10/Win11版本10.0.17763.0以上
 
+![从Windows Store安装](ms-windows-store://pdp/?productid=9P9PVZS13C97)
+
 ## 依赖项
 
 - python运行环境
