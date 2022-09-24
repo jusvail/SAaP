@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using System.Reflection;
+using Microsoft.UI.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SAaP.Chart.Contracts.Services;
@@ -32,7 +33,16 @@ public partial class App
         return service;
     }
 
-    public static Window MainWindow { get; set; } = new() { Title = "AppTitle".GetLocalized() };
+    public static TEnum GetEnum<TEnum>(string text) where TEnum : struct
+    {
+        if (!typeof(TEnum).GetTypeInfo().IsEnum)
+        {
+            throw new InvalidOperationException("Generic parameter 'TEnum' must be an enum.");
+        }
+        return (TEnum)Enum.Parse(typeof(TEnum), text);
+    }
+
+    public static MainWindow MainWindow { get; set; } = new();
 
     private const string MainWindowKey = nameof(MainWindow);
 
@@ -65,8 +75,6 @@ public partial class App
                     services.AddTransient<AnalyzeDetailViewModel>();
                     services.AddTransient<MainPage>();
                     services.AddTransient<MainViewModel>();
-                    services.AddTransient<ShellPage>();
-                    services.AddTransient<ShellViewModel>();
                     services.AddTransient<SettingsPage>();
                     services.AddTransient<SettingsViewModel>();
 

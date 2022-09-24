@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using SAaP.Views;
 
 namespace SAaP.Contracts.Services;
 
@@ -8,7 +9,7 @@ public interface IWindowManageService
 {
     void CreateWindowAndNavigateTo<T>(string key, string title, object arg) where T : Page;
 
-    Window CreateWindow(string key );
+    MainWindow CreateWindow(string key);
 
     void SetWindowForeground(Window window);
 

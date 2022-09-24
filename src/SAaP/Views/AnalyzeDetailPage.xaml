@@ -6,8 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:helper="using:SAaP.Helper"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
-    mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    mc:Ignorable="d">
 
     <Page.Resources>
         <helper:ReverseBooleanConverter x:Key="ReverseBooleanConverter" />
@@ -96,7 +95,7 @@
                     </StackPanel>
                 </Grid>
                 <Grid Grid.Row="1" HorizontalAlignment="Left">
-                    <Canvas x:Name="MainCan" Height="280" Width="640" Background="AliceBlue">
+                    <Canvas x:Name="MainCan" Height="280" Width="640" Background="{ThemeResource LayerFillColorDefaultBrush}">
                     </Canvas>
                 </Grid>
             </Grid>

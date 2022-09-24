@@ -13,6 +13,8 @@
                 <ResourceDictionary Source="/Styles/TextBlock.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <!-- Other app resources here -->
+            <StaticResource x:Key="WindowCaptionBackground" ResourceKey="ControlFillColorTransparentBrush" />
+            <StaticResource x:Key="WindowCaptionBackgroundDisabled" ResourceKey="ControlFillColorTransparentBrush" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

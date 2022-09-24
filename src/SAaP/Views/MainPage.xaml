@@ -9,8 +9,7 @@
     xmlns:models="using:SAaP.Core.Models"
     xmlns:db="using:SAaP.Core.Models.DB"
     xmlns:animatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
-    mc:Ignorable="d"
-    Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}">
+    mc:Ignorable="d">
 
     <Page.Resources>
         <helpers:CodeNameFormatConverter x:Key="CodeNameFormatConverter" />
@@ -37,7 +36,7 @@
                                  Content="{x:Bind CodeName, Converter={StaticResource CodeNameFormatConverter}}"
                                  Click="CodeNameCell_OnClick"
                                  x:Phase="2"
-                                 Margin="-5,-2,0,2"/>
+                                 Margin="-7,0,0,2"/>
             </Grid>
         </DataTemplate>
         <DataTemplate x:Key="ActivityTemplate" x:DataType="db:ActivityData">
@@ -60,15 +59,18 @@
                            Margin="5,0,0,6"/>
             </Grid>
         </DataTemplate>
+        <CornerRadius x:Key="DefaultThickness" >4</CornerRadius>
+        <Thickness x:Key="DefaultBorderThickness" >.5</Thickness>
     </Page.Resources>
 
-    <Grid Padding="5" Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}">
+    <Grid Padding="5">
         <Grid.ColumnDefinitions>
             <ColumnDefinition MaxWidth="150"/>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <Grid Grid.Column="0" Background="SkyBlue" 
-              CornerRadius="5" BorderThickness="1" BorderBrush="LightGray">
+        <Grid Grid.Column="0"
+              CornerRadius="{StaticResource DefaultThickness}" BorderThickness="{StaticResource DefaultBorderThickness}" BorderBrush="LightGray"
+              Background="{ThemeResource LayerFillColorDefaultBrush}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*" />
@@ -76,7 +78,7 @@
             </Grid.RowDefinitions>
             <StackPanel>
                 <Grid>
-                    <ComboBox IsEditable="False" Margin="2" x:Name="FavoriteGroups"
+                    <ComboBox IsEditable="False" Margin="5" x:Name="FavoriteGroups"
                               ItemsSource="{x:Bind ViewModel.FavoriteGroups}" SelectedIndex="{x:Bind ViewModel.SelectedFavGroupIndex,Mode=TwoWay}"
                               SelectionChanged="FavoriteGroups_OnSelectionChanged"/>
                 </Grid>
@@ -304,10 +306,11 @@
                             </Grid>
                         </Grid>
                     </StackPanel>
-                    <Grid Grid.Column="1" Background="LightCoral"
+                    <Grid Grid.Column="1"
                           VerticalAlignment="Top"
                           Padding="0 0 0 5"
-                          CornerRadius="5" BorderThickness="1" BorderBrush="LightGray">
+                          CornerRadius="{StaticResource DefaultThickness}" BorderThickness="{StaticResource DefaultBorderThickness}" BorderBrush="LightGray"
+                          Background="{ThemeResource LayerFillColorDefaultBrush}">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -315,7 +318,7 @@
                             </Grid.RowDefinitions>
                             <StackPanel>
                                 <Grid>
-                                    <ComboBox x:Name="QueryHistory" IsEditable="False" Margin="2"
+                                    <ComboBox x:Name="QueryHistory" IsEditable="False" Margin="5"
                                               ItemsSource="{x:Bind ViewModel.ActivityDateList}" 
                                               SelectedIndex="{x:Bind ViewModel.SelectedActivityDate,Mode=TwoWay}"
                                               SelectionChanged="{x:Bind ViewModel.QueryHistorySelectionChanged}"/>
@@ -336,7 +339,9 @@
                         </Grid>
                     </Grid>
                 </Grid>
-                <Grid Grid.Row="1" Margin="5 4 0 0" CornerRadius="5" BorderThickness="1" BorderBrush="LightGray">
+                <Grid Grid.Row="1" Margin="5 4 0 0" 
+                      CornerRadius="{StaticResource DefaultThickness}" BorderThickness="{StaticResource DefaultBorderThickness}" BorderBrush="LightGray"
+                      Background="{ThemeResource LayerFillColorDefaultBrush}">
                     <Grid x:Name="ContentArea"
                           Padding="5">
                         <Grid.RowDefinitions>
@@ -378,6 +383,11 @@
                                            ItemsSource="{x:Bind ViewModel.AnalyzedResults, Mode=OneWay}">
                                 <controls:DataGrid.Resources>
                                     <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor" Color="Transparent" />
+                                    <SolidColorBrush x:Key="DataGridRowSelectedBackgroundColor" Color="Transparent" />
+                                    <SolidColorBrush x:Key="DataGridRowSelectedHoveredBackgroundColor" Color="Transparent" />
+                                    <SolidColorBrush x:Key="DataGridRowSelectedUnfocusedBackgroundColor" Color="Transparent" />
+                                    <SolidColorBrush x:Key="DataGridRowSelectedHoveredUnfocusedBackgroundColor" Color="Transparent" />
+                                    <SolidColorBrush x:Key="DataGridRowInvalidBrush" Color="Transparent" />
                                 </controls:DataGrid.Resources>
                                 <controls:DataGrid.Columns>
                                     <controls:DataGridTemplateColumn Header="代码" Tag="CodeName">

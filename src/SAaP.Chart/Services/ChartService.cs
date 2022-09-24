@@ -169,7 +169,7 @@ public class ChartService : IChartService
                     rec.Stroke = HighLightStroke;
                 };
 
-                rec.PointerExited += (sender, e) =>
+                rec.PointerExited += (_, _) =>
                 {
                     grid.Visibility = Visibility.Collapsed;
 

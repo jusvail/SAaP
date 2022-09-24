@@ -17,7 +17,6 @@ public class PageService : IPageService
     {
         Configure<MainViewModel, MainPage>(InstanceType.Single);
         Configure<SettingsViewModel, SettingsPage>(InstanceType.Single);
-        Configure<ShellViewModel, ShellPage>(InstanceType.Single);
         Configure<AnalyzeDetailViewModel, AnalyzeDetailPage>(InstanceType.Multi);
     }
 

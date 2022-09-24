@@ -18,8 +18,7 @@ internal class Program
                     DispatcherQueue.GetForCurrentThread());
                 SynchronizationContext.SetSynchronizationContext(context);
                 // Single instance App
-                // ReSharper disable once ObjectCreationAsStatement
-                new App();
+                _ = new App();
             });
         }
     }
@@ -28,7 +27,7 @@ internal class Program
     {
         var isRedirect = false;
         var args = AppInstance.GetCurrent().GetActivatedEventArgs();
-        var kind = args.Kind;
+
         var keyInstance = AppInstance.FindOrRegisterForKey("randomKey");
 
         if (keyInstance.IsCurrent)
@@ -46,6 +45,5 @@ internal class Program
 
     private static void OnActivated(object sender, AppActivationArguments args)
     {
-        var kind = args.Kind;
     }
 }

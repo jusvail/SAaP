@@ -14,7 +14,7 @@ public class WindowManageService : IWindowManageService
 {
     private readonly IPageService _pageService;
 
-    public Dictionary<string, List<Window>> ActiveWindows { get; } = new();
+    public static Dictionary<string, List<Window>> ActiveWindows { get; } = new();
 
     [DllImport("User32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     public static extern bool BringWindowToTop(IntPtr hWnd);
@@ -31,9 +31,9 @@ public class WindowManageService : IWindowManageService
         BringWindowToTop(hwnd);
     }
 
-    public Window CreateWindow(string key)
+    public MainWindow CreateWindow(string key)
     {
-        var newWindow = new Window();
+        var newWindow = new MainWindow();
         TrackWindow(newWindow, key);
 
         return newWindow;
@@ -56,10 +56,7 @@ public class WindowManageService : IWindowManageService
 
         var window = CreateWindow(key);
 
-        var shellPage = App.GetService<ShellPage>();
-        shellPage.ReadyToNavigate<T>(window, string.IsNullOrEmpty(title) ? $"{typeof(T).Name}Title".GetLocalized() : title, arg);
-
-        window.Content = shellPage;
+        window.NavigateTo<T>(string.IsNullOrEmpty(title) ? $"{typeof(T).Name}Title".GetLocalized() : title, arg);
 
         window.Activate();
 
