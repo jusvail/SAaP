@@ -1,12 +1,17 @@
 ﻿using System.Runtime.InteropServices;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
 using SAaP.Helper;
+using Windows.ApplicationModel;
+using Microsoft.UI.Windowing;
 using WinRT;
+using WinRT.Interop;
 
 namespace SAaP;
-class WindowsSystemDispatcherQueueHelper
+
+internal class WindowsSystemDispatcherQueueHelper
 {
     [StructLayout(LayoutKind.Sequential)]
     private struct DispatcherQueueOptions
@@ -62,13 +67,13 @@ public sealed partial class MainWindow
 
         SetBackdrop(BackdropType.Mica);
 
+        var hwnd = WindowNative.GetWindowHandle(this);
+        var windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
+        appWindow.SetIcon(Path.Combine(Package.Current.InstalledLocation.Path, "Assets/BadgeLogo.ico"));
+
         // frame navigate to
         NavigationFrame.Navigate(typeof(T), arg, new DrillInNavigationTransitionInfo());
-    }
-
-    public void SetTitle(string title)
-    {
-        AppTitleBarText.Text = title;
     }
 
     public enum BackdropType
