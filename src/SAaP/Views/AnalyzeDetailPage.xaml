@@ -19,7 +19,7 @@
         <helper:ProfitPercentWeightConverter x:Key="ProfitPercentWeightConverter" />
     </Page.Resources>
 
-    <Grid Margin="5" CornerRadius="5" BorderThickness="1" BorderBrush="LightGray">
+    <Grid Margin="5 0 5 0" CornerRadius="5" BorderThickness="1" BorderBrush="LightGray">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="*" />
