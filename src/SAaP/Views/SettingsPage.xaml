@@ -52,31 +52,15 @@
             <TextBlock x:Uid="Settings_About" Style="{ThemeResource SubtitleTextBlockStyle}"  />
 
             <StackPanel Margin="{StaticResource XSmallTopMargin}" Padding="10 0 0 0">
-                <TextBlock Text="{x:Bind ViewModel.VersionDescription, Mode=OneWay}" Style="{ThemeResource BodyTextBlockStyle}" />
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0"
-                               x:Uid="Settings_AboutDescription"
-                               VerticalAlignment="Center"
-                               Style="{ThemeResource BodyTextBlockStyle}"/>
-                    <HyperlinkButton Grid.Column="1" Content="https://github.com/ryoukou/SAaP" 
+                <TextBlock Margin="12 10" 
+                           Text="{x:Bind ViewModel.VersionDescription, Mode=OneWay}" 
+                           Style="{ThemeResource BodyTextBlockStyle}" />
+                <StackPanel>
+                    <HyperlinkButton x:Uid="Settings_AboutDescription"
                                      NavigateUri="https://github.com/ryoukou/SAaP"></HyperlinkButton>
-                </Grid>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0"
-                               x:Uid="Settings_PrivacyPolicy"
-                               VerticalAlignment="Center"
-                               Style="{ThemeResource BodyTextBlockStyle}"/>
-                    <HyperlinkButton Grid.Column="1" Content="https://github.com/ryoukou/SAaP/blob/master/PrivacyPolicy.md" 
+                    <HyperlinkButton x:Uid="Settings_PrivacyPolicy"
                                      NavigateUri="https://github.com/ryoukou/SAaP/blob/master/PrivacyPolicy.md"></HyperlinkButton>
-                </Grid>
+                </StackPanel>
             </StackPanel>
         </StackPanel>
     </Grid>

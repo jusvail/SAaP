@@ -132,11 +132,11 @@
   <data name="Settings_About.Text" xml:space="preserve">
     <value>About this application</value>
   </data>
-  <data name="Settings_AboutDescription.Text" xml:space="preserve">
-    <value>project homapage =&gt;</value>
+  <data name="Settings_AboutDescription.Content" xml:space="preserve">
+    <value>Project Homapage</value>
   </data>
-  <data name="Settings_PrivacyPolicy.Text" xml:space="preserve">
-    <value>Privacy Policy =&gt;</value>
+  <data name="Settings_PrivacyPolicy.Content" xml:space="preserve">
+    <value>Privacy Policy</value>
   </data>
   <data name="Settings_Title.Text" xml:space="preserve">
     <value>Settings</value>

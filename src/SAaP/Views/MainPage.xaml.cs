@@ -260,4 +260,9 @@ public sealed partial class MainPage
 
         ViewModel.FavoriteListSelectionChanged(sender, e);
     }
+
+    private void ExecBtn_OnClick(object sender, RoutedEventArgs e)
+    {
+        AnalyzeResultGrid.ItemsSource = ViewModel.AnalyzedResults;
+    }
 }

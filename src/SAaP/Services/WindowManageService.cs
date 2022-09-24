@@ -4,7 +4,6 @@ using Microsoft.UI.Xaml.Controls;
 using SAaP.Contracts.Enum;
 using SAaP.Contracts.Services;
 using SAaP.Extensions;
-using SAaP.Views;
 using System.Runtime.InteropServices;
 using WinRT.Interop;
 
@@ -15,6 +14,9 @@ public class WindowManageService : IWindowManageService
     private readonly IPageService _pageService;
 
     public static Dictionary<string, List<Window>> ActiveWindows { get; } = new();
+
+    [DllImport("user32.dll", CharSet = CharSet.Auto)]
+    private static extern bool ShowWindow(IntPtr hWnd, uint nCmdShow);
 
     [DllImport("User32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     public static extern bool BringWindowToTop(IntPtr hWnd);
@@ -28,6 +30,7 @@ public class WindowManageService : IWindowManageService
     {
         var hwnd = WindowNative.GetWindowHandle(window);
 
+        ShowWindow(hwnd, 9); // SW_RESTORE：激活并显示窗口
         BringWindowToTop(hwnd);
     }
 
@@ -56,7 +59,10 @@ public class WindowManageService : IWindowManageService
 
         var window = CreateWindow(key);
 
-        window.NavigateTo<T>(string.IsNullOrEmpty(title) ? $"{typeof(T).Name}Title".GetLocalized() : title, arg);
+        var windowTitle = string.IsNullOrEmpty(title) ? $"{typeof(T).Name}Title".GetLocalized() : title;
+
+        window.Title = windowTitle;
+        window.NavigateTo<T>(windowTitle, arg);
 
         window.Activate();
 
@@ -69,7 +75,13 @@ public class WindowManageService : IWindowManageService
     {
         window.Closed += (_, _) =>
         {
-            ActiveWindows[key].Remove(window);
+            if (!ActiveWindows.Any()) return;
+            if(!ActiveWindows.ContainsKey(key)) return;
+
+            if (ActiveWindows[key].Contains(window))
+            {
+                ActiveWindows[key].Remove(window);
+            }
 
             if (!ActiveWindows[key].Any())
             {

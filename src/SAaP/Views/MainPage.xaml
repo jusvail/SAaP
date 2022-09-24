@@ -9,9 +9,11 @@
     xmlns:models="using:SAaP.Core.Models"
     xmlns:db="using:SAaP.Core.Models.DB"
     xmlns:animatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+    xmlns:primitives="using:CommunityToolkit.WinUI.UI.Controls.Primitives"
     mc:Ignorable="d">
 
     <Page.Resources>
+        <helpers:SimplifyDateTimeConverter x:Key="SimplifyDateTimeConverter" />
         <helpers:CodeNameFormatConverter x:Key="CodeNameFormatConverter" />
         <helpers:ReverseBooleanConverter x:Key="ReverseBooleanConverter" />
         <helpers:ProfitColorConverter x:Key="ProfitColorConverter" />
@@ -49,7 +51,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Row="0"
-                           Text="{x:Bind Date}"
+                           Text="{x:Bind Date, Converter={StaticResource SimplifyDateTimeConverter}}"
                            x:Phase="1"
                            FontWeight="Bold"
                            Margin="5,6,0,0"/>
@@ -60,12 +62,106 @@
             </Grid>
         </DataTemplate>
         <CornerRadius x:Key="DefaultThickness" >4</CornerRadius>
-        <Thickness x:Key="DefaultBorderThickness" >.5</Thickness>
+        <Thickness x:Key="DefaultBorderThickness">.5</Thickness>
+        <Style x:Key="CustomCellStyle" TargetType="controls:DataGridCell" >
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="controls:DataGridCell">
+                        <Grid x:Name="CellRoot" Background="{TemplateBinding Background}">
+                            <ContentPresenter
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- <x:String x:Key="SortIconAscending">&#xE74A;</x:String> -->
+        <!-- <x:String x:Key="SortIconDescending">&#xE74B;</x:String> -->
+        <!-- <Style TargetType="primitives:DataGridColumnHeader"> -->
+        <!--     <Setter Property="HorizontalContentAlignment" Value="Stretch"/> -->
+        <!--     <Setter Property="VerticalContentAlignment" Value="Center"/> -->
+        <!--     <Setter Property="Padding" Value="6,0,0,0"/> -->
+        <!--     <Setter Property="FontSize" Value="12"/> -->
+        <!--     <Setter Property="MinHeight" Value="32"/> -->
+        <!--     <Setter Property="Template"> -->
+        <!--         <Setter.Value> -->
+        <!--             <ControlTemplate TargetType="primitives:DataGridColumnHeader"> -->
+        <!--                 <Grid x:Name="ColumnHeaderRoot"> -->
+        <!--                     <VisualStateManager.VisualStateGroups> -->
+        <!--                         <VisualStateGroup x:Name="CommonStates"> -->
+        <!--                             <VisualState x:Name="Normal"> -->
+        <!--                                 <Storyboard> -->
+        <!--                                     <ColorAnimation Storyboard.TargetName="BackgroundRectangle" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)" Duration="0"  -->
+        <!--                                                     To="#FFFFFF"/> -->
+        <!--                                 </Storyboard> -->
+        <!--                             </VisualState> -->
+        <!--                             <VisualState x:Name="PointerOver"> -->
+        <!--                                 <Storyboard> -->
+        <!--                                     <ColorAnimation Storyboard.TargetName="BackgroundRectangle" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)" Duration="0"  -->
+        <!--                                                     To="#000000"/> -->
+        <!--                                 </Storyboard> -->
+        <!--                             </VisualState> -->
+        <!--                             <VisualState x:Name="Pressed"> -->
+        <!--                                 <Storyboard> -->
+        <!--                                     <ColorAnimation Storyboard.TargetName="BackgroundRectangle" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)" Duration="0"  -->
+        <!--                                                     To="#FF00FF"/> -->
+        <!--                                 </Storyboard> -->
+        <!--                             </VisualState> -->
+        <!--                         </VisualStateGroup> -->
+        <!--                         <VisualStateGroup x:Name="FocusStates"> -->
+        <!--                             <VisualState x:Name="Unfocused"/> -->
+        <!--                             <VisualState x:Name="Focused"> -->
+        <!--                                 <Storyboard> -->
+        <!--                                     <DoubleAnimation Storyboard.TargetName="FocusVisual" Storyboard.TargetProperty="Opacity" To="1" Duration="0"/> -->
+        <!--                                 </Storyboard> -->
+        <!--                             </VisualState> -->
+        <!--                         </VisualStateGroup> -->
+        <!--                         <VisualStateGroup x:Name="SortStates"> -->
+        <!--                             <VisualState x:Name="Unsorted"/> -->
+        <!--                             <VisualState x:Name="SortAscending"> -->
+        <!--                                 <Storyboard> -->
+        <!--                                     <DoubleAnimation Storyboard.TargetName="SortIcon" Storyboard.TargetProperty="Opacity" Duration="0" To="1"/> -->
+        <!--                                 </Storyboard> -->
+        <!--                             </VisualState> -->
+        <!--                             <VisualState x:Name="SortDescending"> -->
+        <!--                                 <Storyboard> -->
+        <!--                                     <DoubleAnimation Storyboard.TargetName="SortIcon" Storyboard.TargetProperty="Opacity" Duration="0" To="1"/> -->
+        <!--                                 </Storyboard> -->
+        <!--                                 <VisualState.Setters> -->
+        <!--                                     <Setter Target="SortIcon.Glyph" Value="{ThemeResource SortIconDescending}"/> -->
+        <!--                                 </VisualState.Setters> -->
+        <!--                             </VisualState> -->
+        <!--                         </VisualStateGroup> -->
+        <!--                     </VisualStateManager.VisualStateGroups> -->
+        <!--                     <Rectangle x:Name="BackgroundRectangle" Stretch="Fill" Fill="Gray" Grid.ColumnSpan="2"/> -->
+        <!--                     <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1"> -->
+        <!--                         <Grid.ColumnDefinitions> -->
+        <!--                             <ColumnDefinition Width="*"/> -->
+        <!--                             <ColumnDefinition MinWidth="24" Width="Auto"/> -->
+        <!--                         </Grid.ColumnDefinitions> -->
+        <!-- -->
+        <!--                         <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Left" VerticalAlignment="Center"/> -->
+        <!-- -->
+        <!--                         <FontIcon Grid.Column="1" x:Name="SortIcon"  -->
+        <!--                                   Margin="0" -->
+        <!--                                   Glyph="{ThemeResource SortIconAscending}" FontSize="9"  -->
+        <!--                                   Foreground="Red" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0"/> -->
+        <!--                     </Grid> -->
+        <!--                     <Rectangle x:Name="VerticalSeparator" Width="1" VerticalAlignment="Stretch" HorizontalAlignment="Right" -->
+        <!--                                Fill="DarkBlue"/> -->
+        <!--                 </Grid> -->
+        <!--             </ControlTemplate> -->
+        <!--         </Setter.Value> -->
+        <!--     </Setter> -->
+        <!-- </Style> -->
     </Page.Resources>
 
     <Grid Padding="5">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition MaxWidth="150"/>
+            <ColumnDefinition MaxWidth="160"/>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid Grid.Column="0"
@@ -86,7 +182,7 @@
             <Grid Grid.Row="1">
                 <ListView
                         x:Name="FavoriteCodes"
-                        MinWidth="160"
+                        MinWidth="150"
                         Margin="2"
                         ItemTemplate="{StaticResource FavoriteListViewTemplate}"
                         ItemsSource="{x:Bind ViewModel.GroupList}"
@@ -258,6 +354,7 @@
                                             <Button x:Name="ExecBtn" Style="{StaticResource AccentButtonStyle}" 
                                                 IsEnabled="{x:Bind ViewModel.AnalysisPressedCommand.IsRunning, Converter={StaticResource ReverseBooleanConverter}, Mode=OneWay}"
                                                 Command="{x:Bind ViewModel.AnalysisPressedCommand}"
+                                                Click="ExecBtn_OnClick"
                                                 Content="执行分析" Margin="4 0"/>
                                             <Grid Margin="2">
                                                 <ProgressRing HorizontalAlignment="Left"
@@ -327,7 +424,7 @@
                             <StackPanel Grid.Row="1">
                                 <ListView
                                     Margin="-10 0 0 0"
-                                    MinWidth="185"
+                                    MinWidth="170"
                                     Height="245"
                                     IsItemClickEnabled="True"
                                     ItemClick="{x:Bind ViewModel.ActivityDateClicked}"
@@ -378,6 +475,7 @@
                                            HeadersVisibility="Column"
                                            IsReadOnly="True"
                                            SelectionMode="Extended"
+                                           CellStyle="{StaticResource CustomCellStyle}"
                                            RowGroupHeaderPropertyNameAlternative="Range"
                                            Sorting="DataGrid_OnSorting"
                                            ItemsSource="{x:Bind ViewModel.AnalyzedResults, Mode=OneWay}">
@@ -395,7 +493,7 @@
                                             <DataTemplate x:DataType="models:AnalysisResult">
                                                 <Grid>
                                                     <HyperlinkButton x:Name="CodeNameCell"
-                                                                     Content="{x:Bind CodeName}"
+                                                                     Content="{x:Bind CodeName, Converter={StaticResource CodeNameFormatConverter}}"
                                                                      Click="CodeNameCell_OnClick"/>
                                                 </Grid>
                                             </DataTemplate>

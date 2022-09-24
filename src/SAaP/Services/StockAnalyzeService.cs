@@ -49,7 +49,7 @@ public class StockAnalyzeService : IStockAnalyzeService
             var analyzeResult = new AnalysisResultDetail
             {
                 Duration = duration,
-                CodeName = codeMain,
+                CodeName = codeName,
                 CompanyName = companyName,
                 OverPricedPercent = bot.CalcOverPricedPercent(),
                 OverPricedDays = bot.CalcOverPricedDays(),
