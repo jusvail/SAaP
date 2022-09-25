@@ -266,15 +266,26 @@ public sealed partial class MainPage
         AnalyzeResultGrid.ItemsSource = ViewModel.AnalyzedResults;
     }
 
+    private const double Offset = -7.0;
+    private const double Distance = 1.05;
+
     private void SfPanel_OnSizeChanged(object sender, SizeChangedEventArgs e)
     {
-        if (e.NewSize.Height > ActivityListView.Height * 1.1)
+        if (e.NewSize.Height > ActivityListView.Height * Distance)
         {
-            ActivityListView.Height = e.NewSize.Height * .8;
+            ActivityListView.Height = e.NewSize.Height * .8 + Offset;
         }
-        else if (ActivityListView.Height > e.NewSize.Height * 1.1)
+        else if (ActivityListView.Height > e.NewSize.Height * Distance)
         {
-            ActivityListView.Height = e.NewSize.Height * .8;
+            ActivityListView.Height = e.NewSize.Height * .8 + Offset;
+        }
+        else if (SfPanel.DesiredSize.Height > ActivityListView.Height * Distance)
+        {
+            ActivityListView.Height = SfPanel.DesiredSize.Height * .8 + Offset;
+        }
+        else if (ActivityListView.Height > SfPanel.DesiredSize.Height * Distance)
+        {
+            ActivityListView.Height = SfPanel.DesiredSize.Height * .8 + Offset;
         }
     }
 }

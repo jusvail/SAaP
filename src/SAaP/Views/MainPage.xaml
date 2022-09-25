@@ -61,8 +61,6 @@
                            Margin="5,0,0,6"/>
             </Grid>
         </DataTemplate>
-        <CornerRadius x:Key="DefaultThickness" >4</CornerRadius>
-        <Thickness x:Key="DefaultBorderThickness">.5</Thickness>
         <Style x:Key="CustomCellStyle" TargetType="controls:DataGridCell" >
             <Setter Property="Template">
                 <Setter.Value>
@@ -275,7 +273,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto"/>
                     <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+                </Grid.RowDefinitions>  
                 <Grid Grid.Row="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -321,9 +319,7 @@
                                                       Width="42"
                                                       HorizontalAlignment="Center"
                                                       VerticalAlignment="Center"
-                                                      PointerEntered="ShellMenuBarSettingsButton_PointerEntered"
-                                                      PointerExited="ShellMenuBarSettingsButton_PointerExited"
-                                                      Command="{x:Bind ViewModel.MenuSettingsCommand}">
+                                                      Command="{x:Bind ViewModel.NavigateToInvestLogCommand}">
                                             <AppBarButton.Icon >
                                                 <FontIcon  Margin="0 -3 0 0" 
                                                            FontFamily="{StaticResource SymbolThemeFontFamily}" 
@@ -352,6 +348,7 @@
                                              TextWrapping="Wrap" AcceptsReturn="True"
                                              Text="{x:Bind ViewModel.CodeInput,Mode=TwoWay}"
                                              SelectionHighlightColor="Green" MinHeight="150"
+                                             MaxHeight="150"
                                              AllowFocusOnInteraction="True"
                                              LostFocus="OnCodeInputLostFocusEventHandler"
                                              Language="zh-CN"
@@ -449,7 +446,7 @@
                         </Grid>
                     </Grid>
                 </Grid>
-                <Grid Grid.Row="1" Margin="5 4 0 0" 
+                <Grid Grid.Row="1" Margin="5 -3 0 0" 
                       CornerRadius="{StaticResource DefaultThickness}" BorderThickness="{StaticResource DefaultBorderThickness}" BorderBrush="LightGray"
                       Background="{ThemeResource LayerFillColorDefaultBrush}">
                     <Grid x:Name="ContentArea"

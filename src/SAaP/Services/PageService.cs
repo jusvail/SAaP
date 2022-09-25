@@ -17,6 +17,7 @@ public class PageService : IPageService
     {
         Configure<MainViewModel, MainPage>(InstanceType.Single);
         Configure<SettingsViewModel, SettingsPage>(InstanceType.Single);
+        Configure<InvestLogViewModel, InvestLogPage>(InstanceType.Single);
         Configure<AnalyzeDetailViewModel, AnalyzeDetailPage>(InstanceType.Multi);
     }
 
@@ -73,7 +74,5 @@ public class PageService : IPageService
                 _instanceTypes.Add(key, tp);
             }
         }
-
-
     }
 }

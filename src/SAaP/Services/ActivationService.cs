@@ -12,9 +12,9 @@ public class ActivationService : IActivationService
     {
         // Execute tasks before activation.
         await InitializeAsync();
-
+        // navigate to main page
         App.MainWindow.NavigateTo<MainPage>(PjConstant.AppTitle.GetLocalized(), null);
-
+        // active main window
         App.MainWindow.Activate();
     }
 

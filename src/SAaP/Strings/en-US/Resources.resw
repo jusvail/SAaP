@@ -126,6 +126,9 @@
   <data name="AppTitle" xml:space="preserve">
     <value>Stock Analyse and unpredictable Prediction</value>
   </data>
+  <data name="InvestLogPageTitle" xml:space="preserve">
+    <value>Invest Log</value>
+  </data>
   <data name="SettingsPageTitle" xml:space="preserve">
     <value>Settings</value>
   </data>

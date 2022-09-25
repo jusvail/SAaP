@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using LinqToDB;
 using SAaP.Core.Models.DB;
@@ -20,6 +21,7 @@ public static class DbService
         await db.CreateTableAsync<AnalyzedData>();
         await db.CreateTableAsync<ActivityData>();
         await db.CreateTableAsync<FavoriteData>();
+        await db.CreateTableAsync<InvestData>();
     }
 
     public static async Task<string> SelectCompanyNameByCode(string codeName, int belongTo = -1)
@@ -36,7 +38,7 @@ public static class DbService
                 break;
             case StockService.TdxCodeLength:
                 codeSelect = codeName.Substring(1, 6);
-                int.TryParse(codeName[..1], out belong);
+                belong = Convert.ToInt32(codeName[..1]);
                 break;
             default:
                 return null;

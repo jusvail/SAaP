@@ -35,5 +35,7 @@
     <Thickness x:Key="SettingsPageGridElementMargin">4,4,0,0</Thickness>
 
     <Thickness x:Key="StandardButtonMargin">5,5,0,5</Thickness>
+    <CornerRadius x:Key="DefaultThickness">4</CornerRadius>
+    <Thickness x:Key="DefaultBorderThickness">.5</Thickness>
 
 </ResourceDictionary>
