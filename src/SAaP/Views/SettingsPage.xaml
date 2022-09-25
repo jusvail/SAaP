@@ -16,6 +16,7 @@
             Grid.Row="0"
             x:Uid="Settings_Title"
             Style="{StaticResource PageTitleStyle}" />
+
         <StackPanel
             Grid.Row="1" 
             Padding="5">
@@ -49,13 +50,30 @@
                         CommandParameter="{x:Bind XamlRoot}"
                         Command="{x:Bind ViewModel.OnTdxInstallationPathPressed}"></Button>
             </Grid>
+
+            <StackPanel Orientation="Horizontal" >
+                <Button Content="清楚缓存" Margin="{StaticResource StandardButtonMargin}" >
+                    <Button.Flyout>
+                        <Flyout>
+                            <StackPanel>
+                                <TextBlock Text="将会清除自选股、查询记录等本地数据" Margin="0,0,0,12" />
+                                <Button Content="确定" Style="{StaticResource AccentButtonStyle}"
+                                        Command="{x:Bind ViewModel.DeleteLocalStoredCacheCommand}"/>
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+                <Button Content="备份数据" Margin="{StaticResource StandardButtonMargin}"
+                        Command="{x:Bind ViewModel.OpenLocalDbLocationCommand}"></Button>
+            </StackPanel>
+
             <TextBlock x:Uid="Settings_About" Style="{ThemeResource SubtitleTextBlockStyle}"  />
 
             <StackPanel Margin="{StaticResource XSmallTopMargin}" Padding="10 0 0 0">
-                <TextBlock Margin="12 10" 
+                <TextBlock Margin="5 10" 
                            Text="{x:Bind ViewModel.VersionDescription, Mode=OneWay}" 
                            Style="{ThemeResource BodyTextBlockStyle}" />
-                <StackPanel>
+                <StackPanel Margin="-7 0 0 0">
                     <HyperlinkButton x:Uid="Settings_AboutDescription"
                                      NavigateUri="https://github.com/ryoukou/SAaP"></HyperlinkButton>
                     <HyperlinkButton x:Uid="Settings_PrivacyPolicy"

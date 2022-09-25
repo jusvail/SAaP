@@ -1,11 +1,8 @@
-﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using SAaP.Constant;
+﻿using SAaP.Constant;
 using SAaP.Contracts.Services;
 using SAaP.Core.Services;
 using SAaP.Extensions;
 using SAaP.Views;
-using static SAaP.MainWindow;
 
 namespace SAaP.Services;
 

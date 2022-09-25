@@ -7,6 +7,9 @@ using Microsoft.UI.Xaml;
 using SAaP.Helper;
 using System.Reflection;
 using Windows.ApplicationModel;
+using Windows.Storage;
+using Windows.System;
+using SAaP.Core.Services;
 using SAaP.Extensions;
 
 namespace SAaP.ViewModels;
@@ -41,6 +44,8 @@ public class SettingsViewModel : ObservableRecipient
     public IAsyncRelayCommand<object> OnPythonInstallationPathPressed { get; }
 
     public IAsyncRelayCommand<object> OnTdxInstallationPathPressed { get; }
+    public IAsyncRelayCommand DeleteLocalStoredCacheCommand { get; }
+    public IAsyncRelayCommand OpenLocalDbLocationCommand { get; }
 
     public SettingsViewModel(ILocalSettingsService localSettingsService, IWindowManageService windowManageService)
     {
@@ -51,6 +56,14 @@ public class SettingsViewModel : ObservableRecipient
 
         OnPythonInstallationPathPressed = new AsyncRelayCommand<object>(OnPythonInstallationPath);
         OnTdxInstallationPathPressed = new AsyncRelayCommand<object>(OnTdxInstallationPath);
+
+        // delete the local cache folder  , and create again
+        DeleteLocalStoredCacheCommand = new AsyncRelayCommand(StartupService.InitializeWorkSpaceFolderTreeAsync);
+        // launch the local sqlite db location
+        OpenLocalDbLocationCommand = new AsyncRelayCommand(async () =>
+        {
+            await Launcher.LaunchFolderAsync(await StorageFolder.GetFolderFromPathAsync(StartupService.DbPath));
+        });
     }
 
     private static string GetVersionDescription()

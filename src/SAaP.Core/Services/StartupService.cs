@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Windows.Storage;
+using ABI.Windows.Devices.AllJoyn;
 
 namespace SAaP.Core.Services;
 
@@ -52,5 +53,16 @@ public static class StartupService
         var dbFolder = await EnsureFolderExist(workSpace, WorkFolderSubDbContainer);
 
         await EnsureDbFileExist(dbFolder, DbName);
+    }
+
+    public static async Task InitializeWorkSpaceFolderTreeAsync()
+    {
+        var localAppDataFolder = await StorageFolder.GetFolderFromPathAsync(LocalApplicationData);
+
+        var workSpace = await EnsureFolderExist(localAppDataFolder, WorkFolder);
+
+        await workSpace.DeleteAsync();
+
+        await EnsureWorkSpaceFolderTreeIntegrityAsync();
     }
 }

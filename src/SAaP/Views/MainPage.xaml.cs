@@ -88,9 +88,9 @@ public sealed partial class MainPage
         AnalyzeResultGrid.ItemsSource = null;
     }
 
-    private  void OnCodeInputLostFocusEventHandler(object sender, RoutedEventArgs e)
+    private void OnCodeInputLostFocusEventHandler(object sender, RoutedEventArgs e)
     {
-         ViewModel.FormatCodeInput(CodeInput.Text);
+        ViewModel.FormatCodeInput(CodeInput.Text);
     }
 
     private void QueryAll_OnChecked(object sender, RoutedEventArgs e)
@@ -235,12 +235,12 @@ public sealed partial class MainPage
 
     private void ShellMenuBarSettingsButton_PointerEntered(object sender, PointerRoutedEventArgs e)
     {
-        AnimatedIcon.SetState((UIElement)sender, "PointerOver");
+        AnimatedIcon.SetState(SettingsAppBarButton, "PointerOver");
     }
 
     private void ShellMenuBarSettingsButton_PointerExited(object sender, PointerRoutedEventArgs e)
     {
-        AnimatedIcon.SetState((UIElement)sender, "Normal");
+        AnimatedIcon.SetState(SettingsAppBarButton, "Normal");
     }
 
     private void CodeNameCell_OnClick(object sender, RoutedEventArgs e)
@@ -264,5 +264,17 @@ public sealed partial class MainPage
     private void ExecBtn_OnClick(object sender, RoutedEventArgs e)
     {
         AnalyzeResultGrid.ItemsSource = ViewModel.AnalyzedResults;
+    }
+
+    private void SfPanel_OnSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (e.NewSize.Height > ActivityListView.Height * 1.1)
+        {
+            ActivityListView.Height = e.NewSize.Height * .8;
+        }
+        else if (ActivityListView.Height > e.NewSize.Height * 1.1)
+        {
+            ActivityListView.Height = e.NewSize.Height * .8;
+        }
     }
 }
