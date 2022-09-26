@@ -162,8 +162,8 @@
             <ColumnDefinition MaxWidth="160"/>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <Grid Grid.Column="0"
-              CornerRadius="{StaticResource DefaultThickness}" BorderThickness="{StaticResource DefaultBorderThickness}" BorderBrush="LightGray"
+        <Grid Grid.Column="0" 
+              Style="{StaticResource DefaultGridWithBorderStyle}"
               Background="{ThemeResource LayerFillColorDefaultBrush}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -286,7 +286,7 @@
                                 Title="免责声明"
                                 IsClosable="False"
                                 Message="本程序仅限学习交流使用。本程序仅进行数据分析，并且不构成任何买卖建议。擅自根据本程序进行交易所造成的后果自负。" />
-                            <InfoBar x:Name="NotifyUser"  IsEnabled="False" IsOpen="False"
+                            <InfoBar x:Name="NotifyUser" IsEnabled="False" IsOpen="False"
                                      Severity="Informational"
                                      IsClosable="True"/>
                         </StackPanel>
@@ -416,7 +416,7 @@
                     <Grid Grid.Column="1"
                           VerticalAlignment="Top"
                           Padding="0 0 0 5"
-                          CornerRadius="{StaticResource DefaultThickness}" BorderThickness="{StaticResource DefaultBorderThickness}" BorderBrush="LightGray"
+                          Style="{StaticResource DefaultGridWithBorderStyle}"
                           Background="{ThemeResource LayerFillColorDefaultBrush}">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -447,7 +447,7 @@
                     </Grid>
                 </Grid>
                 <Grid Grid.Row="1" Margin="5 -3 0 0" 
-                      CornerRadius="{StaticResource DefaultThickness}" BorderThickness="{StaticResource DefaultBorderThickness}" BorderBrush="LightGray"
+                      Style="{StaticResource DefaultGridWithBorderStyle}" 
                       Background="{ThemeResource LayerFillColorDefaultBrush}">
                     <Grid x:Name="ContentArea"
                           Padding="5">

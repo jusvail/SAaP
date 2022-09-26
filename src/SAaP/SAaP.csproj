@@ -26,9 +26,6 @@
 	<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
 	<AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
   </PropertyGroup>
-  <ItemGroup>
-    <None Remove="Views\InvestLogPage.xaml" />
-  </ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -65,6 +62,21 @@
   <ItemGroup>
     <ProjectReference Include="..\SAaP.Chart\SAaP.Chart.csproj" />
     <ProjectReference Include="..\SAaP.Core\SAaP.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="ControlPages\TradeListRow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="ControlPages\AddToTradeListDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="ControlPages\TradeListHeader.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\InvestLogPage.xaml">

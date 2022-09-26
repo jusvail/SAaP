@@ -19,7 +19,7 @@
         <helper:ProfitPercentWeightConverter x:Key="ProfitPercentWeightConverter" />
     </Page.Resources>
 
-    <Grid Margin="5 0 5 0" CornerRadius="5" BorderThickness="1" BorderBrush="LightGray">
+    <Grid Margin="5 0 5 0" CornerRadius="5" BorderThickness="1" BorderBrush="{StaticResource DefaultBorderBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="*" />
@@ -31,7 +31,7 @@
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Column="0" Margin="10" Padding="10"
                         HorizontalAlignment="Center" VerticalAlignment="Center"
-                         CornerRadius="5" BorderThickness="1" BorderBrush="LightGray">
+                         CornerRadius="5" BorderThickness="1" BorderBrush="{StaticResource DefaultBorderBrush}">
                 <StackPanel.Resources>
                     <Style TargetType="RadioButton">
                         <Setter Property="Margin" Value="15 0 -20  0" />
@@ -75,7 +75,7 @@
                 </StackPanel>
             </StackPanel>
             <Grid Grid.Column="1" Padding="10" Margin="0 5 5 5 " 
-                  CornerRadius="5" BorderThickness="1" BorderBrush="LightGray">
+                  CornerRadius="5" BorderThickness="1" BorderBrush="{StaticResource DefaultBorderBrush}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto" />
                     <RowDefinition Height="*" />

@@ -4,7 +4,20 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tlh="using:SAaP.ControlPages"
+    xmlns:models="using:SAaP.Core.Models"
     mc:Ignorable="d">
+
+    <Page.Resources>
+        <DataTemplate x:Key="TradeListDateTemplate" x:DataType="models:InvestDetail">
+            <tlh:TradeListRow TradeDate="{x:Bind TradeDate}"
+                              TradeTime="{x:Bind TradeTime}"
+                              TradeType="{x:Bind TradeType}"
+                              Volume="{x:Bind Volume}"
+                              Price="{x:Bind Price}"
+                              Amount="{x:Bind Amount}"/>
+        </DataTemplate>
+    </Page.Resources>
 
     <Grid Padding="5">
         <Grid.ColumnDefinitions>
@@ -13,10 +26,9 @@
             <ColumnDefinition MaxWidth="200"/>
         </Grid.ColumnDefinitions>
 
-        <Grid CornerRadius="{StaticResource DefaultThickness}" 
-             BorderThickness="{StaticResource DefaultBorderThickness}" 
-             BorderBrush="LightGray"
-             Background="{ThemeResource LayerFillColorDefaultBrush}">
+        <!-- Invest history List -->
+        <Grid Style="{StaticResource DefaultGridWithBorderStyle}"
+              Background="{ThemeResource LayerFillColorDefaultBrush}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*" />
@@ -29,31 +41,178 @@
                 <ListView />
             </Grid>
         </Grid>
+
         <!-- Main Logging area -->
-        <Grid Grid.Column="1">
+        <Grid Grid.Column="1" Margin="{StaticResource SmallLeftRightMargin}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto" MinHeight="240"/>
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
             <!-- Main Top -->
-            <Grid></Grid>
+            <StackPanel>
+                <Button Content="新建一笔建仓-清仓记录"
+                        Style="{StaticResource AccentButtonStyle}">
+                    <Button.Flyout>
+                        <Flyout>
+                            <Grid MinWidth="200">
+                                <Grid.Resources>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+                                    </Style>
+                                    <Style TargetType="Grid">
+                                        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+                                        <Setter Property="Margin" Value="{StaticResource XXSmallLeftTopRightBottomMargin}"></Setter>
+                                    </Style>
+                                </Grid.Resources>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="2*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" 
+                                           Grid.Column="0" 
+                                           Text="股票代码："/>
+                                <Grid Grid.Row="0"  
+                                      Grid.Column="1">
+                                    <TextBox/>
+                                </Grid>
+                                <TextBlock Grid.Row="1" 
+                                           Grid.Column="0" 
+                                           Text="股票名："/>
+                                <Grid Grid.Row="1" 
+                                      Grid.Column="1">
+                                    <TextBox/>
+                                </Grid>
+                                <StackPanel Grid.Row="2" 
+                                            Grid.Column="1" 
+                                            Orientation="Horizontal"
+                                            HorizontalAlignment="Right">
+                                    <Button Content="确认" 
+                                            Height="30"
+                                            Margin="0 5 0 -10"
+                                            Style="{StaticResource AccentButtonStyle}"></Button>
+                                </StackPanel>
+                            </Grid>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+            </StackPanel>
 
             <!-- Local Logging area -->
             <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- Left: Buy List -->
-                <Grid Grid.Column="0">
-                    <ListView x:Name="BuyListView"/>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid Margin="{StaticResource ArrangeLeftGridMargin}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid Margin="{StaticResource DefaultGridThickness}">
+                        <Grid.Resources>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"></Setter>
+                            </Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Orientation" Value="Horizontal"></Setter>
+                            </Style>
+                        </Grid.Resources>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="80"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid Style="{StaticResource GdStyle}">
+                            <TextBlock Text="股票代码："/>
+                        </Grid>
+                        <Grid Grid.Row="0" Grid.Column="1" Style="{StaticResource GdStyle}">
+                            <TextBlock Text="600657"/>
+                        </Grid>
+                        <Grid Grid.Row="1" Grid.Column="0" Style="{StaticResource GdStyle}">
+                            <TextBlock Text="股票名："/>
+                        </Grid>
+                        <Grid Grid.Row="1" Grid.Column="1" Style="{StaticResource GdStyle}">
+                            <TextBlock Text="信达地产"/>
+                        </Grid>
+                    </Grid>
+                    <Grid Grid.Column="1">
+                        <Grid>
+                            <Grid>
+                                <TextBlock Text="注意：保存后将只能删除，无法修改！" Margin="5 5 0 0"></TextBlock>
+                            </Grid>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
+                                <Grid>
+                                    <Button Content="记录一笔交易" 
+                                        Margin="{StaticResource DefaultButtonMargin}">
+                                        <Button.Flyout>
+                                            <Flyout>
+                                                <tlh:AddToTradeListDialog></tlh:AddToTradeListDialog>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                    </Button>
+                                </Grid>
+                                <Grid>
+                                    <Button Content="保存修改"
+                                            Margin="{StaticResource DefaultButtonMargin}"
+                                            Style="{StaticResource AccentButtonStyle}"></Button>
+                                </Grid>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
                 </Grid>
 
-                <!-- Right: Sale List -->
-                <Grid Grid.Column="1">
-                    <ListView x:Name="SaleListView"/>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left: Buy List -->
+                    <Grid Grid.Column="0" VerticalAlignment="Top">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid Style="{StaticResource GdStyle}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition Height="auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="买入列表" />
+                        </Grid>
+                        <tlh:TradeListHeader Grid.Row="1" />
+                        <Grid Grid.Row="1">
+                            <ListView x:Name="BuyListView"
+                                      ItemTemplate="{StaticResource TradeListDateTemplate}"/>
+                        </Grid>
+                    </Grid>
+
+                    <!-- Right: Sale List -->
+                    <Grid Grid.Column="1" VerticalAlignment="Top">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid Style="{StaticResource GdStyle}">
+                            <TextBlock Text="卖出列表" />
+                        </Grid>
+                        <tlh:TradeListHeader Grid.Row="1" />
+                        <Grid Grid.Row="1">
+                            <ListView x:Name="SaleListView"/>
+                        </Grid>
+                    </Grid>
                 </Grid>
             </Grid>
 
@@ -67,8 +226,54 @@
             </Grid.RowDefinitions>
 
             <!-- Note/Reminder ListView -->
-            <Grid>
-                <ListView x:Name="Reminder"/>
+            <Grid CornerRadius="{StaticResource DefaultThickness}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="42"/>
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid>
+
+                    </Grid>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <StackPanel.Resources>
+                        </StackPanel.Resources>
+                        <Button x:Name="NewLogHiddenButton" Visibility="Collapsed">
+                            <Button.Flyout>
+                                <Flyout>
+                                    <Grid Margin="{StaticResource DefaultButtonFlyOutMargin}">
+                                        <TextBox AutomationProperties.Name="multi-line TextBox"
+                                                 TextWrapping="Wrap" 
+                                                 AcceptsReturn="True"
+                                                 MinHeight="150"
+                                                 MinWidth="300"
+                                                 AllowFocusOnInteraction="True"/>
+                                    </Grid>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        <AppBarButton x:Name="InvestLogAppBarButton"
+                                      Width="42"
+                                      Margin="0 0 3 0"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      Click="InvestLogAppBarButton_OnClick">
+                            <AppBarButton.Icon>
+                                <FontIcon Margin="0 -5 0 0" 
+                                      FontFamily="{StaticResource SymbolThemeFontFamily}" 
+                                      Glyph="&#xE109;"/>
+                            </AppBarButton.Icon>
+                        </AppBarButton>
+                    </StackPanel>
+                </Grid>
+                <Grid Grid.Row="1">
+                    <ListView />
+                </Grid>
             </Grid>
             <Grid Grid.Row="1">
                 <StackPanel></StackPanel>

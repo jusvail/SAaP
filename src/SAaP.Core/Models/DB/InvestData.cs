@@ -13,16 +13,22 @@ namespace SAaP.Core.Models.DB
     public class InvestData
     {
         [Column]
+        public int TradeIndex { get; set; }
+
+        [Column]
         public string CodeName { get; set; }
+
+        [Column]
+        public string CompanyName { get; set; }
 
         [Column]
         public DateTime TradeDate { get; set; }
 
         [Column]
-        public TradeType TradeType { get; set; }
+        public DateTime TradeTime { get; set; }
 
         [Column]
-        public string CompanyName { get; set; }
+        public TradeType TradeType { get; set; }
 
         [Column]
         public int Volume { get; set; }

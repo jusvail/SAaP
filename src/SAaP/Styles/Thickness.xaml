@@ -21,7 +21,7 @@
     <Thickness x:Key="XSmallLeftTopRightBottomMargin">8,8,8,8</Thickness>
 
     <Thickness x:Key="XXSmallTopMargin">0,4,0,0</Thickness>
-    <Thickness x:Key="XXSmallLeftTopRightBottomMargin">4,4,4,4</Thickness>
+    <Thickness x:Key="XXSmallLeftTopRightBottomMargin">4,2,2,4</Thickness>
 
     <Thickness x:Key="NavigationViewContentGridBorderThickness">1,1,0,0</Thickness>
     <CornerRadius x:Key="NavigationViewContentGridCornerRadius">8,0,0,0</CornerRadius>
@@ -35,7 +35,36 @@
     <Thickness x:Key="SettingsPageGridElementMargin">4,4,0,0</Thickness>
 
     <Thickness x:Key="StandardButtonMargin">5,5,0,5</Thickness>
+    <Thickness x:Key="DefaultButtonFlyOutMargin">-6,-6,-6,-6</Thickness>
+
     <CornerRadius x:Key="DefaultThickness">4</CornerRadius>
     <Thickness x:Key="DefaultBorderThickness">.5</Thickness>
+    <Thickness x:Key="DefaultGridBorderMargin">-.5,-.5,0,0</Thickness>
+    <Thickness x:Key="DefaultButtonMargin">0 5 5 5</Thickness>
+    <Thickness x:Key="DefaultGridBorderPadding">5</Thickness>
+    <Thickness x:Key="DefaultGridThickness">5</Thickness>
+    <Thickness x:Key="DefaultRadioButtonThickness">5,0,-50,0</Thickness>
+
+    <Thickness x:Key="ArrangeLeftGridMargin">-5,2,0,2</Thickness>
+
+    <SolidColorBrush x:Key="DefaultBorderBrush">LightGray</SolidColorBrush>
+
+    <Style x:Key="DefaultGridWithBorderStyle" TargetType="Grid">
+        <Setter Property="CornerRadius" Value ="{StaticResource DefaultThickness}"></Setter>
+        <Setter Property="BorderThickness" Value ="{StaticResource DefaultBorderThickness}" ></Setter>
+        <Setter Property="BorderBrush" Value ="{StaticResource DefaultBorderBrush}"></Setter>
+    </Style>
+
+    <Style x:Key="GdStyle" TargetType="Grid">
+        <Setter Property="Margin" Value="{StaticResource DefaultGridBorderMargin}"></Setter>
+        <Setter Property="Padding" Value="{StaticResource DefaultGridBorderPadding}"></Setter>
+        <Setter Property="BorderBrush" Value="{StaticResource DefaultBorderBrush}"></Setter>
+        <Setter Property="BorderThickness" Value="{StaticResource DefaultBorderThickness}"></Setter>
+        <Setter Property="Background" Value="{ThemeResource LayerFillColorDefaultBrush}"></Setter>
+    </Style>
+
+    <x:Double x:Key="TimePickerSelectorThemeMinWidth">40</x:Double>
+    <Thickness x:Key="TimePickerFirstHostThemeMargin">100,0,0,0</Thickness>
+    <Thickness x:Key="TimePickerThirdHostThemeMargin">0,0,0,0</Thickness>
 
 </ResourceDictionary>

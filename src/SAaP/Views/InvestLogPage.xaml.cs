@@ -1,4 +1,7 @@
-﻿using SAaP.ViewModels;
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Automation.Provider;
+using SAaP.ViewModels;
 
 namespace SAaP.Views
 {
@@ -13,6 +16,14 @@ namespace SAaP.Views
         {
             ViewModel = App.GetService<InvestLogViewModel>();
             InitializeComponent();
+        }
+
+        private void InvestLogAppBarButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            var peer = new ButtonAutomationPeer(NewLogHiddenButton);
+            var provider = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+
+            provider?.Invoke();
         }
     }
 }
