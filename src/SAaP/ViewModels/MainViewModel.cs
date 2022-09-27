@@ -129,7 +129,7 @@ public class MainViewModel : ObservableRecipient
 
     private void NavigateToInvestLogPage()
     {
-        _windowManageService.CreateWindowAndNavigateTo<InvestLogPage>(typeof(InvestLogViewModel).FullName!, null!, null!);
+        _windowManageService.CreateOrBackToWindow<InvestLogPage>(typeof(InvestLogViewModel).FullName!, null!, null!);
     }
 
     private async Task QueryHot100Codes()
@@ -161,12 +161,12 @@ public class MainViewModel : ObservableRecipient
 
         var title = "AnalyzeDetailPageTitle".GetLocalized() + $": [{codeName} {companyName}]";
 
-        _windowManageService.CreateWindowAndNavigateTo<AnalyzeDetailPage>(typeof(AnalyzeDetailViewModel).FullName!, title, codeName);
+        _windowManageService.CreateOrBackToWindow<AnalyzeDetailPage>(typeof(AnalyzeDetailViewModel).FullName!, title, codeName);
     }
 
     private void OnMenuSettingsPressed()
     {
-        _windowManageService.CreateWindowAndNavigateTo<SettingsPage>(typeof(SettingsViewModel).FullName!, null!, null!);
+        _windowManageService.CreateOrBackToWindow<SettingsPage>(typeof(SettingsViewModel).FullName!, null!, null!);
     }
 
     public void AddToQuerying(object listView)

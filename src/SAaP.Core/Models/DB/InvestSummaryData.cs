@@ -3,15 +3,8 @@ using LinqToDB.Mapping;
 
 namespace SAaP.Core.Models.DB
 {
-    public enum TradeType
-    {
-        Buy = 0,
-        Sell = 1,
-        UnKnow = 2
-    }
-
     [Table(Name = "InvestData")]
-    public class InvestData
+    public class InvestSummaryData
     {
         [Column]
         public int TradeIndex { get; set; }
@@ -23,18 +16,21 @@ namespace SAaP.Core.Models.DB
         public string CompanyName { get; set; }
 
         [Column]
-        public DateTime TradeDate { get; set; }
+        public DateTime Start { get; set; }
 
         [Column]
-        public string TradeTime { get; set; }
+        public DateTime End { get; set; }
 
         [Column]
-        public TradeType TradeType { get; set; }
+        public double AverageCost { get; set; }
 
         [Column]
-        public int Volume { get; set; }
+        public double AverageSale { get; set; }
 
         [Column]
-        public double Price { get; set; }
+        public double Profit { get; set; }
+
+        [Column]
+        public bool IsArchived { get; set; }
     }
 }

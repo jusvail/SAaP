@@ -67,4 +67,6 @@
     <Thickness x:Key="TimePickerFirstHostThemeMargin">100,0,0,0</Thickness>
     <Thickness x:Key="TimePickerThirdHostThemeMargin">0,0,0,0</Thickness>
 
+    <Thickness x:Key="TradeListRowDefaultThickness">-16,0,-13,0</Thickness>
+
 </ResourceDictionary>

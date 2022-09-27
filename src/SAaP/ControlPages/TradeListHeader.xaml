@@ -7,14 +7,6 @@
     mc:Ignorable="d">
 
     <Grid.Resources>
-        <x:Double x:Key="DefaultHeaderFontSize">12</x:Double>
-        <Style TargetType="Grid">
-            <Setter Property="Margin" Value="{StaticResource DefaultGridBorderMargin}"></Setter>
-            <Setter Property="Padding" Value="{StaticResource DefaultGridBorderPadding}"></Setter>
-            <Setter Property="BorderBrush" Value="{StaticResource DefaultBorderBrush}"></Setter>
-            <Setter Property="BorderThickness" Value="{StaticResource DefaultBorderThickness}"></Setter>
-            <Setter Property="Background" Value="{ThemeResource LayerFillColorDefaultBrush}"></Setter>
-        </Style>
         <Style TargetType="TextBlock">
             <Setter Property="FontSize" Value="{ThemeResource DefaultHeaderFontSize}"></Setter>
         </Style>
@@ -29,22 +21,22 @@
         <ColumnDefinition Width="4*"/>
     </Grid.ColumnDefinitions>
 
-    <Grid Grid.Column="0">
+    <Grid Grid.Column="0" Style="{StaticResource GdStyle}">
         <TextBlock Text="交易日" />
     </Grid>
-    <Grid Grid.Column="1">
+    <Grid Grid.Column="1" Style="{StaticResource GdStyle}">
         <TextBlock Text="成交时间" />
     </Grid>
-    <Grid Grid.Column="2">
+    <Grid Grid.Column="2" Style="{StaticResource GdStyle}">
         <TextBlock Text="方向" />
     </Grid>
-    <Grid Grid.Column="3">
+    <Grid Grid.Column="3" Style="{StaticResource GdStyle}">
         <TextBlock Text="成交价格" />
     </Grid>
-    <Grid Grid.Column="4">
+    <Grid Grid.Column="4" Style="{StaticResource GdStyle}">
         <TextBlock Text="成交数量" />
     </Grid>
-    <Grid Grid.Column="5">
+    <Grid Grid.Column="5" Style="{StaticResource GdStyle}">
         <TextBlock Text="成交金额" />
     </Grid>
 

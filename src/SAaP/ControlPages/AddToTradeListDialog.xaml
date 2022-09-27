@@ -1,10 +1,17 @@
-﻿<Page
+﻿<Grid
     x:Class="SAaP.ControlPages.AddToTradeListDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:helper="using:SAaP.Helper"
     mc:Ignorable="d">
+
+    <Grid.Resources>
+        <helper:DateTimeToDateTimeOffsetConverter x:Key="DateTimeOffsetConverter" />
+        <helper:DateTimeToTimeSpanConverter x:Key="DateTimeToTimeSpanConverter" />
+        <helper:BuySaleToEnumConverter x:Key="BuySaleToEnumConverter" />
+    </Grid.Resources>
 
     <Grid Width="190">
         <Grid.Resources>
@@ -38,37 +45,54 @@
         <TextBlock Grid.Row="0" Grid.Column="0"
                    Text="交易日："/>
         <StackPanel Grid.Row="0" Grid.Column="1">
-            <CalendarDatePicker Width="{StaticResource DefaultAlignmentTextBoxWidth}"/>
+            <CalendarDatePicker Date="{x:Bind InvestDetail.TradeDate,
+                                Mode=TwoWay, 
+                                Converter={StaticResource DateTimeOffsetConverter}}" 
+                                Width="{StaticResource DefaultAlignmentTextBoxWidth}"/>
         </StackPanel>
         <TextBlock Grid.Row="1" Grid.Column="0"
                    Text="交易时间："/>
         <StackPanel Grid.Row="1" Grid.Column="1">
             <TimePicker ClockIdentifier="24HourClock" Scale=".5,1,1" 
+                        x:Name="TpPicker"
+                        Time="{x:Bind InvestDetail.TradeTime,
+                        Mode=TwoWay,
+                        Converter={StaticResource DateTimeToTimeSpanConverter}}"
                         VerticalAlignment="Center" HorizontalAlignment="Center"/>
         </StackPanel>
         <TextBlock Grid.Row="2" Grid.Column="0"
                    Text="交易类型："/>
         <StackPanel Grid.Row="2" Grid.Column="1"
                     VerticalAlignment="Center">
-            <RadioButton Content="买" Margin="{StaticResource DefaultRadioButtonThickness}"/>
-            <RadioButton Content="卖" Margin="-10 0 0 0" />
+            <RadioButton Content="买" IsChecked="{x:Bind InvestDetail.TradeType, 
+                         Converter={StaticResource BuySaleToEnumConverter}, ConverterParameter=0, Mode=TwoWay}" 
+                         Margin="{StaticResource DefaultRadioButtonThickness}"/>
+            <RadioButton Content="卖" IsChecked="{x:Bind InvestDetail.TradeType, 
+                         Converter={StaticResource BuySaleToEnumConverter}, ConverterParameter=1, Mode=TwoWay}"  
+                         Margin="-10 0 0 0" />
         </StackPanel>
         <TextBlock Grid.Row="3" Grid.Column="0" 
                    Text="成交量："/>
         <Grid Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left">
-            <TextBox Width="{StaticResource DefaultAlignmentTextBoxWidth}"/>
+            <TextBox Text="{x:Bind InvestDetail.Volume}" 
+                     GettingFocus="TextBox_OnGettingFocus"
+                     Width="{StaticResource DefaultAlignmentTextBoxWidth}"/>
         </Grid>
         <TextBlock Grid.Row="4" Grid.Column="0" 
                    Text="成交价："/>
         <Grid Grid.Row="4" Grid.Column="1" HorizontalAlignment="Left">
-            <TextBox Width="{StaticResource DefaultAlignmentTextBoxWidth}"/>
+            <TextBox Text="{x:Bind InvestDetail.Price}"  
+                     GettingFocus="TextBox_OnGettingFocus"
+                     LostFocus="TextBox_OnLostFocus"
+                     Width="{StaticResource DefaultAlignmentTextBoxWidth}"/>
         </Grid>
         <StackPanel Grid.Row="5" Grid.Column="1" HorizontalAlignment="Right">
             <Button Content="确认" 
                     Height="30"
                     Margin="0 5 0 -10"
+                    Click="Confirm_OnClick"
                     Style="{StaticResource AccentButtonStyle}"></Button>
         </StackPanel>
     </Grid>
    
-</Page>
+</Grid>

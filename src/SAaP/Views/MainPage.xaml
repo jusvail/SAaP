@@ -13,7 +13,7 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <helpers:SimplifyDateTimeConverter x:Key="SimplifyDateTimeConverter" />
+        <helpers:DateTimeToRegularFormatConverter x:Key="SimplifyDateTimeConverter" />
         <helpers:CodeNameFormatConverter x:Key="CodeNameFormatConverter" />
         <helpers:ReverseBooleanConverter x:Key="ReverseBooleanConverter" />
         <helpers:ProfitColorConverter x:Key="ProfitColorConverter" />

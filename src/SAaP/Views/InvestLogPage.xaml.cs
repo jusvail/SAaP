@@ -1,6 +1,8 @@
 ﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation.Peers;
-using Microsoft.UI.Xaml.Automation.Provider;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using SAaP.ControlPages;
+using SAaP.Helper;
 using SAaP.ViewModels;
 
 namespace SAaP.Views
@@ -20,10 +22,9 @@ namespace SAaP.Views
 
         private void InvestLogAppBarButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var peer = new ButtonAutomationPeer(NewLogHiddenButton);
-            var provider = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+            UiInvokeHelper.Invoke(NewLogHiddenButton);
 
-            provider?.Invoke();
         }
+
     }
 }

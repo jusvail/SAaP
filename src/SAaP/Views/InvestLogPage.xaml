@@ -5,17 +5,12 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tlh="using:SAaP.ControlPages"
-    xmlns:models="using:SAaP.Core.Models"
+    xmlns:models="using:SAaP.Models"
     mc:Ignorable="d">
 
     <Page.Resources>
-        <DataTemplate x:Key="TradeListDateTemplate" x:DataType="models:InvestDetail">
-            <tlh:TradeListRow TradeDate="{x:Bind TradeDate}"
-                              TradeTime="{x:Bind TradeTime}"
-                              TradeType="{x:Bind TradeType}"
-                              Volume="{x:Bind Volume}"
-                              Price="{x:Bind Price}"
-                              Amount="{x:Bind Amount}"/>
+        <DataTemplate x:Key="TradeListDateTemplate" x:DataType="models:ObservableInvestDetail">
+            <tlh:TradeListRow InvestDetail="{x:Bind}"/>
         </DataTemplate>
     </Page.Resources>
 
@@ -192,10 +187,10 @@
                             <TextBlock Text="买入列表" />
                         </Grid>
                         <tlh:TradeListHeader Grid.Row="1" />
-                        <Grid Grid.Row="1">
-                            <ListView x:Name="BuyListView"
-                                      ItemTemplate="{StaticResource TradeListDateTemplate}"/>
-                        </Grid>
+                        <ListView Grid.Row="2" x:Name="BuyListView"
+                                  Margin="{StaticResource TradeListRowDefaultThickness}"
+                                  ItemsSource="{x:Bind ViewModel.BuyList}"
+                                  ItemTemplate="{StaticResource TradeListDateTemplate}"/>
                     </Grid>
 
                     <!-- Right: Sale List -->
@@ -209,8 +204,11 @@
                             <TextBlock Text="卖出列表" />
                         </Grid>
                         <tlh:TradeListHeader Grid.Row="1" />
-                        <Grid Grid.Row="1">
-                            <ListView x:Name="SaleListView"/>
+                        <Grid Grid.Row="2">
+                            <ListView x:Name="SaleListView"
+                                      Margin="{StaticResource TradeListRowDefaultThickness}"
+                                      ItemsSource="{x:Bind ViewModel.SellList}"
+                                      ItemTemplate="{StaticResource TradeListDateTemplate}"/>
                         </Grid>
                     </Grid>
                 </Grid>

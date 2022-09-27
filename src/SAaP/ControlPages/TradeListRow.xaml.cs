@@ -1,23 +1,34 @@
-﻿using SAaP.Core.Models.DB;
+﻿using Microsoft.UI.Xaml.Input;
+using SAaP.Core.Models.DB;
+using SAaP.Helper;
+using SAaP.Models;
+using System.Windows.Input;
+using Mapster;
 
 namespace SAaP.ControlPages;
 
 public sealed partial class TradeListRow
 {
-    public DateTime TradeDate { get; set; }
+    private readonly ObservableInvestDetail _investDetail = new();
 
-    public DateTime TradeTime { get; set; }
-
-    public TradeType TradeType { get; set; }
-
-    public int Volume { get; set; }
-
-    public double Price { get; set; }
-
-    public double Amount { get; set; }
+    public ObservableInvestDetail InvestDetail
+    {
+        get => _investDetail;
+        set => value.Adapt(_investDetail);
+    }
 
     public TradeListRow()
     {
+        InvestDetail = App.GetService<ObservableInvestDetail>();
         this.InitializeComponent();
+    }
+
+    public ICommand ConfirmCommand { get; set; }
+
+    private void TradeListRow_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+    {
+        AddToTradeListDialog.ConfirmCommand = ConfirmCommand;
+        UiInvokeHelper.Invoke(HdFlyOutButton);
+        AddToTradeListDialog.InvestDetail = InvestDetail;
     }
 }

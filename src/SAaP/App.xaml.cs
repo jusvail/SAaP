@@ -78,6 +78,8 @@ public partial class App
                     services.AddTransient<InvestLogPage>();
                     services.AddTransient<InvestLogViewModel>();
 
+                    services.AddTransient<ObservableInvestDetail>();
+
                     // Configuration
                     services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
                 }
