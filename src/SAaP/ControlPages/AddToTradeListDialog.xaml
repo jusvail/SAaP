@@ -48,13 +48,14 @@
             <CalendarDatePicker Date="{x:Bind InvestDetail.TradeDate,
                                 Mode=TwoWay, 
                                 Converter={StaticResource DateTimeOffsetConverter}}" 
+                                IsEnabled="{x:Bind InvestDetail.Editable}"
                                 Width="{StaticResource DefaultAlignmentTextBoxWidth}"/>
         </StackPanel>
         <TextBlock Grid.Row="1" Grid.Column="0"
                    Text="交易时间："/>
         <StackPanel Grid.Row="1" Grid.Column="1">
             <TimePicker ClockIdentifier="24HourClock" Scale=".5,1,1" 
-                        x:Name="TpPicker"
+                        IsEnabled="{x:Bind InvestDetail.Editable}"
                         Time="{x:Bind InvestDetail.TradeTime,
                         Mode=TwoWay,
                         Converter={StaticResource DateTimeToTimeSpanConverter}}"
@@ -66,32 +67,43 @@
                     VerticalAlignment="Center">
             <RadioButton Content="买" IsChecked="{x:Bind InvestDetail.TradeType, 
                          Converter={StaticResource BuySaleToEnumConverter}, ConverterParameter=0, Mode=TwoWay}" 
+                         IsEnabled="{x:Bind InvestDetail.Editable}"
                          Margin="{StaticResource DefaultRadioButtonThickness}"/>
             <RadioButton Content="卖" IsChecked="{x:Bind InvestDetail.TradeType, 
-                         Converter={StaticResource BuySaleToEnumConverter}, ConverterParameter=1, Mode=TwoWay}"  
+                         Converter={StaticResource BuySaleToEnumConverter}, ConverterParameter=1, Mode=TwoWay}" 
+                         IsEnabled="{x:Bind InvestDetail.Editable}" 
                          Margin="-10 0 0 0" />
         </StackPanel>
         <TextBlock Grid.Row="3" Grid.Column="0" 
                    Text="成交量："/>
         <Grid Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left">
-            <TextBox Text="{x:Bind InvestDetail.Volume}" 
+            <TextBox Text="{x:Bind InvestDetail.Volume, Mode=TwoWay}" 
                      GettingFocus="TextBox_OnGettingFocus"
+                     LostFocus="TextBox_OnLostFocus"
+                     IsEnabled="{x:Bind InvestDetail.Editable}"
                      Width="{StaticResource DefaultAlignmentTextBoxWidth}"/>
         </Grid>
         <TextBlock Grid.Row="4" Grid.Column="0" 
                    Text="成交价："/>
         <Grid Grid.Row="4" Grid.Column="1" HorizontalAlignment="Left">
-            <TextBox Text="{x:Bind InvestDetail.Price}"  
+            <TextBox Text="{x:Bind InvestDetail.Price, Mode=TwoWay}"  
                      GettingFocus="TextBox_OnGettingFocus"
                      LostFocus="TextBox_OnLostFocus"
+                     IsEnabled="{x:Bind InvestDetail.Editable}"
                      Width="{StaticResource DefaultAlignmentTextBoxWidth}"/>
         </Grid>
-        <StackPanel Grid.Row="5" Grid.Column="1" HorizontalAlignment="Right">
+        <StackPanel Grid.Row="5" Grid.Column="1" HorizontalAlignment="Left" Orientation="Horizontal">
             <Button Content="确认" 
                     Height="30"
-                    Margin="0 5 0 -10"
+                    Margin="0 5 0 0"
                     Click="Confirm_OnClick"
+                    IsEnabled="{x:Bind InvestDetail.Editable}"
                     Style="{StaticResource AccentButtonStyle}"></Button>
+            <Button Content="删除" 
+                    Height="30"
+                    Margin="5 5 5 0"
+                    Click="Delete_OnClick"
+                    IsEnabled="{x:Bind InvestDetail.Editable}"></Button>
         </StackPanel>
     </Grid>
    

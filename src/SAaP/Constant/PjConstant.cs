@@ -9,5 +9,8 @@
         public const string PythonInstallationPath = "PythonInstallationPath";
 
         public const string TdxInstallationPath = "TdxInstallationPath";
+
+        public const string DefaultStartTimeSpan = "9:30";
+
     }
 }

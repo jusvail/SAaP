@@ -1,7 +1,6 @@
 ﻿#nullable enable
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using SAaP.Views;
 
 namespace SAaP.Contracts.Services;
 

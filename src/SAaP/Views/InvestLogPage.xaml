@@ -148,16 +148,19 @@
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
                                 <Grid>
                                     <Button Content="记录一笔交易" 
-                                        Margin="{StaticResource DefaultButtonMargin}">
+                                            x:Name="RecordNew"
+                                            Margin="{StaticResource DefaultButtonMargin}">
                                         <Button.Flyout>
                                             <Flyout>
-                                                <tlh:AddToTradeListDialog></tlh:AddToTradeListDialog>
+                                                <tlh:AddToTradeListDialog ConfirmCommand="{x:Bind ViewModel.AddNewTradeRecordCommand}" 
+                                                                          Sender="{x:Bind RecordNew}"/>
                                             </Flyout>
                                         </Button.Flyout>
                                     </Button>
                                 </Grid>
                                 <Grid>
-                                    <Button Content="保存修改"
+                                    <Button Content="保存记录"
+                                            x:Name="SaveRecord"
                                             Margin="{StaticResource DefaultButtonMargin}"
                                             Style="{StaticResource AccentButtonStyle}"></Button>
                                 </Grid>
@@ -179,14 +182,16 @@
                             <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
                         </Grid.RowDefinitions>
-                        <Grid Style="{StaticResource GdStyle}">
+                        <Grid Grid.Row="0" 
+                              Style="{StaticResource GdStyle}"
+                              Margin="{StaticResource TopOnlyMargin}">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="auto"/>
                                 <RowDefinition Height="auto"/>
                             </Grid.RowDefinitions>
                             <TextBlock Text="买入列表" />
                         </Grid>
-                        <tlh:TradeListHeader Grid.Row="1" />
+                        <tlh:TradeListHeader Grid.Row="1" Margin="{StaticResource BottomOnlyMargin}"/>
                         <ListView Grid.Row="2" x:Name="BuyListView"
                                   Margin="{StaticResource TradeListRowDefaultThickness}"
                                   ItemsSource="{x:Bind ViewModel.BuyList}"
@@ -200,10 +205,12 @@
                             <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
                         </Grid.RowDefinitions>
-                        <Grid Style="{StaticResource GdStyle}">
+                        <Grid  Grid.Row="0" 
+                               Style="{StaticResource GdStyle}"
+                               Margin="{StaticResource TopOnlyMargin}">
                             <TextBlock Text="卖出列表" />
                         </Grid>
-                        <tlh:TradeListHeader Grid.Row="1" />
+                        <tlh:TradeListHeader Grid.Row="1" Margin="{StaticResource BottomOnlyMargin}"/>
                         <Grid Grid.Row="2">
                             <ListView x:Name="SaleListView"
                                       Margin="{StaticResource TradeListRowDefaultThickness}"

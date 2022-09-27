@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using SAaP.Core.Models.DB;
 using Mapster;
+using SAaP.Constant;
 using SAaP.Core.Models;
 
 namespace SAaP.Models;
@@ -8,11 +9,15 @@ namespace SAaP.Models;
 public class ObservableInvestDetail : ObservableRecipient
 {
     private DateTime _tradeDate = DateTime.Now;
-    private string _tradeTime;
-    private TradeType _tradeType = TradeType.UnKnow;
+    private string _tradeTime = PjConstant.DefaultStartTimeSpan;
+    private TradeType _tradeType = TradeType.Unknown;
     private int _volume;
     private double _price;
     private double _amount;
+
+    public int TradeIndex { get; set; }
+
+    public bool Editable { get; set; } = true;
 
     public DateTime TradeDate
     {
@@ -31,7 +36,7 @@ public class ObservableInvestDetail : ObservableRecipient
         get => _tradeType;
         set
         {
-            if (value == TradeType.UnKnow) return;
+            if (value == TradeType.Unknown) return;
             SetProperty(ref _tradeType, value);
         }
     }
@@ -51,7 +56,7 @@ public class ObservableInvestDetail : ObservableRecipient
     public double Amount
     {
         get => _amount;
-        set => SetProperty(ref _amount, value);
+        set => SetProperty(ref _amount, Volume * Price);
     }
 
     public InvestDetail ToInvestDetail()

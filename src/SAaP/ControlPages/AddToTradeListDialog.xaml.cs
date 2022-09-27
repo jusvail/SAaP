@@ -1,8 +1,9 @@
-﻿using System.Windows.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 using Mapster;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using SAaP.Helper;
 using SAaP.Models;
 
 namespace SAaP.ControlPages;
@@ -20,7 +21,10 @@ public sealed partial class AddToTradeListDialog
         set => value.Adapt(_investDetail);
     }
 
-    public ICommand ConfirmCommand { get; set; }
+    public IRelayCommand<object> ConfirmCommand { get; set; }
+    public IRelayCommand<object> DeleteCommand { get; set; }
+
+    public Button Sender { get; set; }
 
     public AddToTradeListDialog()
     {
@@ -30,33 +34,35 @@ public sealed partial class AddToTradeListDialog
 
     private void Confirm_OnClick(object sender, RoutedEventArgs e)
     {
+        UiInvokeHelper.HideButtonFlyOut(Sender);
         ConfirmCommand?.Execute(InvestDetail);
+    }
+
+    private void Delete_OnClick(object sender, RoutedEventArgs e)
+    {
+        UiInvokeHelper.HideButtonFlyOut(Sender);
+        DeleteCommand?.Execute(InvestDetail);
     }
 
     private void TextBox_OnGettingFocus(UIElement sender, GettingFocusEventArgs args)
     {
-        TextBox tb = args.OriginalSource as TextBox;
+        var tb = args.OriginalSource as TextBox;
+        if (tb == null) return;
         tb.SelectAll();
         tb.PreviewKeyDown -= OnPreviewMouseDown;
     }
 
-    void OnPreviewMouseDown(object sender, KeyRoutedEventArgs e)
+    private static void OnPreviewMouseDown(object sender, KeyRoutedEventArgs e)
     {
-        TextBox tb = e.OriginalSource as TextBox;
-        tb.Focus(FocusState.Keyboard);
+        var tb = e.OriginalSource as TextBox;
+        if (tb != null) tb.Focus(FocusState.Keyboard);
 
         e.Handled = true;
     }
 
-    private void TextBox_OnLosingFocus(UIElement sender, LosingFocusEventArgs args)
-    {
-        TextBox tb = args.OriginalSource as TextBox;
-        tb.PreviewKeyDown += OnPreviewMouseDown;
-    }
-
     private void TextBox_OnLostFocus(object sender, RoutedEventArgs e)
     {
-        TextBox tb = e.OriginalSource as TextBox;
-        tb.PreviewKeyDown += OnPreviewMouseDown;
+        var tb = e.OriginalSource as TextBox;
+        if (tb != null) tb.PreviewKeyDown += OnPreviewMouseDown;
     }
 }

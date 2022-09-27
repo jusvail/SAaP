@@ -251,6 +251,7 @@ public sealed partial class MainPage
 
     private void DeleteFavoriteCodesButton_OnClick(object sender, RoutedEventArgs e)
     {
+        DeleteFavoriteCodesButton.Flyout.Hide();
         FavoriteCodeManageSelectAll.IsChecked = false;
     }
 

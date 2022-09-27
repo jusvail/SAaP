@@ -13,4 +13,10 @@ internal class UiInvokeHelper
 
         provider?.Invoke();
     }
+
+    public static void HideButtonFlyOut(Button button)
+    {
+        if (button == null) return;
+        button.Flyout.Hide();
+    }
 }

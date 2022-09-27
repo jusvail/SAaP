@@ -41,6 +41,8 @@
     <Thickness x:Key="DefaultBorderThickness">.5</Thickness>
     <Thickness x:Key="DefaultGridBorderMargin">-.5,-.5,0,0</Thickness>
     <Thickness x:Key="DefaultButtonMargin">0 5 5 5</Thickness>
+    <Thickness x:Key="BottomOnlyMargin">0,0,0,5</Thickness>
+    <Thickness x:Key="TopOnlyMargin">-1,5,0,0</Thickness>
     <Thickness x:Key="DefaultGridBorderPadding">5</Thickness>
     <Thickness x:Key="DefaultGridThickness">5</Thickness>
     <Thickness x:Key="DefaultRadioButtonThickness">5,0,-50,0</Thickness>
@@ -67,6 +69,6 @@
     <Thickness x:Key="TimePickerFirstHostThemeMargin">100,0,0,0</Thickness>
     <Thickness x:Key="TimePickerThirdHostThemeMargin">0,0,0,0</Thickness>
 
-    <Thickness x:Key="TradeListRowDefaultThickness">-16,0,-13,0</Thickness>
+    <Thickness x:Key="TradeListRowDefaultThickness">-16,0,-12,0</Thickness>
 
 </ResourceDictionary>

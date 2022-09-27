@@ -16,6 +16,6 @@ internal class BuySaleToEnumConverter : IValueConverter
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)
     {
-        return (bool)value ? (TradeType)System.Convert.ToInt32(parameter) : TradeType.UnKnow;
+        return (bool)value ? (TradeType)System.Convert.ToInt32(parameter) : TradeType.Unknown;
     }
 }

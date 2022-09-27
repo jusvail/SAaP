@@ -1,30 +1,25 @@
 ﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
-using SAaP.ControlPages;
+using SAaP.Contracts.Services;
 using SAaP.Helper;
 using SAaP.ViewModels;
 
-namespace SAaP.Views
+namespace SAaP.Views;
+
+/// <summary>
+/// Invest Log Page
+/// </summary>
+public sealed partial class InvestLogPage
 {
-    /// <summary>
-    /// Invest Log Page
-    /// </summary>
-    public sealed partial class InvestLogPage
+    public InvestLogViewModel ViewModel { get; }
+
+    public InvestLogPage()
     {
-        public InvestLogViewModel ViewModel { get; }
+        ViewModel = App.GetService<InvestLogViewModel>();
+        InitializeComponent();
+    }
 
-        public InvestLogPage()
-        {
-            ViewModel = App.GetService<InvestLogViewModel>();
-            InitializeComponent();
-        }
-
-        private void InvestLogAppBarButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            UiInvokeHelper.Invoke(NewLogHiddenButton);
-
-        }
-
+    private void InvestLogAppBarButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        UiInvokeHelper.Invoke(NewLogHiddenButton);
     }
 }

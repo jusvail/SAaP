@@ -7,7 +7,7 @@ namespace SAaP.Core.Models.DB
     {
         Buy = 0,
         Sell = 1,
-        UnKnow = 2
+        Unknown = 2
     }
 
     [Table(Name = "InvestData")]
