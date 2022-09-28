@@ -46,8 +46,8 @@
             <Button.Flyout>
                 <Flyout>
                     <controlPages:AddToTradeListDialog x:Name="AddToTradeListDialog"
-                                                       ConfirmCommand="{x:Bind ConfirmCommand}"
-                                                       DeleteCommand="{x:Bind DeleteCommand}"/>
+                                                       Sender="{x:Bind HdFlyOutButton}"
+                                                       InvestDetail="{x:Bind InvestDetail}"/>
                 </Flyout>
             </Button.Flyout>
         </Button>

@@ -35,13 +35,27 @@ public sealed partial class AddToTradeListDialog
     private void Confirm_OnClick(object sender, RoutedEventArgs e)
     {
         UiInvokeHelper.HideButtonFlyOut(Sender);
-        ConfirmCommand?.Execute(InvestDetail);
+        if (ConfirmCommand == null)
+        {
+            InvestDetail.ConfirmCommand?.Execute(InvestDetail);
+        }
+        else
+        {
+            ConfirmCommand.Execute(InvestDetail);
+        }
     }
 
     private void Delete_OnClick(object sender, RoutedEventArgs e)
     {
         UiInvokeHelper.HideButtonFlyOut(Sender);
-        DeleteCommand?.Execute(InvestDetail);
+        if (DeleteCommand == null)
+        {
+            InvestDetail.DeleteCommand?.Execute(InvestDetail);
+        }
+        else
+        {
+            DeleteCommand.Execute(InvestDetail);
+        }
     }
 
     private void TextBox_OnGettingFocus(UIElement sender, GettingFocusEventArgs args)

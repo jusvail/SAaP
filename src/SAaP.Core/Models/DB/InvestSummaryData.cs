@@ -3,10 +3,11 @@ using LinqToDB.Mapping;
 
 namespace SAaP.Core.Models.DB
 {
-    [Table(Name = "InvestData")]
+    [Table(Name = "InvestSummaryData")]
     public class InvestSummaryData
     {
         [Column]
+        [PrimaryKey, Identity]
         public int TradeIndex { get; set; }
 
         [Column]
@@ -25,7 +26,10 @@ namespace SAaP.Core.Models.DB
         public double AverageCost { get; set; }
 
         [Column]
-        public double AverageSale { get; set; }
+        public double AverageSell { get; set; }
+
+        [Column]
+        public int Volume { get; set; }
 
         [Column]
         public double Profit { get; set; }

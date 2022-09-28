@@ -46,6 +46,7 @@
     <Thickness x:Key="DefaultGridBorderPadding">5</Thickness>
     <Thickness x:Key="DefaultGridThickness">5</Thickness>
     <Thickness x:Key="DefaultRadioButtonThickness">5,0,-50,0</Thickness>
+    <Thickness x:Key="DefaultTextBoxThickness">0,1,2,1</Thickness>
 
     <Thickness x:Key="ArrangeLeftGridMargin">-5,2,0,2</Thickness>
 

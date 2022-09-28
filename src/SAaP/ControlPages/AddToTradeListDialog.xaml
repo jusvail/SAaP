@@ -11,6 +11,7 @@
         <helper:DateTimeToDateTimeOffsetConverter x:Key="DateTimeOffsetConverter" />
         <helper:DateTimeToTimeSpanConverter x:Key="DateTimeToTimeSpanConverter" />
         <helper:BuySaleToEnumConverter x:Key="BuySaleToEnumConverter" />
+        <helper:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
     </Grid.Resources>
 
     <Grid Width="190">
@@ -96,13 +97,16 @@
             <Button Content="确认" 
                     Height="30"
                     Margin="0 5 0 0"
+                    x:Name="Confirm"
                     Click="Confirm_OnClick"
                     IsEnabled="{x:Bind InvestDetail.Editable}"
                     Style="{StaticResource AccentButtonStyle}"></Button>
             <Button Content="删除" 
                     Height="30"
                     Margin="5 5 5 0"
+                    x:Name="Delete"
                     Click="Delete_OnClick"
+                    Visibility="{x:Bind InvestDetail.DeleteCommand, Converter={StaticResource NullToVisibilityConverter}}"
                     IsEnabled="{x:Bind InvestDetail.Editable}"></Button>
         </StackPanel>
     </Grid>

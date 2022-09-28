@@ -1,6 +1,4 @@
-﻿using ColorCode.Common;
-using Microsoft.UI.Xaml.Data;
-using SAaP.Contracts.Services;
+﻿using Microsoft.UI.Xaml.Data;
 using SAaP.Core.Services;
 
 namespace SAaP.Helper;

@@ -12,6 +12,8 @@ public static class CalculationService
     /// <returns>result</returns>
     public static double Round2(double input) => Math.Round(input, 2);
 
+    public static double Round3(double input) => Math.Round(input, 3);
+
     public static double CalcTtm(double before, double after) =>
         Round2(100 * (after - before) / before);
 

@@ -2,7 +2,6 @@
 using SAaP.Helper;
 using SAaP.Models;
 using Mapster;
-using CommunityToolkit.Mvvm.Input;
 
 namespace SAaP.ControlPages;
 
@@ -16,9 +15,6 @@ public sealed partial class TradeListRow
         set => value.Adapt(_investDetail);
     }
 
-    public IRelayCommand<object> ConfirmCommand { get; set; }
-    public IRelayCommand<object> DeleteCommand { get; set; }
-
     public TradeListRow()
     {
         InvestDetail = App.GetService<ObservableInvestDetail>();
@@ -27,6 +23,8 @@ public sealed partial class TradeListRow
 
     private void TradeListRow_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
+        if (!InvestDetail.Editable) return;
+
         UiInvokeHelper.Invoke(HdFlyOutButton);
         AddToTradeListDialog.InvestDetail = InvestDetail;
     }

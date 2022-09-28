@@ -1,14 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using SAaP.Core.Models.DB;
-using Mapster;
 using SAaP.Constant;
-using SAaP.Core.Models;
+using CommunityToolkit.Mvvm.Input;
 
 namespace SAaP.Models;
 
 public class ObservableInvestDetail : ObservableRecipient
 {
-    private DateTime _tradeDate = DateTime.Now;
+    private DateTime _tradeDate = DateTime.Now.Date;
     private string _tradeTime = PjConstant.DefaultStartTimeSpan;
     private TradeType _tradeType = TradeType.Unknown;
     private int _volume;
@@ -59,8 +58,7 @@ public class ObservableInvestDetail : ObservableRecipient
         set => SetProperty(ref _amount, Volume * Price);
     }
 
-    public InvestDetail ToInvestDetail()
-    {
-        return this.Adapt<InvestDetail>();
-    }
+    public IRelayCommand<object> ConfirmCommand { get; set; }
+    public IRelayCommand<object> DeleteCommand { get; set; }
+
 }

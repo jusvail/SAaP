@@ -1,4 +1,5 @@
 ﻿using SAaP.Core.Models.DB;
+using SAaP.Models;
 
 namespace SAaP.Contracts.Services;
 
@@ -17,4 +18,12 @@ public interface IDbTransferService
     Task DeleteFavoriteCodes(FavoriteData favorite);
 
     Task AddToFavorite(string codeName, string groupName);
+
+    Task SaveToInvestSummaryDataToDb(ObservableInvestSummaryDetail data);
+
+    Task SaveToInvestDataToDb(ObservableInvestSummaryDetail summaryDetail, IEnumerable<ObservableInvestDetail> investDetail);
+
+    IAsyncEnumerable<InvestSummaryData> SelectInvestSummaryData();
+
+    IAsyncEnumerable<InvestData> SelectInvestDataByIndex(int index);
 }

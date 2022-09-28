@@ -1,102 +1,352 @@
 ﻿using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapster;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using SAaP.Contracts.Services;
 using SAaP.Core.Models.DB;
+using SAaP.Core.Services;
 using SAaP.Models;
 
 namespace SAaP.ViewModels;
 
 public class InvestLogViewModel : ObservableRecipient
 {
-#if DEBUG
-    private void Debug()
-    {
+    private int _buySelectedIndex;
+    private int _sellSelectedIndex;
 
-        BuyList.Add(new ObservableInvestDetail
-        {
-            Price = 56.0,
-            Volume = 2000,
-            TradeDate = DateTime.Now,
-            TradeType = TradeType.Buy,
-            TradeTime = "10:31",
-            Editable = true
-        });
+    private readonly IDbTransferService _dbTransferService;
+    private readonly IFetchStockDataService _fetchStockDataService;
 
-        BuyList.Add(new ObservableInvestDetail
-        {
-            Price = 51.0,
-            Volume = 122000,
-            TradeDate = new DateTime(2021, 12, 2),
-            TradeType = TradeType.Buy,
-            TradeTime = "14:31",
-            Editable = false
-        });
+    private string _notifyContent;
+    private string _newSummaryRecordCodeName;
+    private string _newSummaryRecordCompanyName;
 
-        SellList.Add(new ObservableInvestDetail
-        {
-            Price = 12.0,
-            Volume = 2400,
-            TradeType = TradeType.Sell,
-            TradeDate = new DateTime(2008, 12, 2),
-            TradeTime = "9:31",
-            Editable = false
-        });
+    public ObservableCollection<ObservableInvestSummaryDetail> InvestSummary { get; set; } = new();
 
-        SellList.Add(new ObservableInvestDetail
-        {
-            Price = 56.0,
-            TradeType = TradeType.Sell,
-            Volume = 2000,
-            TradeDate = DateTime.Now,
-            TradeTime = "10:31"
-        });
+    public ObservableCollection<ObservableInvestDetail> BuyList { get; set; } = new();
 
-        SellList.Add(new ObservableInvestDetail
-        {
-            Price = 56.0,
-            TradeType = TradeType.Sell,
-            Volume = 2000,
-            TradeDate = DateTime.Now,
-            TradeTime = "10:31"
-        });
-    }
-#endif
+    public ObservableCollection<ObservableInvestDetail> SellList { get; set; } = new();
 
-    public ObservableCollection<ObservableInvestDetail> TradeList { get; } = new();
-
-    public ObservableCollection<ObservableInvestDetail> BuyList { get; } = new();
-
-    public ObservableCollection<ObservableInvestDetail> SellList { get; } = new();
-
-    public ObservableCollection<InvestSummaryData> InvestSummary { get; set; } = new();
-
-    public InvestSummaryData CurrentSummaryData { get; set; }
+    public ObservableInvestSummaryDetail InvestSummaryDetail { get; set; } = new();
 
     public IRelayCommand<object> AddNewTradeRecordCommand { get; set; }
 
-    public InvestLogViewModel()
+    public TradeType ClickedRowsOriginalTradeType { get; set; }
+
+    public int BuySelectedIndex
     {
-#if DEBUG
-        Debug();
-#endif
+        get => _buySelectedIndex;
+        set => SetProperty(ref _buySelectedIndex, value);
+    }
+
+    public int SellSelectedIndex
+    {
+        get => _sellSelectedIndex;
+        set => SetProperty(ref _sellSelectedIndex, value);
+    }
+
+    public string NotifyContent
+    {
+        get => _notifyContent;
+        set => SetProperty(ref _notifyContent, value);
+    }
+
+    public string NewSummaryRecordCodeName
+    {
+        get => _newSummaryRecordCodeName;
+        set => SetProperty(ref _newSummaryRecordCodeName, value);
+    }
+
+    public string NewSummaryRecordCompanyName
+    {
+        get => _newSummaryRecordCompanyName;
+        set => SetProperty(ref _newSummaryRecordCompanyName, value);
+    }
+
+    public IAsyncRelayCommand SaveRecordCommand { get; }
+    public IRelayCommand NewSummaryRecordCommand { get; }
+
+    public InvestLogViewModel
+        (IDbTransferService dbTransferService, IFetchStockDataService fetchStockDataService)
+    {
+        _dbTransferService = dbTransferService;
+        _fetchStockDataService = fetchStockDataService;
+
+        BuyList.CollectionChanged += OnCollectionChanged;
+        SellList.CollectionChanged += OnCollectionChanged;
 
         AddNewTradeRecordCommand = new RelayCommand<object>(AddNewTradeRecord);
+        SaveRecordCommand = new AsyncRelayCommand(SaveRecordAsync);
+        NewSummaryRecordCommand = new RelayCommand(NewSummaryRecordAsync);
+    }
+
+    private void NewSummaryRecordAsync()
+    {
+        if (string.IsNullOrEmpty(NewSummaryRecordCodeName))
+        {
+            SetNotifyContent("股票代码为必填");
+        }
+
+        ClearCurrentDisplayedSummaryRecord();
+
+        InvestSummaryDetail.CodeName = NewSummaryRecordCodeName;
+        InvestSummaryDetail.CompanyName = string.IsNullOrEmpty(NewSummaryRecordCompanyName) ? "Unknown" : NewSummaryRecordCompanyName;
+    }
+
+    public void ClearCurrentDisplayedSummaryRecord()
+    {
+        InvestSummaryDetail.Clear();
+        BuyList.Clear();
+        SellList.Clear();
+    }
+
+    public async Task InitialInvestSummaryDetail()
+    {
+        var summaryData = _dbTransferService.SelectInvestSummaryData();
+
+        await foreach (var s in summaryData)
+        {
+            InvestSummary.Add(s.Adapt<ObservableInvestSummaryDetail>());
+        }
+
+        if (InvestSummary.Any())
+        {
+            await InitialInvestSummaryDetail(InvestSummary[0]);
+        }
+        else
+        {
+            InvestSummaryDetail.DefaultArchived();
+        }
+    }
+
+    public async Task InitialInvestSummaryDetail(ObservableInvestSummaryDetail detail)
+    {
+        ClearCurrentDisplayedSummaryRecord();
+
+        var newest = detail.TradeIndex;
+
+        InvestSummaryDetail = detail.Adapt<ObservableInvestSummaryDetail>();
+        InvestSummaryDetail.EnsureArchived();
+
+        var investDatas = _dbTransferService.SelectInvestDataByIndex(newest);
+
+        await foreach (var investData in investDatas)
+        {
+            var item = investData.Adapt<ObservableInvestDetail>();
+            item.Editable = !InvestSummaryDetail.IsArchived;
+
+            TradeRecordBindCallBack(item);
+
+            switch (investData.TradeType)
+            {
+                case TradeType.Buy:
+                case TradeType.Unknown:
+                    BuyList.Add(item); break;
+                case TradeType.Sell:
+                    SellList.Add(item); break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        // TODO next 
+    }
+
+    private void SetNotifyContent(string content)
+    {
+        NotifyContent = content;
+    }
+
+    private async Task SaveRecordAsync()
+    {
+        if (string.IsNullOrEmpty(InvestSummaryDetail.CodeName))
+        {
+            SetNotifyContent("股票代码为控！");
+            return;
+        }
+
+        // save to InvestSummaryData table
+        await _dbTransferService.SaveToInvestSummaryDataToDb(InvestSummaryDetail);
+
+        var list = BuyList.ToList();
+        list.AddRange(SellList);
+
+        await _dbTransferService.SaveToInvestDataToDb(InvestSummaryDetail, list);
+
+        if (InvestSummaryDetail.IsArchived)
+        {
+            InvestSummaryDetail.IsArchivedAndSavedToDb = true;
+
+            foreach (var buy in BuyList)
+            {
+                buy.Editable = false;
+            }
+            foreach (var sell in SellList)
+            {
+                sell.Editable = false;
+            }
+        }
+    }
+
+    public bool CheckIfSoldAll()
+    {
+        var buySum = BuyList.Sum(o => o.Volume);
+        var sellSum = SellList.Sum(o => o.Volume);
+
+        return buySum == sellSum;
+    }
+
+    private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+    {
+        var principle = 0.0;
+        var sold = 0.0;
+        var bSum = BuyList.Sum(b => b.Volume);
+        var sSum = SellList.Sum(b => b.Volume);
+
+        if (BuyList.Any())
+        {
+            principle = BuyList.Sum(b => b.Price * b.Volume);
+            double buyVolume = BuyList.Sum(b => b.Volume);
+
+            InvestSummaryDetail.AverageCost = CalculationService.Round3(principle / buyVolume);
+        }
+        if (SellList.Any())
+        {
+            sold = SellList.Sum(b => b.Price * b.Volume);
+            double sellVolume = SellList.Sum(b => b.Volume);
+
+            InvestSummaryDetail.AverageSell = CalculationService.Round3(sold / sellVolume);
+        }
+
+        // sold all
+        if (bSum == sSum)
+        {
+            InvestSummaryDetail.Volume = bSum;
+            InvestSummaryDetail.Profit = CalculationService.Round2(100 * (sold - principle) / principle);
+        }
+        else
+        {
+            InvestSummaryDetail.Volume = 0;
+            InvestSummaryDetail.Profit = 0.0;
+        }
+    }
+
+    private void DeleteTradeRecord(object observableInvestDetail)
+    {
+        if (observableInvestDetail is not ObservableInvestDetail investDetail) return;
+
+        switch (investDetail.TradeType)
+        {
+            case TradeType.Buy:
+            case TradeType.Unknown:
+                BuyList.RemoveAt(BuySelectedIndex); break;
+            case TradeType.Sell:
+                SellList.RemoveAt(SellSelectedIndex); break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(investDetail.TradeType));
+        }
+
+        SortTradeList(BuyList);
+        SortTradeList(SellList);
+    }
+
+    private static void SortTradeList(ICollection<ObservableInvestDetail> list)
+    {
+        var ordered = list.OrderBy(detail => detail.TradeDate).ThenBy(detail => TimeSpan.Parse(detail.TradeTime)).ToList();
+
+        list.Clear();
+
+        foreach (var g in ordered)
+        {
+            list.Add(g);
+        }
+    }
+
+    private void ModifyTradeRecord(object observableInvestDetail)
+    {
+        if (observableInvestDetail is not ObservableInvestDetail investDetail) return;
+
+        var modified = investDetail.Adapt<ObservableInvestDetail>();
+
+        switch (ClickedRowsOriginalTradeType)
+        {
+            case TradeType.Buy:
+            case TradeType.Unknown:
+                BuyList.RemoveAt(BuySelectedIndex); break;
+            case TradeType.Sell:
+                SellList.RemoveAt(SellSelectedIndex); break;
+            default: throw new ArgumentOutOfRangeException(nameof(modified.TradeType));
+        }
+
+        switch (modified.TradeType)
+        {
+            case TradeType.Buy:
+            case TradeType.Unknown:
+                BuyList.Add(modified); break;
+            case TradeType.Sell:
+                SellList.Add(modified); break;
+            default: throw new ArgumentOutOfRangeException(nameof(modified.TradeType));
+        }
+
+        SortTradeList(BuyList);
+        SortTradeList(SellList);
+    }
+
+    private void TradeRecordBindCallBack(ObservableInvestDetail detail)
+    {
+        detail.ConfirmCommand = new RelayCommand<object>(ModifyTradeRecord);
+        detail.DeleteCommand = new RelayCommand<object>(DeleteTradeRecord);
     }
 
     private void AddNewTradeRecord(object observableInvestDetail)
     {
         if (observableInvestDetail is not ObservableInvestDetail investDetail) return;
         {
-            TradeList.Add(investDetail);
+            var hardCoped = investDetail.Adapt<ObservableInvestDetail>();
 
-            if (investDetail.TradeType == TradeType.Sell)
+            TradeRecordBindCallBack(hardCoped);
+
+            if (hardCoped.TradeType == TradeType.Sell)
             {
-                SellList.Add(investDetail);
+                SellList.Add(hardCoped);
+                SortTradeList(SellList);
             }
             else
             {
-                BuyList.Add(investDetail);
+                BuyList.Add(hardCoped);
+                SortTradeList(BuyList);
             }
         }
+    }
+
+    public async void OnNewSummaryRecordCodeNameFocusOut(object sender, RoutedEventArgs e)
+    {
+        var box = sender as TextBox;
+
+        if (box == null) return;
+
+        var codeName = box.Text;
+
+        if (string.IsNullOrEmpty(codeName)) return;
+
+        codeName = codeName.Trim();
+        var loc = -1;
+
+        switch (codeName.Length)
+        {
+            case StockService.StandardCodeLength:
+                loc = await _fetchStockDataService.TryGetBelongByCode(codeName);
+                codeName = loc + codeName;
+                NewSummaryRecordCodeName = codeName;
+                break;
+            case StockService.TdxCodeLength:
+                loc = codeName[0];
+                break;
+        }
+
+        NewSummaryRecordCompanyName = await StockService.FetchCompanyNameByCode(codeName, loc);
     }
 }
