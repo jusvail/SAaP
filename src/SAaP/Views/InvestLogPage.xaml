@@ -142,7 +142,9 @@
             </Grid>
             <Grid Grid.Row="1">
                 <ListView x:Name="TradeHistoryListView"
-                          ItemsSource="{x:Bind ViewModel.InvestSummary}"
+                          DoubleTapped="{x:Bind ViewModel.OnTradeHistoryListViewDoubleTapped}"
+                          SelectedIndex="{x:Bind ViewModel.TradeHistorySelectedIndex,Mode=TwoWay}"
+                          ItemsSource="{x:Bind ViewModel.InvestSummary,Mode=OneWay}"
                           ItemTemplate="{StaticResource TradeHistoryDateTemplate}"/>
             </Grid>
         </Grid>
@@ -381,6 +383,7 @@
                         <Grid Grid.Row="2">
                             <ListView x:Name="SellListView"
                                       DoubleTapped="SellListView_OnDoubleTapped"
+                                      SelectedIndex="{x:Bind ViewModel.SellSelectedIndex,Mode=TwoWay}"
                                       Margin="{StaticResource TradeListRowDefaultThickness}"
                                       ItemsSource="{x:Bind ViewModel.SellList}"
                                       ItemTemplate="{StaticResource TradeListDateTemplate}"/>

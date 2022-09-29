@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:helper="using:SAaP.Helper"
+    xmlns:ui="using:CommunityToolkit.WinUI.UI"
     mc:Ignorable="d">
 
     <Grid.Resources>
@@ -76,20 +77,26 @@
                          Margin="-10 0 0 0" />
         </StackPanel>
         <TextBlock Grid.Row="3" Grid.Column="0" 
-                   Text="成交量："/>
+                   Text="成交价："/>
         <Grid Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left">
-            <TextBox Text="{x:Bind InvestDetail.Volume, Mode=TwoWay}" 
+            <TextBox x:Name="Price" 
+                     Text="{x:Bind InvestDetail.Price, Mode=OneWay}" 
                      GettingFocus="TextBox_OnGettingFocus"
                      LostFocus="TextBox_OnLostFocus"
+                     ui:TextBoxExtensions.ValidationMode="Forced"
+                     ui:TextBoxExtensions.ValidationType="Decimal"
                      IsEnabled="{x:Bind InvestDetail.Editable}"
                      Width="{StaticResource DefaultAlignmentTextBoxWidth}"/>
         </Grid>
         <TextBlock Grid.Row="4" Grid.Column="0" 
-                   Text="成交价："/>
+                   Text="成交量："/>
         <Grid Grid.Row="4" Grid.Column="1" HorizontalAlignment="Left">
-            <TextBox Text="{x:Bind InvestDetail.Price, Mode=TwoWay}"  
+            <TextBox x:Name="Volume"
+                     Text="{x:Bind InvestDetail.Volume, Mode=OneWay}" 
                      GettingFocus="TextBox_OnGettingFocus"
                      LostFocus="TextBox_OnLostFocus"
+                     ui:TextBoxExtensions.ValidationMode="Forced"
+                     ui:TextBoxExtensions.ValidationType="Number"
                      IsEnabled="{x:Bind InvestDetail.Editable}"
                      Width="{StaticResource DefaultAlignmentTextBoxWidth}"/>
         </Grid>
@@ -110,5 +117,5 @@
                     IsEnabled="{x:Bind InvestDetail.Editable}"></Button>
         </StackPanel>
     </Grid>
-   
+
 </Grid>

@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using SAaP.Core.Services;
 
 namespace SAaP.Models;
 
@@ -84,8 +85,7 @@ public class ObservableInvestSummaryDetail : ObservableRecipient
         set => SetProperty(ref _isArchivedAndSavedToDb, value);
     }
 
-    public string FullName => $"{CodeName} {CompanyName}";
-    public string Earning => (Volume * AverageCost * Profit / 100).ToString(CultureInfo.InvariantCulture);
+    public string Earning => (CalculationService.Round2(Volume * AverageCost * Profit / 100)).ToString(CultureInfo.InvariantCulture);
     public string FullTradeDateRange => $"{Start:yyyy/MM/dd} ~ {End:yyyy/MM/dd}";
     public string Status => IsArchived ? "已清仓" : "交易中";
 
@@ -94,9 +94,12 @@ public class ObservableInvestSummaryDetail : ObservableRecipient
         TradeIndex = -1;
         CodeName = string.Empty;
         CompanyName = string.Empty;
+        Start = DateTime.Now.Date;
+        End = DateTime.Now.Date;
         AverageCost = 0.0;
         AverageSell = 0.0;
         Profit = 0.0;
+        Volume = 0;
         IsArchived = false;
         IsArchivedAndSavedToDb = false;
     }

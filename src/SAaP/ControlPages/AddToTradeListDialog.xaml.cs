@@ -34,6 +34,14 @@ public sealed partial class AddToTradeListDialog
 
     private void Confirm_OnClick(object sender, RoutedEventArgs e)
     {
+        if (string.IsNullOrEmpty(Volume.Text) || string.IsNullOrEmpty(Price.Text))
+        {
+            return;
+        }
+
+        InvestDetail.Volume = Convert.ToInt32(Volume.Text);
+        InvestDetail.Price = Convert.ToDouble(Price.Text);
+
         UiInvokeHelper.HideButtonFlyOut(Sender);
         if (ConfirmCommand == null)
         {

@@ -24,6 +24,7 @@ public sealed partial class InvestLogPage
     {
         base.OnNavigatedTo(e);
         await ViewModel.InitialInvestSummaryDetail();
+        await ViewModel.InitialFirstSummaryDetail();
     }
 
     private void InvestLogAppBarButton_OnClick(object sender, RoutedEventArgs e)

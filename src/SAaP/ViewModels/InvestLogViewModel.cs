@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using Mapster;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using SAaP.Contracts.Services;
 using SAaP.Core.Models.DB;
 using SAaP.Core.Services;
@@ -23,6 +24,7 @@ public class InvestLogViewModel : ObservableRecipient
     private string _notifyContent;
     private string _newSummaryRecordCodeName;
     private string _newSummaryRecordCompanyName;
+    private int _tradeHistorySelectedIndex;
 
     public ObservableCollection<ObservableInvestSummaryDetail> InvestSummary { get; set; } = new();
 
@@ -66,6 +68,12 @@ public class InvestLogViewModel : ObservableRecipient
         set => SetProperty(ref _newSummaryRecordCompanyName, value);
     }
 
+    public int TradeHistorySelectedIndex
+    {
+        get => _tradeHistorySelectedIndex;
+        set => SetProperty(ref _tradeHistorySelectedIndex, value);
+    }
+
     public IAsyncRelayCommand SaveRecordCommand { get; }
     public IRelayCommand NewSummaryRecordCommand { get; }
 
@@ -105,13 +113,18 @@ public class InvestLogViewModel : ObservableRecipient
 
     public async Task InitialInvestSummaryDetail()
     {
+        InvestSummary.Clear();
+
         var summaryData = _dbTransferService.SelectInvestSummaryData();
 
         await foreach (var s in summaryData)
         {
             InvestSummary.Add(s.Adapt<ObservableInvestSummaryDetail>());
         }
+    }
 
+    public async Task InitialFirstSummaryDetail()
+    {
         if (InvestSummary.Any())
         {
             await InitialInvestSummaryDetail(InvestSummary[0]);
@@ -128,15 +141,17 @@ public class InvestLogViewModel : ObservableRecipient
 
         var newest = detail.TradeIndex;
 
-        InvestSummaryDetail = detail.Adapt<ObservableInvestSummaryDetail>();
+        detail.Adapt(InvestSummaryDetail);
         InvestSummaryDetail.EnsureArchived();
 
         var investDatas = _dbTransferService.SelectInvestDataByIndex(newest);
 
+        var edi = !InvestSummaryDetail.IsArchived;
+
         await foreach (var investData in investDatas)
         {
             var item = investData.Adapt<ObservableInvestDetail>();
-            item.Editable = !InvestSummaryDetail.IsArchived;
+            item.Editable = edi;
 
             TradeRecordBindCallBack(item);
 
@@ -189,10 +204,14 @@ public class InvestLogViewModel : ObservableRecipient
                 sell.Editable = false;
             }
         }
+
+        await InitialInvestSummaryDetail();
     }
 
     public bool CheckIfSoldAll()
     {
+        if (!BuyList.Any() && !SellList.Any()) return false;
+
         var buySum = BuyList.Sum(o => o.Volume);
         var sellSum = SellList.Sum(o => o.Volume);
 
@@ -211,6 +230,7 @@ public class InvestLogViewModel : ObservableRecipient
             principle = BuyList.Sum(b => b.Price * b.Volume);
             double buyVolume = BuyList.Sum(b => b.Volume);
 
+            InvestSummaryDetail.Start = BuyList.Min(b => b.TradeDate);
             InvestSummaryDetail.AverageCost = CalculationService.Round3(principle / buyVolume);
         }
         if (SellList.Any())
@@ -218,6 +238,7 @@ public class InvestLogViewModel : ObservableRecipient
             sold = SellList.Sum(b => b.Price * b.Volume);
             double sellVolume = SellList.Sum(b => b.Volume);
 
+            InvestSummaryDetail.End = SellList.Max(b => b.TradeDate);
             InvestSummaryDetail.AverageSell = CalculationService.Round3(sold / sellVolume);
         }
 
@@ -229,8 +250,15 @@ public class InvestLogViewModel : ObservableRecipient
         }
         else
         {
-            InvestSummaryDetail.Volume = 0;
-            InvestSummaryDetail.Profit = 0.0;
+            if (!InvestSummaryDetail.IsArchivedAndSavedToDb)
+            {
+                InvestSummaryDetail.IsArchived = false;
+            }
+
+            InvestSummaryDetail.Volume = sSum;
+
+            var bc = sSum * principle / bSum;
+            InvestSummaryDetail.Profit = CalculationService.Round2(100 * (sold - bc) / bc);
         }
     }
 
@@ -348,5 +376,17 @@ public class InvestLogViewModel : ObservableRecipient
         }
 
         NewSummaryRecordCompanyName = await StockService.FetchCompanyNameByCode(codeName, loc);
+    }
+
+    public async Task OnTradeHistoryListViewDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+    {
+        var list = sender as ListView;
+        if (list == null) return;
+
+        if (TradeHistorySelectedIndex < 0) return;
+
+        var investSummary = InvestSummary[TradeHistorySelectedIndex];
+
+        await InitialInvestSummaryDetail(investSummary);
     }
 }
