@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using LinqToDB;
+﻿using LinqToDB;
 using SAaP.Core.Models.DB;
 
 namespace SAaP.Core.DataModels;
@@ -21,6 +20,8 @@ public class DbSaap : LinqToDB.Data.DataConnection
     public ITable<FavoriteData> Favorite => this.GetTable<FavoriteData>();
 
     public ITable<InvestData> InvestData => this.GetTable<InvestData>();
+
+    public ITable<RemindMessageData> RemindMessageData => this.GetTable<RemindMessageData>();
 
     public ITable<InvestSummaryData> InvestSummaryData => this.GetTable<InvestSummaryData>();
 

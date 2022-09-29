@@ -7,6 +7,7 @@
     xmlns:tlh="using:SAaP.ControlPages"
     xmlns:models="using:SAaP.Models"
     xmlns:helper="using:SAaP.Helper"
+    xmlns:db="using:SAaP.Core.Models.DB"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -62,9 +63,11 @@
                                        Text="{x:Bind CompanyName,Mode=OneWay}"/>
                             </Grid>
                             <Grid Grid.Row="0" Grid.Column="1" >
-                                <TextBlock Text="B："/></Grid>
+                                <TextBlock Text="B："/>
+                            </Grid>
                             <Grid Grid.Row="1" Grid.Column="1" >
-                                <TextBlock Text="S："/></Grid>
+                                <TextBlock Text="S："/>
+                            </Grid>
                             <Grid Grid.Row="0" Grid.Column="2" HorizontalAlignment="Left">
                                 <TextBlock Text="{x:Bind AverageCost,Mode=OneWay}"/>
                             </Grid>
@@ -72,43 +75,43 @@
                                 <TextBlock Text="{x:Bind AverageSell,Mode=OneWay}"/>
                             </Grid>
                         </Grid>
-                </Grid>
-                <Grid Grid.Row="2">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Grid Grid.Column="0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        <Grid Grid.Row="0">
-                            <StackPanel>
-                                <TextBlock Text="盈亏："/>
-                                <TextBlock Foreground="{x:Bind Profit, Mode=OneWay, Converter={StaticResource DefaultProfitColorConverter}}"
+                    </Grid>
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid Grid.Column="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Grid Grid.Row="0">
+                                <StackPanel>
+                                    <TextBlock Text="盈亏："/>
+                                    <TextBlock Foreground="{x:Bind Profit, Mode=OneWay, Converter={StaticResource DefaultProfitColorConverter}}"
                                                Text="{x:Bind Profit,Mode=OneWay, Converter={StaticResource AddPercentConverter}}"/>
-                            </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                            <Grid Grid.Row="1">
+                                <StackPanel>
+                                    <TextBlock Text="获利："/>
+                                    <TextBlock Text="{x:Bind Earning,Mode=OneWay}"/>
+                                </StackPanel>
+                            </Grid>
                         </Grid>
-                        <Grid Grid.Row="1">
+                        <Grid Grid.Column="1">
+                            <Rectangle Margin="10 5" Fill="Black" Width="1"></Rectangle>
+                        </Grid>
+                        <Grid Grid.Column="2">
                             <StackPanel>
-                                <TextBlock Text="获利："/>
-                                <TextBlock Text="{x:Bind Earning,Mode=OneWay}"/>
+                                <TextBlock Text="{x:Bind Status,Mode=OneWay}"/>
                             </StackPanel>
                         </Grid>
-                    </Grid>
-                    <Grid Grid.Column="1">
-                        <Rectangle Margin="10 5" Fill="Black" Width="1"></Rectangle>
-                    </Grid>
-                    <Grid Grid.Column="2">
-                        <StackPanel>
-                            <TextBlock Text="{x:Bind Status,Mode=OneWay}"/>
-                        </StackPanel>
                     </Grid>
                 </Grid>
-            </Grid>
-            <Rectangle Stretch="Fill" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                <Rectangle Stretch="Fill" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                            Margin="-8 5 -5 5"
                            RadiusX="5"
                            RadiusY="5"
@@ -116,10 +119,40 @@
                            Fill="{x:Bind Profit, Mode=OneWay, Converter={StaticResource DefaultProfitColorConverter}}" />
             </Grid>
         </DataTemplate>
+        <DataTemplate x:Key="ReminderDataTemplate" x:DataType="db:RemindMessageData">
+            <Grid Margin="{StaticResource DefaultGridThickness}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0">
+                        <TextBlock Text="{x:Bind ModifiedDateTime,Mode=OneWay,Converter={StaticResource DateTimeToRegularFormatConverter}}"
+                                   Margin="{StaticResource SmallHeaderTextBoxThickness}"
+                                   FontSize="{StaticResource DefaultHeaderFontSize}"
+                                   FontStyle="Italic" >
+                        </TextBlock>
+                    </Grid>
+                    <Grid Grid.Row="1">
+                        <TextBlock TextWrapping="Wrap" Text="{x:Bind Message,Mode=OneWay}"
+                                   FontSize="{StaticResource DefaultHeaderFontSize}"
+                                   Margin="{StaticResource MainContentTextBoxThickness}"></TextBlock>
+                    </Grid>
+                </Grid>
+                <Rectangle Stretch="Fill" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                           Margin="-12 1.5 -8 1"
+                           RadiusX="5"
+                           RadiusY="5"
+                           Opacity="0.25"
+                           Fill="{x:Bind Mode=OneWay, Converter={StaticResource RandomizedFillColorConverter}}" />
+            </Grid>
+        </DataTemplate>
         <helper:AddPercentConverter x:Key="AddPercentConverter" />
         <helper:DefaultProfitColorConverter x:Key="DefaultProfitColorConverter" />
         <helper:ReverseBooleanConverter x:Key="ReverseBooleanConverter" />
         <helper:CodeNameFormatConverter x:Key="CodeNameFormatConverter" />
+        <helper:RandomizedFillColorConverter x:Key="RandomizedFillColorConverter" />
+        <helper:DateTimeToRegularFormatConverter x:Key="DateTimeToRegularFormatConverter" />
     </Page.Resources>
 
     <Grid Padding="5">
@@ -137,8 +170,8 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid>
-                <ComboBox Margin="5" 
-                          IsEditable="False" />
+                <!-- <ComboBox Margin="5"  -->
+                <!--           IsEditable="False" /> -->
             </Grid>
             <Grid Grid.Row="1">
                 <ListView x:Name="TradeHistoryListView"
@@ -427,7 +460,9 @@
                                                  TextWrapping="Wrap" 
                                                  AcceptsReturn="True"
                                                  MinHeight="150"
-                                                 MinWidth="300"
+                                                 MinWidth="250"
+                                                 Text="{x:Bind ViewModel.ReminderContent,Mode=TwoWay}"
+                                                 KeyUp="ReminderBox_OnKeyDown"
                                                  AllowFocusOnInteraction="True"/>
                                     </Grid>
                                 </Flyout>
@@ -448,7 +483,10 @@
                     </StackPanel>
                 </Grid>
                 <Grid Grid.Row="1">
-                    <ListView />
+                    <ListView SelectedIndex="{x:Bind ViewModel.ReminderSelectedIndex,Mode=TwoWay}"
+                              DoubleTapped="Reminder_OnDoubleTapped"
+                              ItemsSource="{x:Bind ViewModel.RemindMessages}"
+                              ItemTemplate="{StaticResource ReminderDataTemplate}"/>
                 </Grid>
             </Grid>
             <Grid Grid.Row="1">

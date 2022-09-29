@@ -134,7 +134,7 @@ public class AnalyzeDetailViewModel : ObservableRecipient
             if (!originalData.Any()) return;
 
             names.Add(await DbService.SelectCompanyNameByCode(codeName));
-            days.Add(originalData.Select(o => o.Day).ToList());
+            days.Add(originalData.Select(o => o.Day).Reverse().ToList());
 
             var bot = new AnalyzeBot(originalData);
             var data = ComparerModeCheck switch
