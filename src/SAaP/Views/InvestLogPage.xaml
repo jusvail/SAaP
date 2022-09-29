@@ -1,0 +1,460 @@
+﻿<Page
+    x:Class="SAaP.Views.InvestLogPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tlh="using:SAaP.ControlPages"
+    xmlns:models="using:SAaP.Models"
+    xmlns:helper="using:SAaP.Helper"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <DataTemplate x:Key="TradeListDateTemplate" x:DataType="models:ObservableInvestDetail">
+            <tlh:TradeListRow InvestDetail="{x:Bind Mode=OneWay}"/>
+        </DataTemplate>
+        <DataTemplate x:Key="TradeHistoryDateTemplate" x:DataType="models:ObservableInvestSummaryDetail">
+            <Grid>
+                <Grid.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="HorizontalAlignment" Value="Left"></Setter>
+                        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+                        <Setter Property="Margin" Value="{StaticResource DefaultTextBoxThickness}"></Setter>
+                        <Setter Property="FontSize" Value="{StaticResource DefaultHeaderFontSize}"></Setter>
+                    </Style>
+                    <Style TargetType="StackPanel">
+                        <Setter Property="Orientation" Value="Horizontal"></Setter>
+                    </Style>
+                </Grid.Resources>
+                <Grid Margin="{StaticResource DefaultGridThickness}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="2*"/>
+                        <RowDefinition Height="2*"/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0">
+                        <TextBlock Text="{x:Bind FullTradeDateRange,Mode=OneWay}"/>
+                    </Grid>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" MinWidth="25"/>
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid Grid.Column="0">
+                            <TextBlock FontWeight="Bold" Text="{x:Bind TradeIndex,Mode=OneWay}"/>
+                        </Grid>
+                        <Grid Grid.Column="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid Grid.Row="0" Grid.Column="0">
+                                <TextBlock FontStyle="Italic" 
+                                           Text="{x:Bind CodeName,Mode=OneWay,Converter={StaticResource CodeNameFormatConverter}}"/>
+                            </Grid>
+                            <Grid Grid.Row="1" Grid.Column="0">
+                                <TextBlock FontWeight="Bold"
+                                       Text="{x:Bind CompanyName,Mode=OneWay}"/>
+                            </Grid>
+                            <Grid Grid.Row="0" Grid.Column="1" >
+                                <TextBlock Text="B："/></Grid>
+                            <Grid Grid.Row="1" Grid.Column="1" >
+                                <TextBlock Text="S："/></Grid>
+                            <Grid Grid.Row="0" Grid.Column="2" HorizontalAlignment="Left">
+                                <TextBlock Text="{x:Bind AverageCost,Mode=OneWay}"/>
+                            </Grid>
+                            <Grid Grid.Row="1" Grid.Column="2" HorizontalAlignment="Left">
+                                <TextBlock Text="{x:Bind AverageSell,Mode=OneWay}"/>
+                            </Grid>
+                        </Grid>
+                </Grid>
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <StackPanel>
+                                <TextBlock Text="盈亏："/>
+                                <TextBlock Foreground="{x:Bind Profit, Mode=OneWay, Converter={StaticResource DefaultProfitColorConverter}}"
+                                               Text="{x:Bind Profit,Mode=OneWay, Converter={StaticResource AddPercentConverter}}"/>
+                            </StackPanel>
+                        </Grid>
+                        <Grid Grid.Row="1">
+                            <StackPanel>
+                                <TextBlock Text="获利："/>
+                                <TextBlock Text="{x:Bind Earning,Mode=OneWay}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                    <Grid Grid.Column="1">
+                        <Rectangle Margin="10 5" Fill="Black" Width="1"></Rectangle>
+                    </Grid>
+                    <Grid Grid.Column="2">
+                        <StackPanel>
+                            <TextBlock Text="{x:Bind Status,Mode=OneWay}"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Grid>
+            <Rectangle Stretch="Fill" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                           Margin="-8 5 -5 5"
+                           RadiusX="5"
+                           RadiusY="5"
+                           Opacity="0.1"
+                           Fill="{x:Bind Profit, Mode=OneWay, Converter={StaticResource DefaultProfitColorConverter}}" />
+            </Grid>
+        </DataTemplate>
+        <helper:AddPercentConverter x:Key="AddPercentConverter" />
+        <helper:DefaultProfitColorConverter x:Key="DefaultProfitColorConverter" />
+        <helper:ReverseBooleanConverter x:Key="ReverseBooleanConverter" />
+        <helper:CodeNameFormatConverter x:Key="CodeNameFormatConverter" />
+    </Page.Resources>
+
+    <Grid Padding="5">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition MaxWidth="200"/>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition MaxWidth="200"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Invest history List -->
+        <Grid Style="{StaticResource DefaultGridWithBorderStyle}"
+              Background="{ThemeResource LayerFillColorDefaultBrush}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid>
+                <ComboBox Margin="5" 
+                          IsEditable="False" />
+            </Grid>
+            <Grid Grid.Row="1">
+                <ListView x:Name="TradeHistoryListView"
+                          DoubleTapped="{x:Bind ViewModel.OnTradeHistoryListViewDoubleTapped}"
+                          SelectedIndex="{x:Bind ViewModel.TradeHistorySelectedIndex,Mode=TwoWay}"
+                          ItemsSource="{x:Bind ViewModel.InvestSummary,Mode=OneWay}"
+                          ItemTemplate="{StaticResource TradeHistoryDateTemplate}"/>
+            </Grid>
+        </Grid>
+
+        <!-- Main Logging area -->
+        <Grid Grid.Column="1" Margin="{StaticResource SmallLeftRightMargin}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" MinHeight="240"/>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Main Top -->
+            <StackPanel>
+                <Button Content="新建一笔建仓-清仓记录"
+                        x:Name="NewSummaryRecordButton"
+                        Style="{StaticResource AccentButtonStyle}">
+                    <Button.Flyout>
+                        <Flyout>
+                            <Grid MinWidth="200">
+                                <Grid.Resources>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+                                    </Style>
+                                    <Style TargetType="Grid">
+                                        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+                                        <Setter Property="Margin" Value="{StaticResource XXSmallLeftTopRightBottomMargin}"></Setter>
+                                    </Style>
+                                </Grid.Resources>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="2*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" 
+                                           Grid.Column="0" 
+                                           Text="股票代码："/>
+                                <Grid Grid.Row="0"  
+                                      Grid.Column="1">
+                                    <TextBox LostFocus="{x:Bind ViewModel.OnNewSummaryRecordCodeNameFocusOut}"
+                                             Text="{x:Bind ViewModel.NewSummaryRecordCodeName,Mode=TwoWay}"/>
+                                </Grid>
+                                <TextBlock Grid.Row="1" 
+                                           Grid.Column="0" 
+                                           Text="股票名："/>
+                                <Grid Grid.Row="1" 
+                                      Grid.Column="1">
+                                    <TextBox Text="{x:Bind ViewModel.NewSummaryRecordCompanyName,Mode=TwoWay}"/>
+                                </Grid>
+                                <StackPanel Grid.Row="2" 
+                                            Grid.Column="1" 
+                                            Orientation="Horizontal"
+                                            HorizontalAlignment="Right">
+                                    <Button Content="确认" 
+                                            Height="30"
+                                            Click="NewSummaryRecordButtonConfirm_OnClick"
+                                            Command="{x:Bind ViewModel.NewSummaryRecordCommand}"
+                                            Margin="0 5 0 -10"
+                                            Style="{StaticResource AccentButtonStyle}"></Button>
+                                </StackPanel>
+                            </Grid>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+            </StackPanel>
+
+            <!-- Local Logging area -->
+            <Grid Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+                    </Style>
+                    <Style TargetType="StackPanel">
+                        <Setter Property="Orientation" Value="Horizontal"></Setter>
+                    </Style>
+                </Grid.Resources>
+                <Grid Margin="{StaticResource ArrangeLeftGridMargin}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid Margin="{StaticResource DefaultGridThickness}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="80"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid Style="{StaticResource GdStyle}">
+                            <TextBlock Text="股票代码："/>
+                        </Grid>
+                        <Grid Grid.Row="0" Grid.Column="1" Style="{StaticResource GdStyle}">
+                            <TextBlock Text="{x:Bind ViewModel.InvestSummaryDetail.CodeName, Mode=OneWay,Converter={StaticResource CodeNameFormatConverter}}"/>
+                        </Grid>
+                        <Grid Grid.Row="1" Grid.Column="0" Style="{StaticResource GdStyle}">
+                            <TextBlock Text="股票名："/>
+                        </Grid>
+                        <Grid Grid.Row="1" Grid.Column="1" Style="{StaticResource GdStyle}">
+                            <TextBlock Text="{x:Bind ViewModel.InvestSummaryDetail.CompanyName, Mode=OneWay}"/>
+                        </Grid>
+                    </Grid>
+                    <Grid Grid.Column="1" 
+                          Margin="{StaticResource DefaultGridThickness}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="80"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid Style="{StaticResource GdStyle}">
+                            <TextBlock Text="平均成本："/>
+                        </Grid>
+                        <Grid Grid.Row="0" Grid.Column="1" Style="{StaticResource GdStyle}">
+                            <TextBlock Text="{x:Bind ViewModel.InvestSummaryDetail.AverageCost, Mode=OneWay}"/>
+                        </Grid>
+                        <Grid Grid.Row="1" Grid.Column="0" Style="{StaticResource GdStyle}">
+                            <TextBlock Text="清仓盈利："/>
+                        </Grid>
+                        <Grid Grid.Row="1" Grid.Column="1" Style="{StaticResource GdStyle}">
+                            <TextBlock Text="{x:Bind ViewModel.InvestSummaryDetail.Profit, Mode=OneWay, Converter={StaticResource AddPercentConverter}}"
+                                       Foreground="{x:Bind ViewModel.InvestSummaryDetail.Profit, Mode=OneWay, Converter={StaticResource DefaultProfitColorConverter}}"/>
+                        </Grid>
+                    </Grid>
+                    <Grid Grid.Column="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Grid>
+                            <TextBlock Text="{x:Bind ViewModel.NotifyContent,Mode=OneWay}"
+                                       Margin="{StaticResource DefaultButtonMargin}"></TextBlock>
+                        </Grid>
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid Grid.Column="1">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
+                                    <Grid>
+                                        <Button Content="记录一笔交易" 
+                                            x:Name="RecordNew"
+                                            IsEnabled="{x:Bind ViewModel.InvestSummaryDetail.IsArchivedAndSavedToDb,
+                                            Mode=OneWay,Converter={StaticResource ReverseBooleanConverter}}"
+                                            Margin="{StaticResource DefaultButtonMargin}">
+                                            <Button.Flyout>
+                                                <Flyout>
+                                                    <tlh:AddToTradeListDialog ConfirmCommand="{x:Bind ViewModel.AddNewTradeRecordCommand}" 
+                                                                          Sender="{x:Bind RecordNew}"/>
+                                                </Flyout>
+                                            </Button.Flyout>
+                                        </Button>
+                                    </Grid>
+                                    <Grid>
+                                        <Button Content="保存记录"
+                                            x:Name="SaveRecord"
+                                            Command="{x:Bind ViewModel.SaveRecordCommand}"
+                                            IsEnabled="{x:Bind ViewModel.InvestSummaryDetail.IsArchivedAndSavedToDb,
+                                                        Mode=OneWay,Converter={StaticResource ReverseBooleanConverter}}"
+                                            Margin="{StaticResource DefaultButtonMargin}"
+                                            Style="{StaticResource AccentButtonStyle}"></Button>
+                                    </Grid>
+                                </StackPanel>
+                            </Grid>
+                            <StackPanel Grid.Row="1" Grid.Column="2" VerticalAlignment="Bottom">
+                                <ToggleSwitch OffContent="交易状态：交易中" OnContent="交易状态：已清仓" 
+                                          x:Name="SoldAllToggleSwitch"
+                                          Toggled="SoldAllToggleSwitch_OnToggled"
+                                          IsEnabled="{x:Bind ViewModel.InvestSummaryDetail.IsArchivedAndSavedToDb,
+                                          Mode=OneWay,Converter={StaticResource ReverseBooleanConverter}}"
+                                          IsOn="{x:Bind ViewModel.InvestSummaryDetail.IsArchived, Mode=TwoWay}" />
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Grid>
+
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left: Buy List -->
+                    <Grid Grid.Column="0" VerticalAlignment="Top">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0" 
+                              Style="{StaticResource GdStyle}"
+                              Margin="{StaticResource TopOnlyMargin}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition Height="auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="买入列表" />
+                        </Grid>
+                        <tlh:TradeListHeader Grid.Row="1" Margin="{StaticResource BottomOnlyMargin}"/>
+                        <ListView Grid.Row="2" x:Name="BuyListView"
+                                  DoubleTapped="BuyListView_OnDoubleTapped"
+                                  SelectedIndex="{x:Bind ViewModel.BuySelectedIndex,Mode=TwoWay}"
+                                  Margin="{StaticResource TradeListRowDefaultThickness}"
+                                  ItemsSource="{x:Bind ViewModel.BuyList}"
+                                  ItemTemplate="{StaticResource TradeListDateTemplate}">
+                        </ListView>
+                    </Grid>
+
+                    <!-- Right: Sale List -->
+                    <Grid Grid.Column="1" VerticalAlignment="Top">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid  Grid.Row="0" 
+                               Style="{StaticResource GdStyle}"
+                               Margin="{StaticResource TopOnlyMargin}">
+                            <TextBlock Text="卖出列表" />
+                        </Grid>
+                        <tlh:TradeListHeader Grid.Row="1" Margin="{StaticResource BottomOnlyMargin}"/>
+                        <Grid Grid.Row="2">
+                            <ListView x:Name="SellListView"
+                                      DoubleTapped="SellListView_OnDoubleTapped"
+                                      SelectedIndex="{x:Bind ViewModel.SellSelectedIndex,Mode=TwoWay}"
+                                      Margin="{StaticResource TradeListRowDefaultThickness}"
+                                      ItemsSource="{x:Bind ViewModel.SellList}"
+                                      ItemTemplate="{StaticResource TradeListDateTemplate}"/>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Grid>
+
+        </Grid>
+
+        <!-- Note/Reminder area -->
+        <Grid Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Note/Reminder ListView -->
+            <Grid CornerRadius="{StaticResource DefaultThickness}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="42"/>
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid>
+
+                    </Grid>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <StackPanel.Resources>
+                        </StackPanel.Resources>
+                        <Button x:Name="NewLogHiddenButton" Visibility="Collapsed">
+                            <Button.Flyout>
+                                <Flyout>
+                                    <Grid Margin="{StaticResource DefaultButtonFlyOutMargin}">
+                                        <TextBox AutomationProperties.Name="multi-line TextBox"
+                                                 TextWrapping="Wrap" 
+                                                 AcceptsReturn="True"
+                                                 MinHeight="150"
+                                                 MinWidth="300"
+                                                 AllowFocusOnInteraction="True"/>
+                                    </Grid>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        <AppBarButton x:Name="InvestLogAppBarButton"
+                                      Width="42"
+                                      Margin="0 0 3 0"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      Click="InvestLogAppBarButton_OnClick">
+                            <AppBarButton.Icon>
+                                <FontIcon Margin="0 -5 0 0" 
+                                      FontFamily="{StaticResource SymbolThemeFontFamily}" 
+                                      Glyph="&#xE109;"/>
+                            </AppBarButton.Icon>
+                        </AppBarButton>
+                    </StackPanel>
+                </Grid>
+                <Grid Grid.Row="1">
+                    <ListView />
+                </Grid>
+            </Grid>
+            <Grid Grid.Row="1">
+                <StackPanel></StackPanel>
+                <StackPanel></StackPanel>
+            </Grid>
+        </Grid>
+    </Grid>
+</Page>

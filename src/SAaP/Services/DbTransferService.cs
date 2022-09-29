@@ -4,6 +4,8 @@ using SAaP.Core.Services;
 using Windows.Storage;
 using SAaP.Core.Models.DB;
 using LinqToDB;
+using Mapster;
+using SAaP.Models;
 
 // ReSharper disable PossibleMultipleEnumeration
 
@@ -292,4 +294,87 @@ public class DbTransferService : IDbTransferService
         await DbService.AddToFavorite(codeMain, belong, groupName);
     }
 
+    public async Task SaveToInvestSummaryDataToDb(ObservableInvestSummaryDetail data)
+    {
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+
+        var summaryData = data.Adapt<InvestSummaryData>();
+
+        try
+        {
+            if (data.TradeIndex > 0)
+            {
+                await db.UpdateAsync(summaryData);
+            }
+            else
+            {
+                await db.InsertAsync(summaryData);
+                var newIndex = await db.InvestSummaryData.MaxAsync(s => s.TradeIndex);
+                data.TradeIndex = newIndex;
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    public async Task SaveToInvestDataToDb(ObservableInvestSummaryDetail summaryDetail, IEnumerable<ObservableInvestDetail> investDetail)
+    {
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+
+        var index = summaryDetail.TradeIndex;
+
+        await db.BeginTransactionAsync();
+
+        var readyToDelete = db.InvestData.Where(i => i.TradeIndex == index);
+
+        foreach (var del in readyToDelete)
+        {
+            await db.DeleteAsync(del);
+        }
+
+        foreach (var data in investDetail)
+        {
+            var detail = data.Adapt<InvestData>();
+            detail.TradeIndex = index;
+            await db.InsertAsync(detail);
+        }
+
+        await db.CommitTransactionAsync();
+    }
+
+    public async IAsyncEnumerable<InvestSummaryData> SelectInvestSummaryData()
+    {
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+
+        var investSummaryDatas = 
+            db.InvestSummaryData
+                .Select(i => i)
+                .OrderByDescending(o => o.TradeIndex)
+                .ToList();
+
+        foreach (var summaryData in investSummaryDatas)
+        {
+            yield return summaryData;
+        }
+    }
+
+    public async IAsyncEnumerable<InvestData> SelectInvestDataByIndex(int index)
+    {
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+
+        var investDatas =
+            db.InvestData
+            .Where(i => i.TradeIndex == index)
+            .OrderBy(i => i.TradeDate)
+            .ThenBy(i => i.TradeTime)
+            .ToList();
+
+        foreach (var investData in investDatas)
+        {
+            yield return investData;
+        }
+    }
 }

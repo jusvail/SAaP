@@ -50,6 +50,8 @@ public class MainViewModel : ObservableRecipient
 
     public IRelayCommand MenuSettingsCommand { get; }
 
+    public IRelayCommand NavigateToInvestLogCommand { get; }
+
     public IRelayCommand<object> AddToQueryingCommand { get; }
 
     public IAsyncRelayCommand AnalysisPressedCommand { get; }
@@ -63,8 +65,7 @@ public class MainViewModel : ObservableRecipient
     public IAsyncRelayCommand<object> DeleteSelectedFavoriteCodesCommand { get; }
 
     public IAsyncRelayCommand<object> RedirectToAnalyzeDetailCommand { get; }
-
-
+    
     public int SelectedFavGroupIndex
     {
         get => _selectedFavGroupIndex;
@@ -123,6 +124,12 @@ public class MainViewModel : ObservableRecipient
         MenuSettingsCommand = new RelayCommand(OnMenuSettingsPressed);
         RedirectToAnalyzeDetailCommand = new AsyncRelayCommand<object>(RedirectToAnalyzeDetail);
         QueryHot100CodesCommand = new AsyncRelayCommand(QueryHot100Codes);
+        NavigateToInvestLogCommand = new RelayCommand(NavigateToInvestLogPage);
+    }
+
+    private void NavigateToInvestLogPage()
+    {
+        _windowManageService.CreateOrBackToWindow<InvestLogPage>(typeof(InvestLogViewModel).FullName!, null!, null!);
     }
 
     private async Task QueryHot100Codes()
@@ -154,12 +161,12 @@ public class MainViewModel : ObservableRecipient
 
         var title = "AnalyzeDetailPageTitle".GetLocalized() + $": [{codeName} {companyName}]";
 
-        _windowManageService.CreateWindowAndNavigateTo<AnalyzeDetailPage>(typeof(AnalyzeDetailViewModel).FullName!, title, codeName);
+        _windowManageService.CreateOrBackToWindow<AnalyzeDetailPage>(typeof(AnalyzeDetailViewModel).FullName!, title, codeName);
     }
 
     private void OnMenuSettingsPressed()
     {
-        _windowManageService.CreateWindowAndNavigateTo<SettingsPage>(typeof(SettingsViewModel).FullName!, null!, null!);
+        _windowManageService.CreateOrBackToWindow<SettingsPage>(typeof(SettingsViewModel).FullName!, null!, null!);
     }
 
     public void AddToQuerying(object listView)

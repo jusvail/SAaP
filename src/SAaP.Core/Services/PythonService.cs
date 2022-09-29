@@ -42,7 +42,7 @@ public static class PythonService
             RedirectStandardOutput = true,
             RedirectStandardInput = true,
             RedirectStandardError = true,
-            CreateNoWindow = false
+            CreateNoWindow = true
         };
 
         // new task

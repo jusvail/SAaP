@@ -44,8 +44,6 @@ public partial class App
 
     public static MainWindow MainWindow { get; set; } = new() { Title = "AppTitle".GetLocalized()};
 
-    public const string MainWindowKey = nameof(MainWindow);
-
     /// <summary>
     /// Initializes the singleton application object.  This is the first line of authored code
     /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -77,6 +75,10 @@ public partial class App
                     services.AddTransient<MainViewModel>();
                     services.AddTransient<SettingsPage>();
                     services.AddTransient<SettingsViewModel>();
+                    services.AddTransient<InvestLogPage>();
+                    services.AddTransient<InvestLogViewModel>();
+
+                    services.AddTransient<ObservableInvestDetail>();
 
                     // Configuration
                     services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));

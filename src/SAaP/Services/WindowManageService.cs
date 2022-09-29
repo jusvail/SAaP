@@ -19,7 +19,7 @@ public class WindowManageService : IWindowManageService
     private static extern bool ShowWindow(IntPtr hWnd, uint nCmdShow);
 
     [DllImport("User32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    public static extern bool BringWindowToTop(IntPtr hWnd);
+    private static extern bool BringWindowToTop(IntPtr hWnd);
 
     public WindowManageService(IPageService pageService)
     {
@@ -30,7 +30,7 @@ public class WindowManageService : IWindowManageService
     {
         var hwnd = WindowNative.GetWindowHandle(window);
 
-        ShowWindow(hwnd, 9); // SW_RESTORE：激活并显示窗口
+        ShowWindow(hwnd, 9); // 9 => SW_RESTORE：激活并显示窗口
         BringWindowToTop(hwnd);
     }
 
@@ -42,17 +42,28 @@ public class WindowManageService : IWindowManageService
         return newWindow;
     }
 
-    public void CreateWindowAndNavigateTo<T>(string key, string title, object arg) where T : Page
+    public void CreateOrBackToWindow<T>(string key, string title, object arg) where T : Page
     {
         if (!string.IsNullOrEmpty(key))
         {
             lock (ActiveWindows)
             {
-                if (ActiveWindows.Keys.Contains(key)
-                    && InstanceType.Single == _pageService.GetPageInstanceType(key))
+                if (ActiveWindows.Keys.Contains(key))
                 {
-                    SetWindowForeground(ActiveWindows[key].First());
-                    return;
+                    if (InstanceType.Single == _pageService.GetPageInstanceType(key))
+                    {
+                        SetWindowForeground(ActiveWindows[key].First());
+                        return;
+                    }
+
+                    if (InstanceType.Multi == _pageService.GetPageInstanceType(key))
+                    {
+                        foreach (var activatedWindow in ActiveWindows[key].Where(activatedWindow => activatedWindow.Title.Contains(title)))
+                        {
+                            SetWindowForeground(activatedWindow);
+                            return;
+                        }
+                    }
                 }
             }
         }
@@ -76,7 +87,7 @@ public class WindowManageService : IWindowManageService
         window.Closed += (_, _) =>
         {
             if (!ActiveWindows.Any()) return;
-            if(!ActiveWindows.ContainsKey(key)) return;
+            if (!ActiveWindows.ContainsKey(key)) return;
 
             if (ActiveWindows[key].Contains(window))
             {
@@ -101,9 +112,7 @@ public class WindowManageService : IWindowManageService
 
     public Window GetWindowForElement(UIElement element, string key)
     {
-        return element.XamlRoot == null
-            ? null
-            : ActiveWindows[key].FirstOrDefault(window => element.XamlRoot == window.Content.XamlRoot);
+        return GetWindowForElement(element.XamlRoot, key);
     }
 
     public Window GetWindowForElement(XamlRoot xamlRoot, string key)

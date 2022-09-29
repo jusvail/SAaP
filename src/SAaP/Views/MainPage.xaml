@@ -13,7 +13,7 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <helpers:SimplifyDateTimeConverter x:Key="SimplifyDateTimeConverter" />
+        <helpers:DateTimeToRegularFormatConverter x:Key="SimplifyDateTimeConverter" />
         <helpers:CodeNameFormatConverter x:Key="CodeNameFormatConverter" />
         <helpers:ReverseBooleanConverter x:Key="ReverseBooleanConverter" />
         <helpers:ProfitColorConverter x:Key="ProfitColorConverter" />
@@ -61,8 +61,6 @@
                            Margin="5,0,0,6"/>
             </Grid>
         </DataTemplate>
-        <CornerRadius x:Key="DefaultThickness" >4</CornerRadius>
-        <Thickness x:Key="DefaultBorderThickness">.5</Thickness>
         <Style x:Key="CustomCellStyle" TargetType="controls:DataGridCell" >
             <Setter Property="Template">
                 <Setter.Value>
@@ -164,8 +162,8 @@
             <ColumnDefinition MaxWidth="160"/>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <Grid Grid.Column="0"
-              CornerRadius="{StaticResource DefaultThickness}" BorderThickness="{StaticResource DefaultBorderThickness}" BorderBrush="LightGray"
+        <Grid Grid.Column="0" 
+              Style="{StaticResource DefaultGridWithBorderStyle}"
               Background="{ThemeResource LayerFillColorDefaultBrush}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -197,12 +195,12 @@
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="4 2">
-                            <Button Content="管理" Margin="0 0 4 0">
+                            <Button x:Name="DeleteFavoriteCodesButton" Content="管理" Margin="0 0 5 0">
                                 <Button.Flyout>
                                     <Flyout>
                                         <StackPanel>
                                             <TextBlock Text="将选中的股票从自选股中删除？" Margin="0,0,0,12" />
-                                            <Button x:Name="DeleteFavoriteCodesButton" Content="给我删！" Style="{StaticResource AccentButtonStyle}" 
+                                            <Button Content="确定" Style="{StaticResource AccentButtonStyle}" 
                                                     Click="DeleteFavoriteCodesButton_OnClick"
                                                     CommandParameter="{x:Bind FavoriteCodes}"
                                                     Command="{x:Bind ViewModel.DeleteSelectedFavoriteCodesCommand}"/>
@@ -217,7 +215,7 @@
                         <StackPanel Grid.Row="1" Orientation="Horizontal" >
                             <Grid Margin="14 2 0 -3">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="78"/>
+                                    <ColumnDefinition Width="89"/>
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <Grid>
@@ -275,20 +273,20 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto"/>
                     <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+                </Grid.RowDefinitions>  
                 <Grid Grid.Row="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="180" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" x:Name="SfPanel">
+                    <StackPanel Grid.Column="0" x:Name="SfPanel"  SizeChanged="SfPanel_OnSizeChanged">    
                         <StackPanel Padding="5 0 5 0">
                             <InfoBar IsOpen="True"
                                 Severity="Warning"
                                 Title="免责声明"
                                 IsClosable="False"
                                 Message="本程序仅限学习交流使用。本程序仅进行数据分析，并且不构成任何买卖建议。擅自根据本程序进行交易所造成的后果自负。" />
-                            <InfoBar x:Name="NotifyUser"  IsEnabled="False" IsOpen="False"
+                            <InfoBar x:Name="NotifyUser" IsEnabled="False" IsOpen="False"
                                      Severity="Informational"
                                      IsClosable="True"/>
                         </StackPanel>
@@ -316,29 +314,41 @@
                                                          Command="{x:Bind ViewModel.QueryHot100CodesCommand}">
                                         </HyperlinkButton>
                                     </StackPanel>
-                                    <AppBarButton Grid.Row="2"
-                                                  Width="42"
-                                                  AnimatedIcon.State="Normal"
-                                                  HorizontalAlignment="Right"
-                                                  PointerEntered="ShellMenuBarSettingsButton_PointerEntered"
-                                                  PointerExited="ShellMenuBarSettingsButton_PointerExited"
-                                                  Command="{x:Bind ViewModel.MenuSettingsCommand}">
-                                        <AnimatedIcon x:Name="ShellMenuBarSettingsButtonIcon"
-                                                      Margin="0 -10 0 0">
-                                            <AnimatedIcon.Source>
-                                                <animatedVisuals:AnimatedSettingsVisualSource/>
-                                            </AnimatedIcon.Source>
-                                            <AnimatedIcon.FallbackIconSource>
-                                                <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE713;"/>
-                                            </AnimatedIcon.FallbackIconSource>
-                                        </AnimatedIcon>
-                                    </AppBarButton>
+                                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <AppBarButton x:Name="InvestLogAppBarButton"
+                                                      Width="42"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"
+                                                      Command="{x:Bind ViewModel.NavigateToInvestLogCommand}">
+                                            <AppBarButton.Icon >
+                                                <FontIcon  Margin="0 -3 0 0" 
+                                                           FontFamily="{StaticResource SymbolThemeFontFamily}" 
+                                                           Glyph="&#xF0E3;"/>
+                                            </AppBarButton.Icon>
+                                        </AppBarButton>
+                                        <AppBarButton x:Name="SettingsAppBarButton"
+                                                      Width="42"
+                                                      HorizontalAlignment="Right"
+                                                      PointerEntered="ShellMenuBarSettingsButton_PointerEntered"
+                                                      PointerExited="ShellMenuBarSettingsButton_PointerExited"
+                                                      Command="{x:Bind ViewModel.MenuSettingsCommand}">
+                                            <AnimatedIcon Margin="0 -10 0 0">
+                                                <AnimatedIcon.Source>
+                                                    <animatedVisuals:AnimatedSettingsVisualSource/>
+                                                </AnimatedIcon.Source>
+                                                <AnimatedIcon.FallbackIconSource>
+                                                    <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE713;"/>
+                                                </AnimatedIcon.FallbackIconSource>
+                                            </AnimatedIcon>
+                                        </AppBarButton>
+                                    </StackPanel>
                                 </Grid>
                                 <StackPanel Grid.Column="1">
                                     <TextBox x:Name="CodeInput" AutomationProperties.Name="multi-line TextBox"
                                              TextWrapping="Wrap" AcceptsReturn="True"
                                              Text="{x:Bind ViewModel.CodeInput,Mode=TwoWay}"
                                              SelectionHighlightColor="Green" MinHeight="150"
+                                             MaxHeight="150"
                                              AllowFocusOnInteraction="True"
                                              LostFocus="OnCodeInputLostFocusEventHandler"
                                              Language="zh-CN"
@@ -406,7 +416,7 @@
                     <Grid Grid.Column="1"
                           VerticalAlignment="Top"
                           Padding="0 0 0 5"
-                          CornerRadius="{StaticResource DefaultThickness}" BorderThickness="{StaticResource DefaultBorderThickness}" BorderBrush="LightGray"
+                          Style="{StaticResource DefaultGridWithBorderStyle}"
                           Background="{ThemeResource LayerFillColorDefaultBrush}">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -422,7 +432,7 @@
                                 </Grid>
                             </StackPanel>
                             <StackPanel Grid.Row="1">
-                                <ListView
+                                <ListView x:Name="ActivityListView"
                                     Margin="-10 0 0 0"
                                     MinWidth="170"
                                     Height="245"
@@ -436,8 +446,8 @@
                         </Grid>
                     </Grid>
                 </Grid>
-                <Grid Grid.Row="1" Margin="5 4 0 0" 
-                      CornerRadius="{StaticResource DefaultThickness}" BorderThickness="{StaticResource DefaultBorderThickness}" BorderBrush="LightGray"
+                <Grid Grid.Row="1" Margin="5 -3 0 0" 
+                      Style="{StaticResource DefaultGridWithBorderStyle}" 
                       Background="{ThemeResource LayerFillColorDefaultBrush}">
                     <Grid x:Name="ContentArea"
                           Padding="5">

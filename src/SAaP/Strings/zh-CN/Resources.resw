@@ -126,6 +126,9 @@
   <data name="AppTitle" xml:space="preserve">
     <value>股票溢价分析</value>
   </data>
+  <data name="InvestLogPageTitle" xml:space="preserve">
+    <value>投资账单</value>
+  </data>
   <data name="SettingsPageTitle" xml:space="preserve">
     <value>设置</value>
   </data>
