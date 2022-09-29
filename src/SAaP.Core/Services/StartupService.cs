@@ -37,9 +37,9 @@ public static class StartupService
         if (file == null)
         {
             await top.CreateFileAsync(name);
-            // Initialize Database
-            await DbService.InitializeDatabase();
         }
+        // Initialize Database
+        await DbService.InitializeDatabase();
     }
 
     public static async Task EnsureWorkSpaceFolderTreeIntegrityAsync()

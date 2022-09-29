@@ -26,4 +26,12 @@ public interface IDbTransferService
     IAsyncEnumerable<InvestSummaryData> SelectInvestSummaryData();
 
     IAsyncEnumerable<InvestData> SelectInvestDataByIndex(int index);
+
+    Task AddNewReminder(string content);
+
+    Task DeleteReminder(RemindMessageData message);
+
+    Task UpdateReminder(RemindMessageData message);
+
+    IAsyncEnumerable<RemindMessageData> SelectReminder();
 }

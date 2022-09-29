@@ -14,15 +14,104 @@ public static class DbService
     {
         // db connection
         await using var db = new DbSaap(StartupService.DbConnectionString);
-        
+
         //create all table
-        await db.CreateTableAsync<Stock>();
-        await db.CreateTableAsync<OriginalData>();
-        await db.CreateTableAsync<AnalyzedData>();
-        await db.CreateTableAsync<ActivityData>();
-        await db.CreateTableAsync<FavoriteData>();
-        await db.CreateTableAsync<InvestData>();
-        await db.CreateTableAsync<InvestSummaryData>();
+        try
+        {
+            await db.CreateTableAsync<Stock>();
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
+        try
+        {
+            await db.CreateTableAsync<OriginalData>();
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
+        try
+        {
+            await db.CreateTableAsync<AnalyzedData>();
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
+        try
+        {
+            await db.CreateTableAsync<ActivityData>();
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
+        try
+        {
+            await db.CreateTableAsync<FavoriteData>();
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
+        try
+        {
+            await db.CreateTableAsync<InvestData>();
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
+        try
+        {
+            await db.CreateTableAsync<InvestSummaryData>();
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
+        try
+        {
+            await db.CreateTableAsync<RemindMessageData>();
+            await DefaultMessageInsertAsync();
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
+
+    }
+
+    private static async Task DefaultMessageInsertAsync()
+    {
+        // db connection
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+
+        var date = DateTime.Now;
+
+        var messagesFromDev = new List<string>
+        {
+            "From Dev: 不要冒着下跌10%的风险博取5%的收益。",
+            "From Dev: 如果不知道该不该买入，那么不要买入; 如果不知道该不该卖出，那么立刻卖出。",
+            "From Dev: 散户没有足够的本金去抵挡(甚至可能无限)下跌的风险。",
+            "From Dev: 在A股，对于影响股价的人来说，做空是相当容易的事情。但是对于散户来说，做空只有空仓这一个选择。因此，90%的时间里空仓也许是不错的选择。"
+        };
+
+        await db.BeginTransactionAsync();
+
+        foreach (var remindMessageData in messagesFromDev.Select(message => new RemindMessageData
+        {
+            Message = message,
+            AddedDateTime = date,
+            ModifiedDateTime = date
+        }))
+        {
+            await db.InsertAsync(remindMessageData);
+        }
+
+        await db.CommitTransactionAsync();
     }
 
     public static async Task<string> SelectCompanyNameByCode(string codeName, int belongTo = -1)
@@ -67,8 +156,8 @@ public static class DbService
 
         return db.Stock.Any(s => s.CodeName == stock.CodeName && s.BelongTo == stock.BelongTo);
     }
-    
-    public static async Task AddToFavorite(string codeName,int belongTo, string groupName)
+
+    public static async Task AddToFavorite(string codeName, int belongTo, string groupName)
     {
         await using var db = new DbSaap(StartupService.DbConnectionString);
 

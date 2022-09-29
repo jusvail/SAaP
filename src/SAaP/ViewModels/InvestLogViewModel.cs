@@ -25,6 +25,8 @@ public class InvestLogViewModel : ObservableRecipient
     private string _newSummaryRecordCodeName;
     private string _newSummaryRecordCompanyName;
     private int _tradeHistorySelectedIndex;
+    private int _reminderSelectedIndex;
+    private string _reminderContent;
 
     public ObservableCollection<ObservableInvestSummaryDetail> InvestSummary { get; set; } = new();
 
@@ -33,6 +35,8 @@ public class InvestLogViewModel : ObservableRecipient
     public ObservableCollection<ObservableInvestDetail> SellList { get; set; } = new();
 
     public ObservableInvestSummaryDetail InvestSummaryDetail { get; set; } = new();
+
+    public ObservableCollection<RemindMessageData> RemindMessages { get; set; } = new();
 
     public IRelayCommand<object> AddNewTradeRecordCommand { get; set; }
 
@@ -74,8 +78,21 @@ public class InvestLogViewModel : ObservableRecipient
         set => SetProperty(ref _tradeHistorySelectedIndex, value);
     }
 
+    public string ReminderContent
+    {
+        get => _reminderContent;
+        set => SetProperty(ref _reminderContent, value);
+    }
+
+    public int ReminderSelectedIndex
+    {
+        get => _reminderSelectedIndex;
+        set => SetProperty(ref _reminderSelectedIndex, value);
+    }
+
     public IAsyncRelayCommand SaveRecordCommand { get; }
     public IRelayCommand NewSummaryRecordCommand { get; }
+
 
     public InvestLogViewModel
         (IDbTransferService dbTransferService, IFetchStockDataService fetchStockDataService)
@@ -210,12 +227,10 @@ public class InvestLogViewModel : ObservableRecipient
 
     public bool CheckIfSoldAll()
     {
-        if (!BuyList.Any() && !SellList.Any()) return false;
-
         var buySum = BuyList.Sum(o => o.Volume);
         var sellSum = SellList.Sum(o => o.Volume);
 
-        return buySum == sellSum;
+        return InvestSummaryDetail.TradeIndex > 0 && buySum == sellSum;
     }
 
     private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -388,5 +403,44 @@ public class InvestLogViewModel : ObservableRecipient
         var investSummary = InvestSummary[TradeHistorySelectedIndex];
 
         await InitialInvestSummaryDetail(investSummary);
+    }
+
+    public void ReminderOnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+    {
+        ReminderContent = RemindMessages[ReminderSelectedIndex].Message;
+    }
+
+    public async Task AddNewReminderCommand(object sender, KeyRoutedEventArgs e)
+    {
+        var box = sender as TextBox;
+        if (box == null) return;
+
+        ReminderContent = box.Text.Trim();
+        if (ReminderSelectedIndex < 0)
+        {
+            await _dbTransferService.AddNewReminder(ReminderContent);
+        }
+        else
+        {
+            var upd = RemindMessages[ReminderSelectedIndex];
+            upd.Message = ReminderContent;
+
+            await _dbTransferService.UpdateReminder(upd);
+        }
+
+        ReminderContent = string.Empty;
+        await RefreshReminder();
+    }
+
+    public async Task RefreshReminder()
+    {
+        RemindMessages.Clear();
+
+        var reminders = _dbTransferService.SelectReminder();
+
+        await foreach (var reminder in reminders)
+        {
+            RemindMessages.Add(reminder);
+        }
     }
 }

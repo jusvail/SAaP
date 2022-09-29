@@ -1,4 +1,6 @@
-﻿using Microsoft.UI.Xaml;
+﻿using Windows.System;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
 using SAaP.Core.Models.DB;
@@ -25,11 +27,7 @@ public sealed partial class InvestLogPage
         base.OnNavigatedTo(e);
         await ViewModel.InitialInvestSummaryDetail();
         await ViewModel.InitialFirstSummaryDetail();
-    }
-
-    private void InvestLogAppBarButton_OnClick(object sender, RoutedEventArgs e)
-    {
-        UiInvokeHelper.Invoke(NewLogHiddenButton);
+        await ViewModel.RefreshReminder();
     }
 
     private void BuyListView_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -54,4 +52,29 @@ public sealed partial class InvestLogPage
         NewSummaryRecordButton.Flyout.Hide();
     }
 
+    private async void ReminderBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key != VirtualKey.Enter) return;
+
+        var box = sender as TextBox;
+        if (box == null) return;
+
+        if (string.IsNullOrEmpty(box.Text)) return;
+
+        NewLogHiddenButton.Flyout.Hide();
+        await ViewModel.AddNewReminderCommand(sender, e);
+    }
+
+    private void InvestLogAppBarButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        UiInvokeHelper.Invoke(NewLogHiddenButton);
+        ViewModel.ReminderSelectedIndex = -1;
+        ViewModel.ReminderContent = string.Empty;
+    }
+
+    private void Reminder_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+    {
+        UiInvokeHelper.Invoke(NewLogHiddenButton);
+        ViewModel.ReminderOnDoubleTapped(sender, e);
+    }
 }

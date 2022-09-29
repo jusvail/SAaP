@@ -349,7 +349,7 @@ public class DbTransferService : IDbTransferService
     {
         await using var db = new DbSaap(StartupService.DbConnectionString);
 
-        var investSummaryDatas = 
+        var investSummaryDatas =
             db.InvestSummaryData
                 .Select(i => i)
                 .OrderByDescending(o => o.TradeIndex)
@@ -375,6 +375,65 @@ public class DbTransferService : IDbTransferService
         foreach (var investData in investDatas)
         {
             yield return investData;
+        }
+    }
+
+    public async Task AddNewReminder(string content)
+    {
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+
+        var remindMessageData = new RemindMessageData()
+        {
+            Message = content,
+            ModifiedDateTime = DateTime.Now,
+            AddedDateTime = DateTime.Now,
+        };
+
+        await db.InsertAsync(remindMessageData);
+    }
+
+    public async Task DeleteReminder(RemindMessageData message)
+    {
+        try
+        {
+            await using var db = new DbSaap(StartupService.DbConnectionString);
+
+            await db.DeleteAsync(message);
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
+    }
+
+    public async Task UpdateReminder(RemindMessageData message)
+    {
+        try
+        {
+            await using var db = new DbSaap(StartupService.DbConnectionString);
+
+            message.ModifiedDateTime = DateTime.Now;
+
+            await db.UpdateAsync(message);
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
+    }
+
+    public async IAsyncEnumerable<RemindMessageData> SelectReminder()
+    {
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+        var list =
+            db.RemindMessageData
+            .Select(a => a)
+            .OrderByDescending(r => r.ModifiedDateTime)
+            .ToList();
+
+        foreach (var remindMessageData in list)
+        {
+            yield return remindMessageData;
         }
     }
 }

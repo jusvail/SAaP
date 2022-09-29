@@ -52,7 +52,7 @@ public class SettingsViewModel : ObservableRecipient
         _localSettingsService = localSettingsService;
         _windowManageService = windowManageService;
 
-        _versionDescription = GetVersionDescription();
+        _versionDescription = RuntimeHelper.GetVersionDescription();
 
         OnPythonInstallationPathPressed = new AsyncRelayCommand<object>(OnPythonInstallationPath);
         OnTdxInstallationPathPressed = new AsyncRelayCommand<object>(OnTdxInstallationPath);
@@ -66,23 +66,6 @@ public class SettingsViewModel : ObservableRecipient
         });
     }
 
-    private static string GetVersionDescription()
-    {
-        Version version;
-
-        if (RuntimeHelper.IsMSIX)
-        {
-            var packageVersion = Package.Current.Id.Version;
-
-            version = new Version(packageVersion.Major, packageVersion.Minor, packageVersion.Build, packageVersion.Revision);
-        }
-        else
-        {
-            version = Assembly.GetExecutingAssembly().GetName().Version!;
-        }
-
-        return $"{"AppDisplayName".GetLocalized()} - {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
-    }
 
     public async Task ReadSettingsWhenInitialize()
     {
