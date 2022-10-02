@@ -230,7 +230,7 @@ public class InvestLogViewModel : ObservableRecipient
         var buySum = BuyList.Sum(o => o.Volume);
         var sellSum = SellList.Sum(o => o.Volume);
 
-        return InvestSummaryDetail.TradeIndex > 0 && buySum == sellSum;
+        return (InvestSummaryDetail.TradeIndex > 0 || sellSum > 0) && buySum == sellSum;
     }
 
     private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -393,21 +393,54 @@ public class InvestLogViewModel : ObservableRecipient
         NewSummaryRecordCompanyName = await StockService.FetchCompanyNameByCode(codeName, loc);
     }
 
-    public async Task OnTradeHistoryListViewDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+    public async Task EditTradeHistory(object dataContext = null)
     {
-        var list = sender as ListView;
-        if (list == null) return;
+        ObservableInvestSummaryDetail investSummary;
 
-        if (TradeHistorySelectedIndex < 0) return;
-
-        var investSummary = InvestSummary[TradeHistorySelectedIndex];
+        if (dataContext == null)
+        {
+            if (TradeHistorySelectedIndex < 0) return;
+            investSummary = InvestSummary[TradeHistorySelectedIndex];
+        }
+        else
+        {
+            investSummary = dataContext as ObservableInvestSummaryDetail;
+        }
 
         await InitialInvestSummaryDetail(investSummary);
     }
 
-    public void ReminderOnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+
+    public async Task DeleteTradeHistory(object dataContext)
     {
-        ReminderContent = RemindMessages[ReminderSelectedIndex].Message;
+        var summaryDetail = dataContext as ObservableInvestSummaryDetail;
+
+        if (InvestSummary.IndexOf(summaryDetail) < 0) return;
+        {
+            await _dbTransferService.DeleteInvestSummaryData(summaryDetail);
+        }
+
+        InvestSummary.Remove(summaryDetail);
+    }
+
+    public async Task DeleteReminder(object dataContext)
+    {
+        var remindMessageData = dataContext as RemindMessageData;
+
+        if (RemindMessages.IndexOf(remindMessageData) < 0) return;
+
+        await _dbTransferService.DeleteReminder(remindMessageData);
+
+        RemindMessages.Remove(remindMessageData);
+    }
+
+    public void EditReminder(object remindMessageData = null)
+    {
+        var idx = remindMessageData != null ? RemindMessages.IndexOf(remindMessageData as RemindMessageData) : ReminderSelectedIndex;
+
+        if (idx < 0) return;
+
+        ReminderContent = RemindMessages[idx].Message;
     }
 
     public async Task AddNewReminderCommand(object sender, KeyRoutedEventArgs e)

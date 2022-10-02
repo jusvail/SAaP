@@ -16,6 +16,15 @@
         </DataTemplate>
         <DataTemplate x:Key="TradeHistoryDateTemplate" x:DataType="models:ObservableInvestSummaryDetail">
             <Grid>
+                <Grid.ContextFlyout>
+                    <CommandBarFlyout Placement="Right">
+                        <CommandBarFlyout.SecondaryCommands>
+                            <AppBarButton x:Name="Edit" Label="编辑" Click="EditTradeHistory_OnClick"/>
+                            <AppBarSeparator></AppBarSeparator>
+                            <AppBarButton x:Name="Delete" Label="删除" Click="DeleteTradeHistory_OnClick"/>
+                        </CommandBarFlyout.SecondaryCommands>
+                    </CommandBarFlyout>
+                </Grid.ContextFlyout>
                 <Grid.Resources>
                     <Style TargetType="TextBlock">
                         <Setter Property="HorizontalAlignment" Value="Left"></Setter>
@@ -112,7 +121,7 @@
                     </Grid>
                 </Grid>
                 <Rectangle Stretch="Fill" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                           Margin="-8 5 -5 5"
+                           Margin="-8 5 2 5"
                            RadiusX="5"
                            RadiusY="5"
                            Opacity="0.1"
@@ -121,6 +130,15 @@
         </DataTemplate>
         <DataTemplate x:Key="ReminderDataTemplate" x:DataType="db:RemindMessageData">
             <Grid Margin="{StaticResource DefaultGridThickness}">
+                <Grid.ContextFlyout>
+                    <CommandBarFlyout Placement="Left">
+                        <CommandBarFlyout.SecondaryCommands>
+                            <AppBarButton x:Name="Edit" Label="编辑" Click="EditReminder_OnClick"/>
+                            <AppBarSeparator></AppBarSeparator>
+                            <AppBarButton x:Name="Delete" Label="删除" Click="DeleteReminder_OnClick"/>
+                        </CommandBarFlyout.SecondaryCommands>
+                    </CommandBarFlyout>
+                </Grid.ContextFlyout>
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -147,6 +165,8 @@
                            Fill="{x:Bind Mode=OneWay, Converter={StaticResource RandomizedFillColorConverter}}" />
             </Grid>
         </DataTemplate>
+
+
         <helper:AddPercentConverter x:Key="AddPercentConverter" />
         <helper:DefaultProfitColorConverter x:Key="DefaultProfitColorConverter" />
         <helper:ReverseBooleanConverter x:Key="ReverseBooleanConverter" />
@@ -175,7 +195,7 @@
             </Grid>
             <Grid Grid.Row="1">
                 <ListView x:Name="TradeHistoryListView"
-                          DoubleTapped="{x:Bind ViewModel.OnTradeHistoryListViewDoubleTapped}"
+                          DoubleTapped="OnTradeHistoryListViewDoubleTapped"
                           SelectedIndex="{x:Bind ViewModel.TradeHistorySelectedIndex,Mode=TwoWay}"
                           ItemsSource="{x:Bind ViewModel.InvestSummary,Mode=OneWay}"
                           ItemTemplate="{StaticResource TradeHistoryDateTemplate}"/>
