@@ -1,8 +1,8 @@
-﻿using System.Reflection;
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SAaP.Chart.Contracts.Services;
+using SAaP.Chart.Services;
 using SAaP.Contracts.Services;
 using SAaP.Core.Contracts.Services;
 using SAaP.Core.Services;
@@ -11,7 +11,7 @@ using SAaP.Models;
 using SAaP.Services;
 using SAaP.Views;
 using SAaP.ViewModels;
-using SAaP.Chart.Services;
+using System.Reflection;
 
 namespace SAaP;
 
@@ -42,7 +42,7 @@ public partial class App
         return (TEnum)Enum.Parse(typeof(TEnum), text);
     }
 
-    public static MainWindow MainWindow { get; set; } = new() { Title = "AppTitle".GetLocalized()};
+    public static MainWindow MainWindow { get; set; } = new() { Title = "AppTitle".GetLocalized() };
 
     public string Version { get; set; }
 

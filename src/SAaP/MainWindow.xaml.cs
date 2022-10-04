@@ -58,6 +58,7 @@ public sealed partial class MainWindow
 
         SetBackdrop(BackdropType.Mica);
     }
+
     public void NavigateTo<T>(string title, object arg) where T : Page
     {
         ExtendsContentIntoTitleBar = true;

@@ -12,6 +12,12 @@ public class RuntimeHelper
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern int GetCurrentPackageFullName(ref int packageFullNameLength, StringBuilder? packageFullName);
 
+    [DllImport("user32.dll", CharSet = CharSet.Auto)]
+    public static extern bool ShowWindow(IntPtr hWnd, uint nCmdShow);
+
+    [DllImport("User32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    public static extern bool BringWindowToTop(IntPtr hWnd);
+
     public static bool IsMSIX
     {
         get
