@@ -21,6 +21,8 @@ public interface IDbTransferService
 
     Task SaveToInvestSummaryDataToDb(ObservableInvestSummaryDetail data);
 
+    Task DeleteInvestSummaryData(ObservableInvestSummaryDetail data);
+
     Task SaveToInvestDataToDb(ObservableInvestSummaryDetail summaryDetail, IEnumerable<ObservableInvestDetail> investDetail);
 
     IAsyncEnumerable<InvestSummaryData> SelectInvestSummaryData();

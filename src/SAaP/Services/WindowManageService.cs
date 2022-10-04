@@ -5,6 +5,7 @@ using SAaP.Contracts.Enum;
 using SAaP.Contracts.Services;
 using SAaP.Extensions;
 using System.Runtime.InteropServices;
+using SAaP.Helper;
 using WinRT.Interop;
 
 namespace SAaP.Services;
@@ -15,12 +16,6 @@ public class WindowManageService : IWindowManageService
 
     public static Dictionary<string, List<Window>> ActiveWindows { get; } = new();
 
-    [DllImport("user32.dll", CharSet = CharSet.Auto)]
-    private static extern bool ShowWindow(IntPtr hWnd, uint nCmdShow);
-
-    [DllImport("User32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    private static extern bool BringWindowToTop(IntPtr hWnd);
-
     public WindowManageService(IPageService pageService)
     {
         _pageService = pageService;
@@ -30,8 +25,8 @@ public class WindowManageService : IWindowManageService
     {
         var hwnd = WindowNative.GetWindowHandle(window);
 
-        ShowWindow(hwnd, 9); // 9 => SW_RESTORE：激活并显示窗口
-        BringWindowToTop(hwnd);
+        RuntimeHelper.ShowWindow(hwnd, 9); // 9 => SW_RESTORE：激活并显示窗口
+        RuntimeHelper.BringWindowToTop(hwnd);
     }
 
     public MainWindow CreateWindow(string key)

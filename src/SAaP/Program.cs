@@ -3,30 +3,40 @@ using Microsoft.Windows.AppLifecycle;
 
 namespace SAaP;
 
-internal class Program
+public static class Program
 {
     [STAThread]
-    private static async Task Main(string[] args)
+    [System.Runtime.InteropServices.DllImport("Microsoft.ui.xaml.dll")]
+    private static extern void XamlCheckProcessRequirements();
+
+    [STAThread]
+    static void Main(string[] args)
     {
+        if (DecideRedirection()) return;
+
+        XamlCheckProcessRequirements();
+
         WinRT.ComWrappersSupport.InitializeComWrappers();
-        var isRedirect = await DecideRedirection();
-        if (!isRedirect)
+
+        try
         {
             Microsoft.UI.Xaml.Application.Start((p) =>
             {
-                var context = new DispatcherQueueSynchronizationContext(
-                    DispatcherQueue.GetForCurrentThread());
+                var context = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
                 SynchronizationContext.SetSynchronizationContext(context);
-                // Single instance App
                 _ = new App();
             });
         }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
-    private static async Task<bool> DecideRedirection()
+    private static bool DecideRedirection()
     {
         var isRedirect = false;
-        var args = AppInstance.GetCurrent().GetActivatedEventArgs();
 
         var keyInstance = AppInstance.FindOrRegisterForKey("randomKey");
 
@@ -37,7 +47,6 @@ internal class Program
         else
         {
             isRedirect = true;
-            await keyInstance.RedirectActivationToAsync(args);
         }
 
         return isRedirect;

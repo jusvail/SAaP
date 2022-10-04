@@ -6,6 +6,7 @@ using SAaP.Core.Models.DB;
 using LinqToDB;
 using Mapster;
 using SAaP.Models;
+using System;
 
 // ReSharper disable PossibleMultipleEnumeration
 
@@ -312,6 +313,35 @@ public class DbTransferService : IDbTransferService
                 var newIndex = await db.InvestSummaryData.MaxAsync(s => s.TradeIndex);
                 data.TradeIndex = newIndex;
             }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+
+    public async Task DeleteInvestSummaryData(ObservableInvestSummaryDetail data)
+    {
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+
+        var summaryData = data.Adapt<InvestSummaryData>();
+
+        try
+        {
+            await db.BeginTransactionAsync();
+
+            var readyToDelete = db.InvestData.Where(i => i.TradeIndex == summaryData.TradeIndex);
+
+            foreach (var del in readyToDelete)
+            {
+                await db.DeleteAsync(del);
+            }
+
+            await db.DeleteAsync(summaryData);
+
+            await db.CommitTransactionAsync();
         }
         catch (Exception e)
         {

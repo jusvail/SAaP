@@ -75,6 +75,40 @@ public sealed partial class InvestLogPage
     private void Reminder_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
         UiInvokeHelper.Invoke(NewLogHiddenButton);
-        ViewModel.ReminderOnDoubleTapped(sender, e);
+        ViewModel.EditReminder();
+    }
+
+    private async void DeleteReminder_OnClick(object sender, RoutedEventArgs e)
+    {
+        var dataContext = ((AppBarButton)e.OriginalSource).DataContext;
+
+        await ViewModel.DeleteReminder(dataContext);
+    }
+
+    private void EditReminder_OnClick(object sender, RoutedEventArgs e)
+    {
+        var dataContext = ((AppBarButton)e.OriginalSource).DataContext;
+
+        UiInvokeHelper.Invoke(NewLogHiddenButton);
+        ViewModel.EditReminder(dataContext);
+    }
+
+    private async void EditTradeHistory_OnClick(object sender, RoutedEventArgs e)
+    {
+        var dataContext = ((AppBarButton)e.OriginalSource).DataContext;
+
+        await ViewModel.EditTradeHistory(dataContext);
+    }
+
+    private async void DeleteTradeHistory_OnClick(object sender, RoutedEventArgs e)
+    {
+        var dataContext = ((AppBarButton)e.OriginalSource).DataContext;
+
+        await ViewModel.DeleteTradeHistory(dataContext);
+    }
+
+    public async void OnTradeHistoryListViewDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+    {
+        await ViewModel.EditTradeHistory();
     }
 }
