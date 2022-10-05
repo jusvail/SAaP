@@ -64,23 +64,30 @@ public class DbTransferService : IDbTransferService
                 var companyName = await StockService.FetchCompanyNameByCode(codeName, stock.BelongTo);
                 stock.CompanyName = companyName;
 
-                // transaction
-                await db.BeginTransactionAsync();
-
-                // insert into db
-                await foreach (var original in insertionList)
+                try
                 {
-                    await db.InsertAsync(original);
-                }
+                    // transaction
+                    await db.BeginTransactionAsync();
 
-                // insert only not exist
-                if (!await DbService.CheckRecordExistInStock(stock))
+                    // insert into db
+                    await foreach (var original in insertionList)
+                    {
+                        await db.InsertOrReplaceAsync(original);
+                    }
+
+                    // insert only not exist
+                    if (!await DbService.CheckRecordExistInStock(stock))
+                    {
+                        // query history store into db
+                        await db.InsertAsync(stock);
+                    }
+
+                    await db.CommitTransactionAsync();
+                }
+                catch (Exception)
                 {
-                    // query history store into db
-                    await db.InsertAsync(stock);
+                    // ignore db insertion error
                 }
-
-                await db.CommitTransactionAsync();
             }
         }
         else

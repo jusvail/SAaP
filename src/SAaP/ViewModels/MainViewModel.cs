@@ -52,6 +52,8 @@ public class MainViewModel : ObservableRecipient
 
     public IRelayCommand NavigateToInvestLogCommand { get; }
 
+    public IRelayCommand NavigateToMonitorCommand { get; }
+
     public IRelayCommand<object> AddToQueryingCommand { get; }
 
     public IAsyncRelayCommand AnalysisPressedCommand { get; }
@@ -65,7 +67,7 @@ public class MainViewModel : ObservableRecipient
     public IAsyncRelayCommand<object> DeleteSelectedFavoriteCodesCommand { get; }
 
     public IAsyncRelayCommand<object> RedirectToAnalyzeDetailCommand { get; }
-    
+
     public int SelectedFavGroupIndex
     {
         get => _selectedFavGroupIndex;
@@ -125,11 +127,17 @@ public class MainViewModel : ObservableRecipient
         RedirectToAnalyzeDetailCommand = new AsyncRelayCommand<object>(RedirectToAnalyzeDetail);
         QueryHot100CodesCommand = new AsyncRelayCommand(QueryHot100Codes);
         NavigateToInvestLogCommand = new RelayCommand(NavigateToInvestLogPage);
+        NavigateToMonitorCommand = new RelayCommand(NavigateToMonitorPage);
     }
+
+    private void NavigateToMonitorPage()
+    {
+       _windowManageService.CreateOrBackToWindow<MonitorPage>(typeof(MonitorViewModel).FullName!);
+ }
 
     private void NavigateToInvestLogPage()
     {
-        _windowManageService.CreateOrBackToWindow<InvestLogPage>(typeof(InvestLogViewModel).FullName!, null!, null!);
+        _windowManageService.CreateOrBackToWindow<InvestLogPage>(typeof(InvestLogViewModel).FullName!);
     }
 
     private async Task QueryHot100Codes()
@@ -166,7 +174,7 @@ public class MainViewModel : ObservableRecipient
 
     private void OnMenuSettingsPressed()
     {
-        _windowManageService.CreateOrBackToWindow<SettingsPage>(typeof(SettingsViewModel).FullName!, null!, null!);
+        _windowManageService.CreateOrBackToWindow<SettingsPage>(typeof(SettingsViewModel).FullName!);
     }
 
     public void AddToQuerying(object listView)
@@ -294,16 +302,26 @@ public class MainViewModel : ObservableRecipient
         // formatted code resetting
         CodeInput = pyArg;
 
+        SetCurrentStatus("开始执行py脚本。。。");
+
         // fetch stock data from tdx, then store to csv file
         await _fetchStockDataService.FetchStockData(pyArg, IsQueryAllChecked);
 
         SetCurrentStatus("py脚本执行完毕，开始将数据导入至本地数据库");
 
-        // transfer stock data to sqlite database
-        await Task.Run(async () =>
+        try
         {
-            await _dbTransferService.TransferCsvDataToDb(accuracyCodes, IsQueryAllChecked);
-        });
+            // transfer stock data to sqlite database
+            await Task.Run(async () =>
+            {
+                await _dbTransferService.TransferCsvDataToDb(accuracyCodes, IsQueryAllChecked);
+            });
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
 
         //store last queried  codes
         LastQueriedCodes = accuracyCodes;

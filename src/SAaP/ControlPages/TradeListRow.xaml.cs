@@ -25,7 +25,7 @@ public sealed partial class TradeListRow
     {
         if (!InvestDetail.Editable) return;
 
-        UiInvokeHelper.Invoke(HdFlyOutButton);
+        UiInvokeHelper.TriggerButtonPressed(HdFlyOutButton);
         AddToTradeListDialog.InvestDetail = InvestDetail;
     }
 }

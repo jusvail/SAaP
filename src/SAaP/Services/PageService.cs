@@ -16,6 +16,7 @@ public class PageService : IPageService
     public PageService()
     {
         Configure<MainViewModel, MainPage>(InstanceType.Single);
+        Configure<MonitorViewModel, MonitorPage>(InstanceType.Single);
         Configure<SettingsViewModel, SettingsPage>(InstanceType.Single);
         Configure<InvestLogViewModel, InvestLogPage>(InstanceType.Single);
         Configure<AnalyzeDetailViewModel, AnalyzeDetailPage>(InstanceType.Multi);
