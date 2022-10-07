@@ -328,7 +328,6 @@ public class DbTransferService : IDbTransferService
         }
     }
 
-
     public async Task DeleteInvestSummaryData(ObservableInvestSummaryDetail data)
     {
         await using var db = new DbSaap(StartupService.DbConnectionString);
@@ -471,6 +470,41 @@ public class DbTransferService : IDbTransferService
         foreach (var remindMessageData in list)
         {
             yield return remindMessageData;
+        }
+    }
+
+    public async IAsyncEnumerable<Stock> SelectAllLocalStoredCodes()
+    {
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+
+        foreach (var stock in db.Stock.Where(s => !string.IsNullOrEmpty(s.CompanyName)))
+        {
+            yield return stock;
+        }
+    }
+
+    public async IAsyncEnumerable<Stock> SelectStockOnHold()
+    {
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+
+        foreach (var summaryData in db.InvestSummaryData.Where(s => !s.IsArchived))
+        {
+            yield return new Stock
+            {
+                CodeName = summaryData.CodeName[1..],
+                BelongTo = Convert.ToInt32(summaryData.CodeName[..1]),
+                CompanyName = summaryData.CompanyName
+            };
+        }
+    }
+
+    public async IAsyncEnumerable<TrackData> SelectTrackData()
+    {
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+
+        foreach (var trackData in db.TrackData.Select(t => t))
+        {
+            yield return trackData;
         }
     }
 }

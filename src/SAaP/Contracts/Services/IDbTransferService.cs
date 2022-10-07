@@ -36,4 +36,10 @@ public interface IDbTransferService
     Task UpdateReminder(RemindMessageData message);
 
     IAsyncEnumerable<RemindMessageData> SelectReminder();
+
+    IAsyncEnumerable<Stock> SelectAllLocalStoredCodes();
+
+    IAsyncEnumerable<Stock> SelectStockOnHold();
+
+    IAsyncEnumerable<TrackData> SelectTrackData();
 }

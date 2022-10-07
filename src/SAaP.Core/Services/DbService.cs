@@ -81,7 +81,45 @@ public static class DbService
         {
             // ignored
         }
+        try
+        {
+            await db.CreateTableAsync<TrackData>();
+            await DefaultTrackConditionInsertAsync();
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
+    }
 
+    private static async Task DefaultTrackConditionInsertAsync()
+    {
+        // db connection
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+
+        var data1 = new TrackData
+        {
+            TrackName = "20D-OP%>85",
+            TrackType = TrackType.Filter,
+            TrackContent = "L20D:OP%>85",
+            TrackSummary = "近20交易日溢价率>85"
+        };
+
+        var data2 = new TrackData
+        {
+            TrackName = "连跌5天并反弹",
+            TrackType = TrackType.Filter,
+            TrackContent = "[L6D]:[1-5](ZD<0)&&[5-](ZD>0)",
+            TrackSummary = "近6交易日，连续跌5天后反弹"
+        };
+
+
+        await db.BeginTransactionAsync();
+
+        await db.InsertAsync(data1);
+        await db.InsertAsync(data2);
+
+        await db.CommitTransactionAsync();
     }
 
     private static async Task DefaultMessageInsertAsync()
@@ -93,10 +131,7 @@ public static class DbService
 
         var messagesFromDev = new List<string>
         {
-            "From Dev: 不要冒着下跌10%的风险博取5%的收益。",
-            "From Dev: 如果不知道该不该买入，那么不要买入; 如果不知道该不该卖出，那么立刻卖出。",
-            "From Dev: 散户没有足够的本金去抵挡(甚至可能无限)下跌的风险。",
-            "From Dev: 在A股，对于影响股价的人来说，做空是相当容易的事情。但是对于散户来说，做空只有空仓这一个选择。因此，90%的时间里空仓也许是不错的选择。"
+            "From Dev: 不要冒着下跌10%的风险博取5%的收益。"
         };
 
         await db.BeginTransactionAsync();

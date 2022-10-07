@@ -89,7 +89,7 @@ public class FetchStockDataService : IFetchStockDataService
                 }
             case StockService.TdxCodeLength:
                 var flg = code[..1];
-                int.TryParse(flg, out belongTo);
+                _ = int.TryParse(flg, out belongTo);
                 break;
         }
 

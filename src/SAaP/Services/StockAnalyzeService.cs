@@ -1,6 +1,5 @@
 ﻿using SAaP.Contracts.Services;
 using SAaP.Core.Models;
-using SAaP.Core.Models.DB;
 using SAaP.Core.Services;
 using SAaP.Core.Services.Analyze;
 

@@ -4,7 +4,36 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:helper="using:SAaP.Helper"
+    xmlns:db="using:SAaP.Core.Models.DB"
     mc:Ignorable="d">
+
+    <Page.Resources>
+        <helper:CodeNameFormatConverter x:Key="CodeNameFormatConverter" />
+        <DataTemplate x:DataType="db:Stock" x:Key="SimpleStockDetailForSearchDataTemplate">
+            <StackPanel>
+                <TextBlock Text="{x:Bind CompanyName}" 
+                           Margin="{StaticResource DefaultTextBlockHeaderMargin}"
+                           FontWeight="Bold"/>
+                <TextBlock Text="{x:Bind CodeNameFull,Converter={StaticResource CodeNameFormatConverter}}"
+                           Margin="{StaticResource DefaultTextBlockContentMargin}"/>
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:DataType="db:Stock" x:Key="SimpleStockDetailDataTemplate">
+            <StackPanel>
+                <TextBlock Text="{x:Bind CompanyName}" 
+                           Margin="{StaticResource DefaultTextBlockHeaderMargin}"
+                           FontWeight="Bold"/>
+                <TextBlock Text="{x:Bind CodeNameFull,Converter={StaticResource CodeNameFormatConverter}}"
+                           Margin="{StaticResource DefaultTextBlockContentMargin}"/>
+                <StackPanel.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="删除" Click="DeleteMonitor_OnClick"/>
+                    </MenuFlyout>
+                </StackPanel.ContextFlyout>
+            </StackPanel>
+        </DataTemplate>
+    </Page.Resources>
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -25,46 +54,180 @@
                 </Grid.RowDefinitions>
                 <StackPanel Grid.Row="1">
                     <Grid>
-                        <Button Content="添加所有交易中的股票"></Button>
                     </Grid>
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*" MinWidth="150"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <AutoSuggestBox Grid.Column="0"
-                                        Height="36"/>
-                        <AppBarButton Grid.Column="1" 
-                                      x:Name="AddToMonitorAppBarButton"
-                                      Width="36" Height="48"
-                                      HorizontalAlignment="Center"
-                                      VerticalAlignment="Center"
-                                      Click="AddToMonitorAppBarButton_OnClick"
-                                      Command="{x:Bind ViewModel.AddToMonitorCommand}">
-                            <AppBarButton.Icon>
-                                <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" 
-                                          Glyph="&#xE109;"/>
-                            </AppBarButton.Icon>
-                        </AppBarButton>
+                        <AutoSuggestBox x:Name="CodeSelectSuggestBox"
+                                        PlaceholderText="输入代码或名称"
+                                        TextChanged="CodeSelectSuggestBox_OnTextChanged"
+                                        QuerySubmitted="CodeSelectSuggestBox_OnQuerySubmitted"
+                                        SuggestionChosen="CodeSelectSuggestBox_OnSuggestionChosen"
+                                        Grid.Column="0"
+                                        Width="148"
+                                        Height="36"
+                                        QueryIcon="Find"
+                                        ItemTemplate="{StaticResource SimpleStockDetailForSearchDataTemplate}">
+                        </AutoSuggestBox>
+                        <StackPanel Grid.Column="1">
+                            <AppBarButton x:Name="AddToMonitorAppBarButton"
+                                          Width="42" Height="48"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Margin="0 0 -2 0"
+                                          Click="AddToMonitorAppBarButton_OnClick">
+                                <AppBarButton.Icon>
+                                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" 
+                                              Glyph="&#xE109;"/>
+                                </AppBarButton.Icon>
+                            </AppBarButton>
+                            <Button x:Name="AddToMonitorAppBarButtonHidden" Visibility="Collapsed">
+                                <Button.Flyout>
+                                    <MenuFlyout>
+                                        <MenuFlyoutItem Text="添加所有交易中的股票" 
+                                                        Command="{x:Bind ViewModel.AddOnHoldStockCommand}"/>
+                                    </MenuFlyout>
+                                </Button.Flyout>
+                            </Button>
+                        </StackPanel>
                     </Grid>
                 </StackPanel>
                 <Grid Grid.Row="2">
-                    <ListView />
+                    <ListView ItemsSource="{x:Bind ViewModel.MonitorStocks}"
+                              ItemTemplate="{StaticResource SimpleStockDetailDataTemplate}">
+                    </ListView>
                 </Grid>
             </Grid>
         </Grid>
 
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Grid Grid.Row="0">
-
-            </Grid>
+            <StackPanel Grid.Row="0"
+                  Height="48"
+                  Margin="0 -24 0 -24">
+                <TextBlock Text="dsagsdf" Margin="15 0"></TextBlock>
+                <ProgressBar 
+                             HorizontalContentAlignment="Stretch"
+                             IsIndeterminate="True" 
+                             ShowPaused="False" 
+                             ShowError="False" />
+                <Rectangle Stretch="Fill" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                           Opacity="0.05"
+                           Margin="0 -48 0 -48"
+                           Fill="Red"/>
+            </StackPanel>
             <Grid Grid.Row="1">
-                <!-- Output List -->
-                <ListView/>
+                <Grid>
+                    <Pivot>
+                        <PivotItem Header="筛选" Padding="{StaticResource DefaultPivotBorderPadding}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="1.1*"/>
+                                </Grid.RowDefinitions>
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="2*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid Grid.Column="0">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid Grid.Row="0">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid Grid.Row="0" 
+                                                  Margin="{StaticResource XXSmallTopMargin}">
+                                                <TeachingTip x:Name="FilterTextBoxTeachingTip"
+                                                             Target="{x:Bind FilterTextBox}">
+                                                    <StackPanel>
+                                                        <TextBlock Text="帮助：" 
+                                                                   FontWeight="Bold"
+                                                                   Margin=" 0 0 0 5"></TextBlock>
+                                                        <RichTextBlock FontFamily="Consolas" FontSize="11.5">
+                                                            <Paragraph>基本格式：</Paragraph>
+                                                            <Paragraph>[前N交易日]-[M交易日]:[条件](&amp;&amp;[‘可选’条件])</Paragraph>
+                                                            <Paragraph></Paragraph>
+                                                            <Paragraph>可用代码：</Paragraph>
+                                                            <Paragraph>&#160;&#160;o：开盘价&#160;&#160;h：最高价</Paragraph>
+                                                            <Paragraph>&#160;&#160;l：最低价&#160;&#160;e：收盘价</Paragraph>
+                                                            <Paragraph>&#160;&#160;td：本次交易日&#160;&#160;yd：前一个交易日</Paragraph>
+                                                            <Paragraph>&#160;&#160;op：溢价&#160;&#160;zd：涨跌</Paragraph>
+                                                            <Paragraph>&#160;&#160;bsp：最佳止盈</Paragraph>
+                                                            <Paragraph>&#160;&#160;d：天数</Paragraph>
+                                                            <Paragraph></Paragraph>
+                                                            <Paragraph>例：</Paragraph>
+                                                            <Paragraph>&#160;&#160;L10-TD:ZD&lt;5&amp;&amp;ZD&gt;&#45;5&amp;&amp;+OPD>=8</Paragraph>
+                                                            <Paragraph>&#160;&#160;=>筛选出前10个交易日到今天，涨跌小于5%，大于-5%，正溢价天数大于8天的股票</Paragraph>
+                                                            <Paragraph></Paragraph>
+                                                        </RichTextBlock>
+                                                    </StackPanel>
+                                                </TeachingTip>
+                                                <TextBox x:Name="FilterTextBox" 
+                                                         CharacterCasing="Upper"/>
+                                            </Grid>
+                                            <Grid Grid.Row="1">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="状态：" 
+                                                               VerticalAlignment="Center"/>
+                                                    <TextBlock Text="未输入" 
+                                                               VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1" 
+                                                            Orientation="Horizontal"
+                                                            HorizontalAlignment="Right">
+                                                    <AppBarButton x:Name="HelperAppBarButton"
+                                                                  Width="42" Height="48"
+                                                                  HorizontalAlignment="Center"
+                                                                  VerticalAlignment="Center"
+                                                                  Click="HelperAppBarButton_OnClick">
+                                                        <AppBarButton.Icon>
+                                                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" 
+                                                                      Glyph="&#xE11B;"/>
+                                                        </AppBarButton.Icon>
+                                                    </AppBarButton>
+                                                    <Button x:Name="SaveCondition" 
+                                                            Content="保存条件" 
+                                                            Margin="{StaticResource StandardButtonMargin}" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Grid>
+                                        <Grid Grid.Row="1">
+                                            <GridView>
+                                                <ToggleButton Content="连涨5日"></ToggleButton>
+                                                <ToggleButton Content="近10天溢价率大于90%"></ToggleButton>
+                                                <ToggleButton Content="连涨5日"></ToggleButton>
+                                                <ToggleButton Content="连涨5日"></ToggleButton>
+                                            </GridView>
+                                        </Grid>
+                                    </Grid>
+                                    <Grid Grid.Column="0">
+
+                                    </Grid>
+                                </Grid>
+                                <Grid Grid.Row="1" Background="LightBlue">
+
+                                </Grid>
+                            </Grid>
+                        </PivotItem>
+                        <PivotItem Header="监控" Padding="{StaticResource DefaultPivotBorderPadding}">
+                            <TextBlock Text="all emails go here." />
+                        </PivotItem>
+                    </Pivot>
+                </Grid>
             </Grid>
         </Grid>
         <Grid Grid.Column="2">

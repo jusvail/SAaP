@@ -25,6 +25,8 @@ public class DbSaap : LinqToDB.Data.DataConnection
 
     public ITable<InvestSummaryData> InvestSummaryData => this.GetTable<InvestSummaryData>();
 
+    public ITable<TrackData> TrackData => this.GetTable<TrackData>();
+
     public DbSaap(string dbPath) : base(ProviderName.SQLite, dbPath)
     { }
 

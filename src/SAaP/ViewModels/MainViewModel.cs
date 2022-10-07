@@ -132,8 +132,8 @@ public class MainViewModel : ObservableRecipient
 
     private void NavigateToMonitorPage()
     {
-       _windowManageService.CreateOrBackToWindow<MonitorPage>(typeof(MonitorViewModel).FullName!);
- }
+        _windowManageService.CreateOrBackToWindow<MonitorPage>(typeof(MonitorViewModel).FullName!);
+    }
 
     private void NavigateToInvestLogPage()
     {

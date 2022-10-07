@@ -12,8 +12,16 @@ public class ActivationService : IActivationService
     {
         // Execute tasks before activation.
         await InitializeAsync();
+
+#if DEBUG
+        // navigate to main page
+        App.MainWindow.NavigateTo<MonitorPage>("MonitorPageTitle".GetLocalized(), null);
+
+#else
         // navigate to main page
         App.MainWindow.NavigateTo<MainPage>(PjConstant.AppTitle.GetLocalized(), null);
+
+#endif
         // active main window
         App.MainWindow.Activate();
     }
