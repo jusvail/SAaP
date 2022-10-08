@@ -12,12 +12,10 @@ public enum TrackType
 [Table(Name = "TrackData")]
 public class TrackData
 {
-    [Column]
     [PrimaryKey, Identity]
     public int TrackIndex { get; set; }
 
-    [Column]
-    [PrimaryKey]
+    [PrimaryKey, NotNull]
     public string TrackName { get; set; }
 
     [Column]

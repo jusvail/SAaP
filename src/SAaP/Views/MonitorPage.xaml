@@ -6,10 +6,15 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:helper="using:SAaP.Helper"
     xmlns:db="using:SAaP.Core.Models.DB"
+    xmlns:models="using:SAaP.Models"
     mc:Ignorable="d">
 
     <Page.Resources>
         <helper:CodeNameFormatConverter x:Key="CodeNameFormatConverter" />
+        <helper:SimpleFeedLayout x:Key="SimpleFeedLayout" 
+                                 ColumnSpacing="5"
+                                 RowSpacing="5" 
+                                 MinItemSize="20, 80"/>
         <DataTemplate x:DataType="db:Stock" x:Key="SimpleStockDetailForSearchDataTemplate">
             <StackPanel>
                 <TextBlock Text="{x:Bind CompanyName}" 
@@ -32,6 +37,32 @@
                     </MenuFlyout>
                 </StackPanel.ContextFlyout>
             </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:DataType="models:ObservableTrackData" x:Key="FilterConditionDataTemplate">
+            <Grid>
+                <ToggleButton IsChecked="{x:Bind IsChecked,Mode=TwoWay}">
+                    <StackPanel Width="120"
+                                Height="80"
+                                ToolTipService.ToolTip="{x:Bind TrackContent,Mode=OneWay}">
+                        <TextBlock Text="{x:Bind TrackName,Mode=OneWay}" 
+                                   FontWeight="Bold"
+                                   FontSize="12"
+                                   Margin="{StaticResource DefaultTextBlockHeaderMargin}"
+                                   TextWrapping="Wrap"
+                                   HorizontalAlignment="Left"/>
+                        <TextBlock Text="{x:Bind TrackSummary,Mode=OneWay}"
+                                   TextWrapping="Wrap" 
+                                   Margin="{StaticResource DefaultTextBlockContentMargin}"
+                                   MinHeight="50"/>
+                    </StackPanel>
+                </ToggleButton>
+                <Grid.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="删除" 
+                                        Click="DeleteFilterCondition_OnClick"/>
+                    </MenuFlyout>
+                </Grid.ContextFlyout>
+            </Grid>
         </DataTemplate>
     </Page.Resources>
 
@@ -132,8 +163,8 @@
                                 </Grid.RowDefinitions>
                                 <Grid Grid.Row="0">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="2*"/>
+                                        <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <Grid Grid.Column="0">
                                         <Grid.RowDefinitions>
@@ -173,6 +204,8 @@
                                                     </StackPanel>
                                                 </TeachingTip>
                                                 <TextBox x:Name="FilterTextBox" 
+                                                         Text="{x:Bind ViewModel.CurrentTrackFilterData.TrackContent,Mode=TwoWay}" 
+                                                         KeyDown="FilterTextBox_OnKeyDown"
                                                          CharacterCasing="Upper"/>
                                             </Grid>
                                             <Grid Grid.Row="1">
@@ -199,19 +232,75 @@
                                                                       Glyph="&#xE11B;"/>
                                                         </AppBarButton.Icon>
                                                     </AppBarButton>
+                                                    <Button Content="检查可用性" 
+                                                            Command="{x:Bind ViewModel.CheckUseabilityCommand}"/>
                                                     <Button x:Name="SaveCondition" 
                                                             Content="保存条件" 
-                                                            Margin="{StaticResource StandardButtonMargin}" />
+                                                            IsEnabled="{x:Bind ViewModel.CurrentTrackFilterData.IsValid,Mode=OneWay}"
+                                                            Margin="{StaticResource StandardButtonMargin}"
+                                                            Style="{StaticResource AccentButtonStyle}">
+                                                        <Button.Flyout>
+                                                            <Flyout>
+                                                                <Grid>
+                                                                    <Grid.Resources>
+                                                                        <Style TargetType="Grid">
+                                                                            <Setter Property="Margin" Value="2"></Setter>
+                                                                        </Style>
+                                                                        <Style TargetType="TextBlock">
+                                                                            <Setter Property="HorizontalAlignment" Value="Right"></Setter>
+                                                                            <Setter Property="VerticalAlignment" Value="Top"></Setter>
+                                                                        </Style>
+                                                                    </Grid.Resources>
+                                                                    <Grid.RowDefinitions>
+                                                                        <RowDefinition Height="*"/>
+                                                                        <RowDefinition Height="2*"/>
+                                                                        <RowDefinition Height="Auto"/>
+                                                                    </Grid.RowDefinitions>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="2*" MinWidth="180"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <Grid Grid.Row="0"
+                                                                          Grid.Column="0">
+                                                                        <TextBlock Text="名称："/>
+                                                                    </Grid>
+                                                                    <Grid Grid.Row="0"
+                                                                          Grid.Column="1">
+                                                                        <TextBox Text="{x:Bind ViewModel.CurrentTrackFilterData.TrackName,Mode=TwoWay}"/>
+                                                                    </Grid>
+                                                                    <Grid Grid.Row="1"
+                                                                          Grid.Column="0">
+                                                                        <TextBlock Text="描述："/>
+                                                                    </Grid>
+                                                                    <Grid Grid.Row="1"
+                                                                          Grid.Column="1">
+                                                                        <TextBox Text="{x:Bind ViewModel.CurrentTrackFilterData.TrackSummary,Mode=TwoWay}" 
+                                                                                 TextWrapping="Wrap"
+                                                                                 MinHeight="60"/>
+                                                                    </Grid>
+                                                                    <Grid Grid.Row="2"
+                                                                          Grid.Column="0">
+                                                                    </Grid>
+                                                                    <Grid Grid.Row="2"
+                                                                          Grid.Column="1">
+                                                                        <StackPanel Orientation="Horizontal">
+                                                                            <Button Content="保存"
+                                                                                    Style="{StaticResource AccentButtonStyle}"
+                                                                                    Click="SaveFilterConditionButton_OnClick"
+                                                                                    Command="{x:Bind ViewModel.SaveFilterConditionCommand}"/>
+                                                                        </StackPanel>
+                                                                    </Grid>
+                                                                </Grid>
+                                                            </Flyout>
+                                                        </Button.Flyout>
+                                                    </Button>
+
                                                 </StackPanel>
                                             </Grid>
                                         </Grid>
                                         <Grid Grid.Row="1">
-                                            <GridView>
-                                                <ToggleButton Content="连涨5日"></ToggleButton>
-                                                <ToggleButton Content="近10天溢价率大于90%"></ToggleButton>
-                                                <ToggleButton Content="连涨5日"></ToggleButton>
-                                                <ToggleButton Content="连涨5日"></ToggleButton>
-                                            </GridView>
+                                            <GridView ItemsSource="{x:Bind ViewModel.FilterConditions}"
+                                                      ItemTemplate="{StaticResource FilterConditionDataTemplate}"/>
                                         </Grid>
                                     </Grid>
                                     <Grid Grid.Column="0">

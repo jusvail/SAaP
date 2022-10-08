@@ -6,7 +6,6 @@ using SAaP.Core.Models.DB;
 using LinqToDB;
 using Mapster;
 using SAaP.Models;
-using System;
 
 // ReSharper disable PossibleMultipleEnumeration
 
@@ -505,6 +504,38 @@ public class DbTransferService : IDbTransferService
         foreach (var trackData in db.TrackData.Select(t => t))
         {
             yield return trackData;
+        }
+    }
+
+    public async Task InsertTrackData(TrackData data)
+    {
+        if (data == null) return;
+
+        try
+        {
+            await using var db = new DbSaap(StartupService.DbConnectionString);
+            await db.InsertAsync(data);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    public async Task DeleteTrackData(TrackData data)
+    {
+        if (data == null) return;
+
+        try
+        {
+            await using var db = new DbSaap(StartupService.DbConnectionString);
+            await db.DeleteAsync(data);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
         }
     }
 }

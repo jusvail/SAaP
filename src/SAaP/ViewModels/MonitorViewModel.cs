@@ -2,8 +2,10 @@
 using CommunityToolkit.Mvvm.Input;
 using SAaP.Contracts.Services;
 using System.Collections.ObjectModel;
+using Mapster;
 using SAaP.Core.Models.DB;
 using SAaP.Core.Services;
+using SAaP.Models;
 
 namespace SAaP.ViewModels;
 
@@ -19,13 +21,18 @@ public class MonitorViewModel : ObservableRecipient
 
     public ObservableCollection<Stock> MonitorStocks { get; } = new();
 
-    public ObservableCollection<TrackData> FilterConditions { get; } = new();
+    public ObservableCollection<ObservableTrackData> FilterConditions { get; } = new();
 
-    public ObservableCollection<TrackData> MonitorConditions { get; } = new();
+    public ObservableCollection<ObservableTrackData> MonitorConditions { get; } = new();
+
+    public ObservableTrackData CurrentTrackFilterData { get; set; } = new();
 
     public IRelayCommand<object> AddToMonitorCommand { get; }
 
     public IAsyncRelayCommand AddOnHoldStockCommand { get; }
+
+    public IRelayCommand CheckUseabilityCommand { get; }
+    public IAsyncRelayCommand SaveFilterConditionCommand { get; }
 
     public MonitorViewModel(IDbTransferService dbTransferService, IFetchStockDataService fetchStockDataService)
     {
@@ -34,6 +41,27 @@ public class MonitorViewModel : ObservableRecipient
 
         AddToMonitorCommand = new RelayCommand<object>(AddToMonitor);
         AddOnHoldStockCommand = new AsyncRelayCommand(AddOnHoldStock);
+        CheckUseabilityCommand = new RelayCommand(CheckUseability);
+        SaveFilterConditionCommand = new AsyncRelayCommand(SaveFilterCondition);
+    }
+
+    public async Task DeleteFilterTrackData(object data)
+    {
+        var dbTransferService = App.GetService<IDbTransferService>();
+
+        await dbTransferService.DeleteTrackData(data.Adapt<TrackData>());
+        await InitializeTrackData();
+    }
+
+    private async Task SaveFilterCondition()
+    {
+        await _dbTransferService.InsertTrackData(CurrentTrackFilterData.Adapt<TrackData>());
+        await InitializeTrackData();
+    }
+
+    private void CheckUseability()
+    {
+        CurrentTrackFilterData.IsValid = true;
     }
 
     private async Task AddOnHoldStock()
@@ -89,15 +117,19 @@ public class MonitorViewModel : ObservableRecipient
     {
         var trackDatas = _dbTransferService.SelectTrackData();
 
+        FilterConditions.Clear();
+        MonitorConditions.Clear();
+        CurrentTrackFilterData.Clear();
+
         await foreach (var trackData in trackDatas)
         {
             switch (trackData.TrackType)
             {
                 case TrackType.Filter:
-                    FilterConditions.Add(trackData);
+                    FilterConditions.Add(trackData.Adapt<ObservableTrackData>());
                     break;
                 case TrackType.Monitor:
-                    MonitorConditions.Add(trackData);
+                    MonitorConditions.Add(trackData.Adapt<ObservableTrackData>());
                     break;
                 case TrackType.Unknown:
                     break;

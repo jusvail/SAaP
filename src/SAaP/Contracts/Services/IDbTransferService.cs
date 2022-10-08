@@ -42,4 +42,8 @@ public interface IDbTransferService
     IAsyncEnumerable<Stock> SelectStockOnHold();
 
     IAsyncEnumerable<TrackData> SelectTrackData();
+
+    Task InsertTrackData(TrackData data);
+
+    Task DeleteTrackData(TrackData data);
 }

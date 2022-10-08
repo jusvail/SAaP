@@ -79,4 +79,21 @@ public sealed partial class MonitorPage
     {
         FilterTextBoxTeachingTip.IsOpen = true;
     }
+
+    private void FilterTextBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        ViewModel.CurrentTrackFilterData.IsValid = false;
+    }
+
+    private void SaveFilterConditionButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        SaveCondition.Flyout.Hide();
+    }
+
+    private async void DeleteFilterCondition_OnClick(object sender, RoutedEventArgs e)
+    {
+       var dataContext = (e.OriginalSource as MenuFlyoutItem)?.DataContext;
+
+       await ViewModel.DeleteFilterTrackData(dataContext);
+    }
 }
