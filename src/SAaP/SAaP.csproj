@@ -27,6 +27,7 @@
 	<AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="ControlPages\BackgroundTransparentColoredRectangle.xaml" />
     <None Remove="Views\MonitorPage.xaml" />
   </ItemGroup>
 
@@ -65,6 +66,11 @@
   <ItemGroup>
     <ProjectReference Include="..\SAaP.Chart\SAaP.Chart.csproj" />
     <ProjectReference Include="..\SAaP.Core\SAaP.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="ControlPages\BackgroundTransparentColoredRectangle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\MonitorPage.xaml">

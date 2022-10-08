@@ -7,14 +7,15 @@
     xmlns:helper="using:SAaP.Helper"
     xmlns:db="using:SAaP.Core.Models.DB"
     xmlns:models="using:SAaP.Models"
+    xmlns:controlPages="using:SAaP.ControlPages"
     mc:Ignorable="d">
 
     <Page.Resources>
         <helper:CodeNameFormatConverter x:Key="CodeNameFormatConverter" />
-        <helper:SimpleFeedLayout x:Key="SimpleFeedLayout" 
-                                 ColumnSpacing="5"
-                                 RowSpacing="5" 
-                                 MinItemSize="20, 80"/>
+        <!-- <helper:SimpleFeedLayout x:Key="SimpleFeedLayout"  -->
+        <!--                          ColumnSpacing="5" -->
+        <!--                          RowSpacing="5"  -->
+        <!--                          MinItemSize="20, 80"/> -->
         <DataTemplate x:DataType="db:Stock" x:Key="SimpleStockDetailForSearchDataTemplate">
             <StackPanel>
                 <TextBlock Text="{x:Bind CompanyName}" 
@@ -62,6 +63,54 @@
                                         Click="DeleteFilterCondition_OnClick"/>
                     </MenuFlyout>
                 </Grid.ContextFlyout>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate x:Key="TaskDataTemplate" x:DataType="models:ObservableTaskDetail" x:DefaultBindMode="OneWay">
+            <Grid Margin="0 2 12 2">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*" MinHeight="64"/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <TextBlock Text="{x:Bind TaskName}" 
+                                       FontWeight="Bold"
+                                       TextWrapping="Wrap"
+                                       Margin="{StaticResource DefaultTextBlockHeaderMargin}"/>
+                        </Grid>
+                        <Grid Grid.Row="1">
+                            <TextBlock Text="{x:Bind TaskDetail}" 
+                                       TextWrapping="Wrap"
+                                       Margin="{StaticResource DefaultTextBlockContentMargin}"/>
+                        </Grid>
+                    </Grid>
+                    <Grid Grid.Column="1">
+                        <Rectangle Fill="Black" 
+                                   Width="1.5" 
+                                   Opacity=".5"
+                                   HorizontalAlignment="Left"
+                                   Margin="0 15"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="当前状态："
+                                       Margin="10 0 5 0"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text="{x:Bind ExecStatus}"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text="{x:Bind ExecProgress}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                    <Grid Grid.Column="2">
+                        <Button Content="执行" IsEnabled="{x:Bind IsTaskNotActive}"/>
+                    </Grid>
+                </Grid>
+                <controlPages:BackgroundTransparentColoredRectangle Margin="-8 4 -15 4"/>
             </Grid>
         </DataTemplate>
     </Page.Resources>
@@ -158,8 +207,9 @@
                         <PivotItem Header="筛选" Padding="{StaticResource DefaultPivotBorderPadding}">
                             <Grid>
                                 <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
-                                    <RowDefinition Height="1.1*"/>
+                                    <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
                                 <Grid Grid.Row="0">
                                     <Grid.ColumnDefinitions>
@@ -167,13 +217,9 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <Grid Grid.Column="0">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="*"/>
-                                        </Grid.RowDefinitions>
-                                        <Grid Grid.Row="0">
+                                        <Grid>
                                             <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
                                                 <RowDefinition Height="*"/>
                                             </Grid.RowDefinitions>
                                             <Grid Grid.Row="0" 
@@ -237,8 +283,7 @@
                                                     <Button x:Name="SaveCondition" 
                                                             Content="保存条件" 
                                                             IsEnabled="{x:Bind ViewModel.CurrentTrackFilterData.IsValid,Mode=OneWay}"
-                                                            Margin="{StaticResource StandardButtonMargin}"
-                                                            Style="{StaticResource AccentButtonStyle}">
+                                                            Margin="{StaticResource StandardButtonMargin}">
                                                         <Button.Flyout>
                                                             <Flyout>
                                                                 <Grid>
@@ -294,21 +339,71 @@
                                                             </Flyout>
                                                         </Button.Flyout>
                                                     </Button>
-
                                                 </StackPanel>
                                             </Grid>
                                         </Grid>
+                                    </Grid>
+                                    <Grid Grid.Column="1">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid Grid.Row="0"
+                                              Margin="8 4 4 0">
+                                            <TextBox x:Name="TaskNameTextBox" 
+                                                     PlaceholderText="输入任务名："
+                                                     Text="{x:Bind ViewModel.CurrentTaskFilterData.TaskName,Mode=TwoWay}" 
+                                                     KeyDown="FilterTextBox_OnKeyDown"
+                                                     CharacterCasing="Upper"/>
+                                        </Grid>
                                         <Grid Grid.Row="1">
-                                            <GridView ItemsSource="{x:Bind ViewModel.FilterConditions}"
-                                                      ItemTemplate="{StaticResource FilterConditionDataTemplate}"/>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Button x:Name="SaveFilterTask" 
+                                                        Content="保存任务" 
+                                                        Command="{x:Bind ViewModel.SaveFilterTaskCommand}"
+                                                        Margin="8,5,0,5"
+                                                        Style="{StaticResource AccentButtonStyle}"/>
+                                            </StackPanel>
                                         </Grid>
                                     </Grid>
-                                    <Grid Grid.Column="0">
-
-                                    </Grid>
                                 </Grid>
-                                <Grid Grid.Row="1" Background="LightBlue">
+                                <Grid Grid.Row="1">
+                                    <GridView ItemsSource="{x:Bind ViewModel.FilterConditions}"
+                                              ItemTemplate="{StaticResource FilterConditionDataTemplate}"/>
+                                </Grid>
+                                <Grid Grid.Row="2">
+                                    <TabView x:Name="FilterResultTabView" 
+                                             IsAddTabButtonVisible="False"
+                                             Height="300"
+                                             Margin="-10 0 -8 -3"
+                                             TabWidthMode="SizeToContent">
+                                        <TabView.Resources>
+                                            <!-- <ResourceDictionary> -->
+                                            <!--     <ResourceDictionary.ThemeDictionaries> -->
+                                            <!--         <ResourceDictionary x:Key="Light"> -->
+                                            <!--             <SolidColorBrush x:Key="TabViewBackground" Color="{ThemeResource SystemAccentColorLight2}"/> -->
+                                            <!--         </ResourceDictionary> -->
+                                            <!--         <ResourceDictionary x:Key="Dark"> -->
+                                            <!--             <SolidColorBrush x:Key="TabViewBackground" Color="{ThemeResource SystemAccentColorDark2}"/> -->
+                                            <!--         </ResourceDictionary> -->
+                                            <!--     </ResourceDictionary.ThemeDictionaries> -->
+                                            <!-- </ResourceDictionary> -->
+                                        </TabView.Resources>
+                                        <TabView.TabItems>
+                                            <TabViewItem Header="任务总览" IsClosable="False" >
+                                                <TabViewItem.IconSource>
+                                                    <FontIconSource Glyph="&#xE80F;" />
+                                                </TabViewItem.IconSource>
+                                                <Grid Padding="{StaticResource DefaultGridBorderPadding}"
+                                                      Background="{ThemeResource LayerFillColorDefaultBrush}">
+                                                    <ListView x:Name="FilterTaskListView"
+                                                              ItemTemplate="{StaticResource TaskDataTemplate}"
+                                                              ItemsSource="{x:Bind ViewModel.FilterTasks}"/>
+                                                </Grid>
+                                            </TabViewItem>
+                                        </TabView.TabItems>
 
+                                    </TabView>
                                 </Grid>
                             </Grid>
                         </PivotItem>

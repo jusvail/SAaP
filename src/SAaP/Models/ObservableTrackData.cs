@@ -1,7 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using Mapster;
-using SAaP.Contracts.Services;
 using SAaP.Core.Models.DB;
 
 namespace SAaP.Models;
@@ -84,4 +82,8 @@ public class ObservableTrackData : ObservableRecipient
         IsChecked = false;
     }
 
+    public ObservableTrackData HardCopyNew()
+    {
+        return this.Adapt<ObservableTrackData>();
+    }
 }

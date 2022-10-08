@@ -6,6 +6,7 @@ using Mapster;
 using SAaP.Core.Models.DB;
 using SAaP.Core.Services;
 using SAaP.Models;
+using System.Linq;
 
 namespace SAaP.ViewModels;
 
@@ -27,12 +28,17 @@ public class MonitorViewModel : ObservableRecipient
 
     public ObservableTrackData CurrentTrackFilterData { get; set; } = new();
 
+    public ObservableCollection<ObservableTaskDetail> FilterTasks { get; set; } = new();
+
+    public ObservableTaskDetail CurrentTaskFilterData { get; set; } = new();
+
     public IRelayCommand<object> AddToMonitorCommand { get; }
 
     public IAsyncRelayCommand AddOnHoldStockCommand { get; }
 
     public IRelayCommand CheckUseabilityCommand { get; }
     public IAsyncRelayCommand SaveFilterConditionCommand { get; }
+    public IRelayCommand SaveFilterTaskCommand { get; }
 
     public MonitorViewModel(IDbTransferService dbTransferService, IFetchStockDataService fetchStockDataService)
     {
@@ -43,6 +49,24 @@ public class MonitorViewModel : ObservableRecipient
         AddOnHoldStockCommand = new AsyncRelayCommand(AddOnHoldStock);
         CheckUseabilityCommand = new RelayCommand(CheckUseability);
         SaveFilterConditionCommand = new AsyncRelayCommand(SaveFilterCondition);
+        SaveFilterTaskCommand = new RelayCommand(SaveFilterTask);
+    }
+
+    private void SaveFilterTask()
+    {
+        if (string.IsNullOrEmpty(CurrentTaskFilterData.TaskName)) return;
+
+        var ready = CurrentTaskFilterData.Adapt<ObservableTaskDetail>();
+
+        foreach (var filterCondition in FilterConditions)
+        {
+            if (ObservableTrackData.SelectedTrackIndex.Contains(filterCondition.TrackIndex))
+            {
+                ready.TrackDatas.Add(filterCondition.HardCopyNew());
+            }
+        }
+
+        FilterTasks.Add(ready);
     }
 
     public async Task DeleteFilterTrackData(object data)
