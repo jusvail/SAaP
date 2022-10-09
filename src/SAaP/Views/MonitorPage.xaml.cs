@@ -1,10 +1,8 @@
 ﻿using Microsoft.UI.Xaml.Navigation;
 using SAaP.ViewModels;
-using Windows.ApplicationModel.Core;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using SAaP.Contracts.Services;
 using SAaP.Core.Models.DB;
 using SAaP.Helper;
 
@@ -16,8 +14,7 @@ namespace SAaP.Views;
 public sealed partial class MonitorPage
 {
     public MonitorViewModel ViewModel { get; }
-
-
+    
     public MonitorPage()
     {
         ViewModel = App.GetService<MonitorViewModel>();
@@ -82,7 +79,7 @@ public sealed partial class MonitorPage
 
     private void FilterTextBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        ViewModel.CurrentTrackFilterData.IsValid = false;
+        ViewModel.CurrentTrackFilterCondition.IsValid = false;
     }
 
     private void SaveFilterConditionButton_OnClick(object sender, RoutedEventArgs e)
@@ -96,4 +93,5 @@ public sealed partial class MonitorPage
 
        await ViewModel.DeleteFilterTrackData(dataContext);
     }
+
 }

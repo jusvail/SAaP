@@ -6,44 +6,53 @@ using Mapster;
 using SAaP.Core.Models.DB;
 using SAaP.Core.Services;
 using SAaP.Models;
-using System.Linq;
+using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 namespace SAaP.ViewModels;
 
 public class MonitorViewModel : ObservableRecipient
 {
-    private readonly IDbTransferService _dbTransferService;
+    private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
+    private readonly IDbTransferService _dbTransferService;
+    private readonly IStockAnalyzeService _stockAnalyzeService;
     private readonly IFetchStockDataService _fetchStockDataService;
 
     private readonly Stock _noFoundStock = new() { CompanyName = "找不到对象", CodeName = ">_<0" };
+
+    private string _titleBarMessage;
 
     public ObservableCollection<Stock> AllSuggestStocks { get; } = new();
 
     public ObservableCollection<Stock> MonitorStocks { get; } = new();
 
-    public ObservableCollection<ObservableTrackData> FilterConditions { get; } = new();
+    public ObservableCollection<ObservableTrackCondition> FilterConditions { get; } = new();
 
-    public ObservableCollection<ObservableTrackData> MonitorConditions { get; } = new();
+    public ObservableCollection<ObservableTrackCondition> MonitorConditions { get; } = new();
 
-    public ObservableTrackData CurrentTrackFilterData { get; set; } = new();
+    public ObservableTrackCondition CurrentTrackFilterCondition { get; set; } = new();
 
     public ObservableCollection<ObservableTaskDetail> FilterTasks { get; set; } = new();
 
     public ObservableTaskDetail CurrentTaskFilterData { get; set; } = new();
 
     public IRelayCommand<object> AddToMonitorCommand { get; }
-
-    public IAsyncRelayCommand AddOnHoldStockCommand { get; }
-
     public IRelayCommand CheckUseabilityCommand { get; }
-    public IAsyncRelayCommand SaveFilterConditionCommand { get; }
     public IRelayCommand SaveFilterTaskCommand { get; }
+    public IAsyncRelayCommand AddOnHoldStockCommand { get; }
+    public IAsyncRelayCommand SaveFilterConditionCommand { get; }
 
-    public MonitorViewModel(IDbTransferService dbTransferService, IFetchStockDataService fetchStockDataService)
+    public string TitleBarMessage
+    {
+        get => _titleBarMessage;
+        set => SetProperty(ref _titleBarMessage, value);
+    }
+
+    public MonitorViewModel(IDbTransferService dbTransferService, IFetchStockDataService fetchStockDataService, IStockAnalyzeService stockAnalyzeService)
     {
         _dbTransferService = dbTransferService;
         _fetchStockDataService = fetchStockDataService;
+        _stockAnalyzeService = stockAnalyzeService;
 
         AddToMonitorCommand = new RelayCommand<object>(AddToMonitor);
         AddOnHoldStockCommand = new AsyncRelayCommand(AddOnHoldStock);
@@ -60,13 +69,84 @@ public class MonitorViewModel : ObservableRecipient
 
         foreach (var filterCondition in FilterConditions)
         {
-            if (ObservableTrackData.SelectedTrackIndex.Contains(filterCondition.TrackIndex))
+            if (ObservableTrackCondition.SelectedTrackIndex.Contains(filterCondition.TrackIndex))
             {
-                ready.TrackDatas.Add(filterCondition.HardCopyNew());
+                ready.TrackConditions.Add(filterCondition.HardCopyNew());
             }
         }
 
-        FilterTasks.Add(ready);
+        ready.TaskStartEventHandler += ReadyOnTaskStartEventHandler;
+
+        FilterTasks.Insert(0, ready);
+    }
+
+    private void SetValueCrossThread(Action action)
+    {
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            action();
+        });
+    }
+
+    private async void ReadyOnTaskStartEventHandler(object sender, TaskStartEventArgs e)
+    {
+        if (sender is not ObservableTaskDetail targetTaskObject) return;
+
+        var allCount = AllSuggestStocks.Count;
+        var curIndex = 1;
+
+        SetValueCrossThread(() =>
+        {
+            targetTaskObject.ExecStatus = "开始";
+        });
+
+        try
+        {
+            await Task.Run(async () =>
+             {
+                 var filtered =
+                     _stockAnalyzeService.Filter(
+                         AllSuggestStocks.Select(s => s.CodeNameFull)
+                         , targetTaskObject.TrackConditions
+                         , e.CancellationToken);
+
+                 await foreach (var filteredCodeName in filtered)
+                 {
+                     var index = curIndex;
+                     SetValueCrossThread(() =>
+                         {
+                             if (!string.IsNullOrEmpty(filteredCodeName))
+                             {
+                                 targetTaskObject.ExecProgress = $"筛选中：{index}/{allCount}...";
+                             }
+                             // ReSharper disable once PossibleLossOfFraction
+                             targetTaskObject.ProgressBarValue = 100 * index / allCount;
+                         }
+                     );
+                     curIndex++;
+                 }
+             }, e.CancellationToken);
+        }
+        catch (TaskCanceledException)
+        {
+            SetValueCrossThread(() =>
+            {
+                targetTaskObject!.ExecStatus = "已取消！";
+
+                targetTaskObject.OnTaskCancelled();
+            });
+
+            return;
+        }
+
+        SetValueCrossThread(() =>
+        {
+            targetTaskObject!.ExecStatus = "完成！";
+            targetTaskObject!.ExecProgress = string.Empty;
+
+            targetTaskObject.OnTaskComplete();
+        });
+
     }
 
     public async Task DeleteFilterTrackData(object data)
@@ -79,13 +159,13 @@ public class MonitorViewModel : ObservableRecipient
 
     private async Task SaveFilterCondition()
     {
-        await _dbTransferService.InsertTrackData(CurrentTrackFilterData.Adapt<TrackData>());
+        await _dbTransferService.InsertTrackData(CurrentTrackFilterCondition.Adapt<TrackData>());
         await InitializeTrackData();
     }
 
     private void CheckUseability()
     {
-        CurrentTrackFilterData.IsValid = true;
+        CurrentTrackFilterCondition.IsValid = true;
     }
 
     private async Task AddOnHoldStock()
@@ -143,17 +223,17 @@ public class MonitorViewModel : ObservableRecipient
 
         FilterConditions.Clear();
         MonitorConditions.Clear();
-        CurrentTrackFilterData.Clear();
+        CurrentTrackFilterCondition.Clear();
 
         await foreach (var trackData in trackDatas)
         {
             switch (trackData.TrackType)
             {
                 case TrackType.Filter:
-                    FilterConditions.Add(trackData.Adapt<ObservableTrackData>());
+                    FilterConditions.Add(trackData.Adapt<ObservableTrackCondition>());
                     break;
                 case TrackType.Monitor:
-                    MonitorConditions.Add(trackData.Adapt<ObservableTrackData>());
+                    MonitorConditions.Add(trackData.Adapt<ObservableTrackCondition>());
                     break;
                 case TrackType.Unknown:
                     break;

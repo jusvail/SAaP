@@ -1,7 +1,12 @@
-﻿using SAaP.Contracts.Services;
+﻿using System.Runtime.CompilerServices;
+using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
+using Mapster;
+using SAaP.Contracts.Services;
 using SAaP.Core.Models;
+using SAaP.Core.Models.DB;
 using SAaP.Core.Services;
 using SAaP.Core.Services.Analyze;
+using SAaP.Models;
 
 namespace SAaP.Services;
 
@@ -10,13 +15,11 @@ namespace SAaP.Services;
 /// </summary>
 public class StockAnalyzeService : IStockAnalyzeService
 {
-
     /// <summary>
     /// main analyze method
     /// </summary>
     /// <param name="codeName">stock code name</param>
     /// <param name="duration">duration(from last trading day)</param>
-    /// <param name="callback">callback method</param>
     /// <returns></returns>
     public async Task<AnalysisResultDetail> Analyze(string codeName, int duration)
     {
@@ -100,5 +103,46 @@ public class StockAnalyzeService : IStockAnalyzeService
         }
 
         return $"正相关性： {Math.Round(d * 100.0 / c, 2)}%";
+    }
+
+    public async IAsyncEnumerable<string> Filter(IEnumerable<string> codeNames,
+        List<ObservableTrackCondition> trackConditions, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        if (!trackConditions.Any())
+        {
+            yield return string.Empty;
+            yield break;
+        }
+
+        var conditions = trackConditions.Select(condition => Condition.Parse(condition.TrackValue)).ToList();
+
+        const int duration = 10;
+
+        foreach (var codeName in codeNames)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                throw new TaskCanceledException();
+            }
+
+            // query original data recently
+            var originalData = await DbService.TakeOriginalData(codeName[1..], Convert.ToInt32(codeName[..1]), duration);
+
+            var filter = new CodeFilter
+            {
+                CodeName = codeName,
+                TrackCondition = conditions,
+                OriginalDatas = originalData
+            };
+
+            if (filter.Filter())
+            {
+                yield return codeName;
+            }
+            else
+            {
+                yield return string.Empty;
+            }
+        }
     }
 }

@@ -12,6 +12,7 @@
 
     <Page.Resources>
         <helper:CodeNameFormatConverter x:Key="CodeNameFormatConverter" />
+        <helper:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <!-- <helper:SimpleFeedLayout x:Key="SimpleFeedLayout"  -->
         <!--                          ColumnSpacing="5" -->
         <!--                          RowSpacing="5"  -->
@@ -39,12 +40,12 @@
                 </StackPanel.ContextFlyout>
             </StackPanel>
         </DataTemplate>
-        <DataTemplate x:DataType="models:ObservableTrackData" x:Key="FilterConditionDataTemplate">
+        <DataTemplate x:DataType="models:ObservableTrackCondition" x:Key="FilterConditionDataTemplate">
             <Grid>
                 <ToggleButton IsChecked="{x:Bind IsChecked,Mode=TwoWay}">
                     <StackPanel Width="120"
                                 Height="80"
-                                ToolTipService.ToolTip="{x:Bind TrackContent,Mode=OneWay}">
+                                ToolTipService.ToolTip="{x:Bind TrackValue,Mode=OneWay}">
                         <TextBlock Text="{x:Bind TrackName,Mode=OneWay}" 
                                    FontWeight="Bold"
                                    FontSize="12"
@@ -67,6 +68,7 @@
         </DataTemplate>
         <DataTemplate x:Key="TaskDataTemplate" x:DataType="models:ObservableTaskDetail" x:DefaultBindMode="OneWay">
             <Grid Margin="0 2 12 2">
+                <controlPages:BackgroundTransparentColoredRectangle Margin="-8 3 -15 4"/>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -105,12 +107,22 @@
                             <TextBlock Text="{x:Bind ExecProgress}"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
+                        <ProgressBar Margin="0 70 0 0"
+                                     HorizontalContentAlignment="Stretch"
+                                     Visibility="{x:Bind ProgressRingVisibility}"
+                                     Value="{x:Bind ProgressBarValue}"
+                                     ShowPaused="False" 
+                                     ShowError="False" />
                     </Grid>
                     <Grid Grid.Column="2">
-                        <Button Content="执行" IsEnabled="{x:Bind IsTaskNotActive}"/>
+                        <ToggleButton Content="{x:Bind ExecButtonText}"
+                                      IsChecked="{x:Bind IsCancelled,Mode=TwoWay}"
+                                      IsEnabled="True"
+                                      Command="{x:Bind StartTaskCommand}"/> 
+                                      <!-- IsEnabled="{x:Bind IsTaskNotActive}" -->
+
                     </Grid>
                 </Grid>
-                <controlPages:BackgroundTransparentColoredRectangle Margin="-8 4 -15 4"/>
             </Grid>
         </DataTemplate>
     </Page.Resources>
@@ -190,12 +202,9 @@
             <StackPanel Grid.Row="0"
                   Height="48"
                   Margin="0 -24 0 -24">
-                <TextBlock Text="dsagsdf" Margin="15 0"></TextBlock>
-                <ProgressBar 
-                             HorizontalContentAlignment="Stretch"
-                             IsIndeterminate="True" 
-                             ShowPaused="False" 
-                             ShowError="False" />
+                <TextBlock x:Name="TitleBarTextBlock" 
+                           Text="{x:Bind ViewModel.TitleBarMessage,Mode=OneWay}" 
+                           Margin="15 0"></TextBlock>
                 <Rectangle Stretch="Fill" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                            Opacity="0.05"
                            Margin="0 -48 0 -48"
@@ -250,7 +259,7 @@
                                                     </StackPanel>
                                                 </TeachingTip>
                                                 <TextBox x:Name="FilterTextBox" 
-                                                         Text="{x:Bind ViewModel.CurrentTrackFilterData.TrackContent,Mode=TwoWay}" 
+                                                         Text="{x:Bind ViewModel.CurrentTrackFilterCondition.TrackValue,Mode=TwoWay}" 
                                                          KeyDown="FilterTextBox_OnKeyDown"
                                                          CharacterCasing="Upper"/>
                                             </Grid>
@@ -282,7 +291,7 @@
                                                             Command="{x:Bind ViewModel.CheckUseabilityCommand}"/>
                                                     <Button x:Name="SaveCondition" 
                                                             Content="保存条件" 
-                                                            IsEnabled="{x:Bind ViewModel.CurrentTrackFilterData.IsValid,Mode=OneWay}"
+                                                            IsEnabled="{x:Bind ViewModel.CurrentTrackFilterCondition.IsValid,Mode=OneWay}"
                                                             Margin="{StaticResource StandardButtonMargin}">
                                                         <Button.Flyout>
                                                             <Flyout>
@@ -311,7 +320,7 @@
                                                                     </Grid>
                                                                     <Grid Grid.Row="0"
                                                                           Grid.Column="1">
-                                                                        <TextBox Text="{x:Bind ViewModel.CurrentTrackFilterData.TrackName,Mode=TwoWay}"/>
+                                                                        <TextBox Text="{x:Bind ViewModel.CurrentTrackFilterCondition.TrackName,Mode=TwoWay}"/>
                                                                     </Grid>
                                                                     <Grid Grid.Row="1"
                                                                           Grid.Column="0">
@@ -319,7 +328,7 @@
                                                                     </Grid>
                                                                     <Grid Grid.Row="1"
                                                                           Grid.Column="1">
-                                                                        <TextBox Text="{x:Bind ViewModel.CurrentTrackFilterData.TrackSummary,Mode=TwoWay}" 
+                                                                        <TextBox Text="{x:Bind ViewModel.CurrentTrackFilterCondition.TrackSummary,Mode=TwoWay}" 
                                                                                  TextWrapping="Wrap"
                                                                                  MinHeight="60"/>
                                                                     </Grid>
@@ -374,7 +383,7 @@
                                 <Grid Grid.Row="2">
                                     <TabView x:Name="FilterResultTabView" 
                                              IsAddTabButtonVisible="False"
-                                             Height="300"
+                                             Height="320"
                                              Margin="-10 0 -8 -3"
                                              TabWidthMode="SizeToContent">
                                         <TabView.Resources>

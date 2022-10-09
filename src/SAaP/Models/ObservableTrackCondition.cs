@@ -4,11 +4,11 @@ using SAaP.Core.Models.DB;
 
 namespace SAaP.Models;
 
-public class ObservableTrackData : ObservableRecipient
+public class ObservableTrackCondition : ObservableRecipient
 {
     private int _trackIndex = -1;
     private string _trackName;
-    private string _trackContent;
+    private string _trackValue;
     private string _trackSummary;
     private TrackType _trackType;
     private bool _isValid;
@@ -26,10 +26,10 @@ public class ObservableTrackData : ObservableRecipient
         set => SetProperty(ref _trackName, value);
     }
 
-    public string TrackContent
+    public string TrackValue
     {
-        get => _trackContent;
-        set => SetProperty(ref _trackContent, value);
+        get => _trackValue;
+        set => SetProperty(ref _trackValue, value);
     }
 
     public string TrackSummary
@@ -76,14 +76,14 @@ public class ObservableTrackData : ObservableRecipient
     {
         _trackIndex = -1;
         _trackName = string.Empty;
-        _trackContent = string.Empty;
+        _trackValue = string.Empty;
         _trackSummary = string.Empty;
         _isValid = false;
         IsChecked = false;
     }
 
-    public ObservableTrackData HardCopyNew()
+    public ObservableTrackCondition HardCopyNew()
     {
-        return this.Adapt<ObservableTrackData>();
+        return this.Adapt<ObservableTrackCondition>();
     }
 }
