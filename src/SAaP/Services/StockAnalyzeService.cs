@@ -114,9 +114,9 @@ public class StockAnalyzeService : IStockAnalyzeService
             yield break;
         }
 
-        var conditions = trackConditions.Select(condition => Condition.Parse(condition.TrackValue)).ToList();
+        var conditions = trackConditions.SelectMany(trackCondition => Condition.Parse(trackCondition.TrackContent)).ToList();
 
-        const int duration = 10;
+        var duration = conditions.Max(c => c.FromDays);
 
         foreach (var codeName in codeNames)
         {

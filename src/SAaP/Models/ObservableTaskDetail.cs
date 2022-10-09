@@ -39,7 +39,7 @@ public class ObservableTaskDetail : ObservableRecipient
 
             if (s.Length > 0)
             {
-                s.Remove(s.Length - 2, 2);
+                s.Remove(s.Length - 3, 3);
             }
 
             return s.ToString();
@@ -157,10 +157,10 @@ public class ObservableTaskDetail : ObservableRecipient
     {
         TaskStartEventHandler?.Invoke(this,
             new TaskStartEventArgs
-            {
-                TitleBarMessage = "开始了！！"
-                ,
-                CancellationToken = _cts.Token
-            });
+              {
+                  TitleBarMessage = "开始了！！"
+                  ,
+                  CancellationToken = _cts.Token
+              });
     }
 }

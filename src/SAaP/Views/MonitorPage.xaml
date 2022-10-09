@@ -45,7 +45,7 @@
                 <ToggleButton IsChecked="{x:Bind IsChecked,Mode=TwoWay}">
                     <StackPanel Width="120"
                                 Height="80"
-                                ToolTipService.ToolTip="{x:Bind TrackValue,Mode=OneWay}">
+                                ToolTipService.ToolTip="{x:Bind TrackContent,Mode=OneWay}">
                         <TextBlock Text="{x:Bind TrackName,Mode=OneWay}" 
                                    FontWeight="Bold"
                                    FontSize="12"
@@ -105,10 +105,12 @@
                             <TextBlock Text="{x:Bind ExecStatus}"
                                        VerticalAlignment="Center"/>
                             <TextBlock Text="{x:Bind ExecProgress}"
+                                       Margin="{StaticResource XSmallLeftMargin}"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
-                        <ProgressBar Margin="0 70 0 0"
+                        <ProgressBar Margin="{StaticResource BottomOnlyMargin}"
                                      HorizontalContentAlignment="Stretch"
+                                     VerticalAlignment="Bottom"
                                      Visibility="{x:Bind ProgressRingVisibility}"
                                      Value="{x:Bind ProgressBarValue}"
                                      ShowPaused="False" 
@@ -259,7 +261,7 @@
                                                     </StackPanel>
                                                 </TeachingTip>
                                                 <TextBox x:Name="FilterTextBox" 
-                                                         Text="{x:Bind ViewModel.CurrentTrackFilterCondition.TrackValue,Mode=TwoWay}" 
+                                                         Text="{x:Bind ViewModel.CurrentTrackFilterCondition.TrackContent,Mode=TwoWay}" 
                                                          KeyDown="FilterTextBox_OnKeyDown"
                                                          CharacterCasing="Upper"/>
                                             </Grid>

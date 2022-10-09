@@ -94,6 +94,7 @@ public class MonitorViewModel : ObservableRecipient
 
         var allCount = AllSuggestStocks.Count;
         var curIndex = 1;
+        var selected = 0;
 
         SetValueCrossThread(() =>
         {
@@ -112,13 +113,19 @@ public class MonitorViewModel : ObservableRecipient
 
                  await foreach (var filteredCodeName in filtered)
                  {
+                     if (!string.IsNullOrEmpty(filteredCodeName))
+                     {
+                         selected++;
+                         var selected1 = selected;
+                         SetValueCrossThread(() =>
+                         {
+                             targetTaskObject.ExecProgress = $"筛选结果:{selected1}/{allCount}";
+                         });
+                     }
+
                      var index = curIndex;
                      SetValueCrossThread(() =>
                          {
-                             if (!string.IsNullOrEmpty(filteredCodeName))
-                             {
-                                 targetTaskObject.ExecProgress = $"筛选中：{index}/{allCount}...";
-                             }
                              // ReSharper disable once PossibleLossOfFraction
                              targetTaskObject.ProgressBarValue = 100 * index / allCount;
                          }
@@ -142,7 +149,6 @@ public class MonitorViewModel : ObservableRecipient
         SetValueCrossThread(() =>
         {
             targetTaskObject!.ExecStatus = "完成！";
-            targetTaskObject!.ExecProgress = string.Empty;
 
             targetTaskObject.OnTaskComplete();
         });

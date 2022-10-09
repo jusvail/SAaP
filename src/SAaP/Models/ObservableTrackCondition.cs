@@ -8,7 +8,7 @@ public class ObservableTrackCondition : ObservableRecipient
 {
     private int _trackIndex = -1;
     private string _trackName;
-    private string _trackValue;
+    private string _trackContent;
     private string _trackSummary;
     private TrackType _trackType;
     private bool _isValid;
@@ -26,10 +26,10 @@ public class ObservableTrackCondition : ObservableRecipient
         set => SetProperty(ref _trackName, value);
     }
 
-    public string TrackValue
+    public string TrackContent
     {
-        get => _trackValue;
-        set => SetProperty(ref _trackValue, value);
+        get => _trackContent;
+        set => SetProperty(ref _trackContent, value);
     }
 
     public string TrackSummary
@@ -76,7 +76,7 @@ public class ObservableTrackCondition : ObservableRecipient
     {
         _trackIndex = -1;
         _trackName = string.Empty;
-        _trackValue = string.Empty;
+        _trackContent = string.Empty;
         _trackSummary = string.Empty;
         _isValid = false;
         IsChecked = false;
