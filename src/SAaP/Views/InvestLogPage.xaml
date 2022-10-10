@@ -157,12 +157,7 @@
                                    Margin="{StaticResource MainContentTextBoxThickness}"></TextBlock>
                     </Grid>
                 </Grid>
-                <Rectangle Stretch="Fill" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                           Margin="-12 1.5 -8 1"
-                           RadiusX="5"
-                           RadiusY="5"
-                           Opacity="0.25"
-                           Fill="{x:Bind Mode=OneWay, Converter={StaticResource RandomizedFillColorConverter}}" />
+                <tlh:BackgroundTransparentColoredRectangle Margin="-12 1.5 -8 1"/>
             </Grid>
         </DataTemplate>
 

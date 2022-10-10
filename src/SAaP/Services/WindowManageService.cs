@@ -4,7 +4,6 @@ using Microsoft.UI.Xaml.Controls;
 using SAaP.Contracts.Enum;
 using SAaP.Contracts.Services;
 using SAaP.Extensions;
-using System.Runtime.InteropServices;
 using SAaP.Helper;
 using WinRT.Interop;
 
@@ -37,7 +36,7 @@ public class WindowManageService : IWindowManageService
         return newWindow;
     }
 
-    public void CreateOrBackToWindow<T>(string key, string title, object arg) where T : Page
+    public void CreateOrBackToWindow<T>(string key, string title = null, object arg = null) where T : Page
     {
         if (!string.IsNullOrEmpty(key))
         {
@@ -53,7 +52,7 @@ public class WindowManageService : IWindowManageService
 
                     if (InstanceType.Multi == _pageService.GetPageInstanceType(key))
                     {
-                        foreach (var activatedWindow in ActiveWindows[key].Where(activatedWindow => activatedWindow.Title.Contains(title)))
+                        foreach (var activatedWindow in ActiveWindows[key].Where(activatedWindow => title != null && activatedWindow.Title.Contains(title)))
                         {
                             SetWindowForeground(activatedWindow);
                             return;

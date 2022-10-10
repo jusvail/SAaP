@@ -129,6 +129,9 @@
   <data name="InvestLogPageTitle" xml:space="preserve">
     <value>投资账单</value>
   </data>
+  <data name="MonitorPageTitle" xml:space="preserve">
+    <value>筛选与监控</value>
+  </data>
   <data name="SettingsPageTitle" xml:space="preserve">
     <value>设置</value>
   </data>

@@ -1,0 +1,62 @@
+﻿<Page
+    x:Class="SAaP.Views.FilterResultViewerPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:db="using:SAaP.Core.Models.DB"
+    xmlns:helper="using:SAaP.Helper"
+    xmlns:controlPages="using:SAaP.ControlPages"
+    mc:Ignorable="d"
+    Background="{ThemeResource LayerFillColorDefaultBrush}">
+
+    <Page.Resources>
+        <helper:CodeNameFormatConverter x:Key="CodeNameFormatConverter" />
+        <DataTemplate x:Key="StockViewerItemTemplate" x:DataType="db:Stock">
+            <Grid>
+                <Grid.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="详细页面" Click="GoToDetail_OnClick"/>
+                    </MenuFlyout>
+                </Grid.ContextFlyout>
+                <controlPages:BackgroundTransparentColoredRectangle/>
+                <StackPanel MinWidth="120" MinHeight="60"
+                        Margin="{StaticResource DefaultGridThickness}">
+                    <TextBlock Text="{x:Bind CompanyName}" 
+                           Margin="{StaticResource DefaultTextBlockHeaderMargin}"
+                           FontWeight="Bold"/>
+                    <TextBlock Text="{x:Bind CodeNameFull,Converter={StaticResource CodeNameFormatConverter}}"
+                           Margin="{StaticResource DefaultTextBlockContentMargin}"/>
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid Margin="{StaticResource DefaultGridBorderPadding}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0"
+              Margin="{StaticResource XXSmallLeftTopRightBottomMargin}">
+            <StackPanel Orientation="Horizontal">
+                <ToggleSwitch Header="只看股票" OffContent="否" OnContent="是" 
+                              IsOn="False" 
+                              Toggled="StockOnly_OnToggled"/>
+                <CheckBox Content="全选" 
+                          Checked="SelectAll_OnChecked"
+                          Unchecked="SelectAll_OnUnchecked"/>
+                <Button Content="复制" 
+                        Click="Copy_OnClick"/>
+                <!-- <Button Content="加入监视列表"  -->
+                <!--         Margin="{StaticResource XXSmallLeftMargin}"/> -->
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="1">
+            <GridView x:Name="StockGridView" 
+                      SelectionMode="Multiple" 
+                      ItemsSource="{x:Bind Stocks}"
+                      ItemTemplate="{StaticResource StockViewerItemTemplate}"/>
+        </Grid>
+    </Grid>
+</Page>

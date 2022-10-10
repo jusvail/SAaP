@@ -21,6 +21,8 @@
     <Thickness x:Key="XSmallLeftTopRightBottomMargin">8,8,8,8</Thickness>
 
     <Thickness x:Key="XXSmallTopMargin">0,4,0,0</Thickness>
+    <Thickness x:Key="XXSmallRightMargin">0,0,4,0</Thickness>
+    <Thickness x:Key="XXSmallLeftMargin">4,0,0,0</Thickness>
     <Thickness x:Key="XXSmallLeftTopRightBottomMargin">4,2,2,4</Thickness>
 
     <Thickness x:Key="NavigationViewContentGridBorderThickness">1,1,0,0</Thickness>
@@ -44,11 +46,16 @@
     <Thickness x:Key="BottomOnlyMargin">0,0,0,5</Thickness>
     <Thickness x:Key="TopOnlyMargin">-1,5,0,0</Thickness>
     <Thickness x:Key="DefaultGridBorderPadding">5</Thickness>
+    <Thickness x:Key="DefaultPivotBorderPadding">0 5</Thickness>
     <Thickness x:Key="DefaultGridThickness">5</Thickness>
     <Thickness x:Key="DefaultRadioButtonThickness">5,0,-50,0</Thickness>
     <Thickness x:Key="DefaultTextBoxThickness">0,1,2,1</Thickness>
+    <Thickness x:Key="DefaultTextBlockHeaderMargin">0,5,2,1</Thickness>
+    <Thickness x:Key="DefaultTextBlockContentMargin">0,1,2,5</Thickness>
     <Thickness x:Key="SmallHeaderTextBoxThickness">-5 8 4 2</Thickness>
     <Thickness x:Key="MainContentTextBoxThickness">-5 2 4 5</Thickness>
+    <Thickness x:Key="MainGridThickness">5</Thickness>
+    <Thickness x:Key="SecondaryGridThickness">2</Thickness>
 
     <Thickness x:Key="ArrangeLeftGridMargin">-5,2,0,2</Thickness>
 

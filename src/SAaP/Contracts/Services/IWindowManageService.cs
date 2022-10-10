@@ -6,7 +6,7 @@ namespace SAaP.Contracts.Services;
 
 public interface IWindowManageService
 {
-    void CreateOrBackToWindow<T>(string key, string title, object arg) where T : Page;
+    void CreateOrBackToWindow<T>(string key, string? title = null, object? arg = null) where T : Page;
 
     MainWindow CreateWindow(string key);
 

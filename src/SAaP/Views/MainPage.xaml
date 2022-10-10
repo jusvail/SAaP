@@ -315,6 +315,17 @@
                                         </HyperlinkButton>
                                     </StackPanel>
                                     <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <AppBarButton x:Name="FilterCodeAppBarButton"
+                                                      Width="42"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"
+                                                      Command="{x:Bind ViewModel.NavigateToMonitorCommand}">
+                                            <AppBarButton.Icon>
+                                                <FontIcon  Margin="0 -3 0 0" 
+                                                           FontFamily="{StaticResource SymbolThemeFontFamily}" 
+                                                           Glyph="&#xE71C;"/>
+                                            </AppBarButton.Icon>
+                                        </AppBarButton>
                                         <AppBarButton x:Name="InvestLogAppBarButton"
                                                       Width="42"
                                                       HorizontalAlignment="Center"

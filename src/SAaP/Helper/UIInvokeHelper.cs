@@ -6,8 +6,10 @@ namespace SAaP.Helper;
 
 internal class UiInvokeHelper
 {
-    public static void Invoke(Button button)
+    public static void TriggerButtonPressed(Button button)
     {
+        if (button == null) return;
+
         var peer = new ButtonAutomationPeer(button);
         var provider = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
 

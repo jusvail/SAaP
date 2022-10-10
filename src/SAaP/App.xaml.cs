@@ -79,6 +79,8 @@ public partial class App
                     services.AddTransient<SettingsViewModel>();
                     services.AddTransient<InvestLogPage>();
                     services.AddTransient<InvestLogViewModel>();
+                    services.AddTransient<MonitorPage>();
+                    services.AddTransient<MonitorViewModel>();
 
                     services.AddTransient<ObservableInvestDetail>();
 

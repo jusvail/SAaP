@@ -67,14 +67,14 @@ public sealed partial class InvestLogPage
 
     private void InvestLogAppBarButton_OnClick(object sender, RoutedEventArgs e)
     {
-        UiInvokeHelper.Invoke(NewLogHiddenButton);
+        UiInvokeHelper.TriggerButtonPressed(NewLogHiddenButton);
         ViewModel.ReminderSelectedIndex = -1;
         ViewModel.ReminderContent = string.Empty;
     }
 
     private void Reminder_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
-        UiInvokeHelper.Invoke(NewLogHiddenButton);
+        UiInvokeHelper.TriggerButtonPressed(NewLogHiddenButton);
         ViewModel.EditReminder();
     }
 
@@ -89,7 +89,7 @@ public sealed partial class InvestLogPage
     {
         var dataContext = ((AppBarButton)e.OriginalSource).DataContext;
 
-        UiInvokeHelper.Invoke(NewLogHiddenButton);
+        UiInvokeHelper.TriggerButtonPressed(NewLogHiddenButton);
         ViewModel.EditReminder(dataContext);
     }
 

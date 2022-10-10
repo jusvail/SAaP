@@ -1,0 +1,451 @@
+﻿<Page
+    x:Class="SAaP.Views.MonitorPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:helper="using:SAaP.Helper"
+    xmlns:db="using:SAaP.Core.Models.DB"
+    xmlns:models="using:SAaP.Models"
+    xmlns:controlPages="using:SAaP.ControlPages"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <helper:CodeNameFormatConverter x:Key="CodeNameFormatConverter" />
+        <helper:ReverseBooleanConverter x:Key="ReverseBooleanConverter" />
+        <helper:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <!-- <helper:SimpleFeedLayout x:Key="SimpleFeedLayout"  -->
+        <!--                          ColumnSpacing="5" -->
+        <!--                          RowSpacing="5"  -->
+        <!--                          MinItemSize="20, 80"/> -->
+        <DataTemplate x:DataType="db:Stock" x:Key="SimpleStockDetailForSearchDataTemplate">
+            <StackPanel>
+                <TextBlock Text="{x:Bind CompanyName}" 
+                           Margin="{StaticResource DefaultTextBlockHeaderMargin}"
+                           FontWeight="Bold"/>
+                <TextBlock Text="{x:Bind CodeNameFull,Converter={StaticResource CodeNameFormatConverter}}"
+                           Margin="{StaticResource DefaultTextBlockContentMargin}"/>
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:DataType="db:Stock" x:Key="SimpleStockDetailDataTemplate">
+            <StackPanel>
+                <TextBlock Text="{x:Bind CompanyName}" 
+                           Margin="{StaticResource DefaultTextBlockHeaderMargin}"
+                           FontWeight="Bold"/>
+                <TextBlock Text="{x:Bind CodeNameFull,Converter={StaticResource CodeNameFormatConverter}}"
+                           Margin="{StaticResource DefaultTextBlockContentMargin}"/>
+                <StackPanel.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="删除" Click="DeleteMonitor_OnClick"/>
+                    </MenuFlyout>
+                </StackPanel.ContextFlyout>
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:DataType="models:ObservableTrackCondition" x:Key="FilterConditionDataTemplate">
+            <Grid>
+                <ToggleButton IsChecked="{x:Bind IsChecked,Mode=TwoWay}">
+                    <StackPanel Width="125"
+                                Height="80"
+                                ToolTipService.ToolTip="{x:Bind TrackContent,Mode=OneWay}">
+                        <TextBlock Text="{x:Bind TrackName,Mode=OneWay}" 
+                                   FontWeight="Bold"
+                                   FontSize="12"
+                                   Margin="{StaticResource DefaultTextBlockHeaderMargin}"
+                                   TextWrapping="Wrap"
+                                   HorizontalAlignment="Left"/>
+                        <TextBlock Text="{x:Bind TrackSummary,Mode=OneWay}"
+                                   TextWrapping="Wrap"
+                                   FontSize="12" 
+                                   Margin="{StaticResource DefaultTextBlockContentMargin}"
+                                   MinHeight="50"/>
+                    </StackPanel>
+                </ToggleButton>
+                <Grid.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="删除" 
+                                        Click="DeleteFilterCondition_OnClick"/>
+                    </MenuFlyout>
+                </Grid.ContextFlyout>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate x:Key="TaskDataTemplate" x:DataType="models:ObservableTaskDetail" x:DefaultBindMode="OneWay">
+            <Grid Margin="0 2 12 2">
+                <controlPages:BackgroundTransparentColoredRectangle Margin="-8 3 -15 4"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="1.2*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*" MinHeight="64"/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <TextBlock Text="{x:Bind TaskName}" 
+                                       FontWeight="Bold"
+                                       TextWrapping="Wrap"
+                                       Margin="{StaticResource DefaultTextBlockHeaderMargin}"/>
+                        </Grid>
+                        <Grid Grid.Row="1">
+                            <TextBlock Text="{x:Bind TaskDetail}" 
+                                       TextWrapping="Wrap"
+                                       Margin="{StaticResource DefaultTextBlockContentMargin}"/>
+                        </Grid>
+                    </Grid>
+                    <Grid Grid.Column="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid>
+                                <Rectangle Fill="Black" 
+                                       Width="1.5" 
+                                       Opacity=".5"
+                                       HorizontalAlignment="Left"
+                                       Margin="0 15"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="当前状态："
+                                       Margin="10 0 5 0"
+                                       VerticalAlignment="Center"/>
+                                    <TextBlock Text="{x:Bind ExecStatus}"
+                                       VerticalAlignment="Center"/>
+                                    <TextBlock Text="{x:Bind ExecProgress}"
+                                       Margin="{StaticResource XSmallLeftMargin}"
+                                       VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Grid>
+                            <Grid Grid.Column="1">
+                                <StackPanel Orientation="Horizontal"
+                                            HorizontalAlignment="Right">
+                                    <Button Content="查看结果" 
+                                            Command="{x:Bind ViewResultCommand}"
+                                            Click="ViewResult_OnClick"
+                                            Margin="{StaticResource XXSmallRightMargin}"
+                                            Visibility="{x:Bind ResultButtonVisibility}"/>
+                                    <ToggleButton Content="{x:Bind ExecButtonText}"
+                                                  IsChecked="{x:Bind IsTaskStart,Converter={StaticResource ReverseBooleanConverter}}"
+                                                  IsEnabled="True"
+                                                  Command="{x:Bind StartTaskCommand}"/>
+                                    <!-- IsEnabled="{x:Bind IsTaskNotActive}" -->
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+                        <ProgressBar Margin="{StaticResource BottomOnlyMargin}"
+                                     HorizontalContentAlignment="Stretch"
+                                     VerticalAlignment="Bottom"
+                                     Visibility="{x:Bind ProgressRingVisibility}"
+                                     Value="{x:Bind ProgressBarValue}"
+                                     ShowPaused="False" 
+                                     ShowError="False" />
+                    </Grid>
+                </Grid>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Column="0"
+              Margin="0 -48 0 0"
+              Padding="{StaticResource MainGridThickness}"
+              Background="{ThemeResource LayerFillColorDefaultBrush}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="48"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="1">
+                    <Grid>
+                    </Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" MinWidth="150"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <AutoSuggestBox x:Name="CodeSelectSuggestBox"
+                                        PlaceholderText="输入代码或名称"
+                                        TextChanged="CodeSelectSuggestBox_OnTextChanged"
+                                        QuerySubmitted="CodeSelectSuggestBox_OnQuerySubmitted"
+                                        SuggestionChosen="CodeSelectSuggestBox_OnSuggestionChosen"
+                                        Grid.Column="0"
+                                        Width="148"
+                                        Height="36"
+                                        QueryIcon="Find"
+                                        ItemTemplate="{StaticResource SimpleStockDetailForSearchDataTemplate}">
+                        </AutoSuggestBox>
+                        <StackPanel Grid.Column="1">
+                            <AppBarButton x:Name="AddToMonitorAppBarButton"
+                                          Width="42" Height="48"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Margin="0 0 -2 0"
+                                          Click="AddToMonitorAppBarButton_OnClick">
+                                <AppBarButton.Icon>
+                                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" 
+                                              Glyph="&#xE109;"/>
+                                </AppBarButton.Icon>
+                            </AppBarButton>
+                            <Button x:Name="AddToMonitorAppBarButtonHidden" Visibility="Collapsed">
+                                <Button.Flyout>
+                                    <MenuFlyout>
+                                        <MenuFlyoutItem Text="添加所有交易中的股票" 
+                                                        Command="{x:Bind ViewModel.AddOnHoldStockCommand}"/>
+                                    </MenuFlyout>
+                                </Button.Flyout>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+                <Grid Grid.Row="2">
+                    <ListView ItemsSource="{x:Bind ViewModel.MonitorStocks}"
+                              ItemTemplate="{StaticResource SimpleStockDetailDataTemplate}">
+                    </ListView>
+                </Grid>
+            </Grid>
+        </Grid>
+
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0"
+                  Height="48"
+                  Margin="0 -24 0 -24">
+                <TextBlock x:Name="TitleBarTextBlock" 
+                           Text="{x:Bind ViewModel.TitleBarMessage,Mode=OneWay}" 
+                           Margin="15 0"></TextBlock>
+                <!-- <Rectangle Stretch="Fill" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" -->
+                <!--            Opacity="0.05" -->
+                <!--            Margin="0 -48 0 -48" -->
+                <!--            Fill="Red"/> -->
+            </StackPanel>
+            <Grid Grid.Row="1">
+                <Grid>
+                    <Pivot Grid.Row="0">
+                        <PivotItem Header="筛选" Padding="{StaticResource DefaultPivotBorderPadding}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="2*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid Grid.Column="0">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="*"/>
+                                                <RowDefinition Height="*"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid Grid.Row="0" 
+                                                  Margin="{StaticResource XXSmallTopMargin}">
+                                                <TeachingTip x:Name="FilterTextBoxTeachingTip"
+                                                             Target="{x:Bind FilterTextBox}">
+                                                    <StackPanel>
+                                                        <TextBlock Text="帮助：" 
+                                                                   FontWeight="Bold"
+                                                                   Margin=" 0 0 0 5"></TextBlock>
+                                                        <RichTextBlock FontFamily="Consolas" FontSize="11.5">
+                                                            <Paragraph>基本格式：</Paragraph>
+                                                            <Paragraph>[前N交易日]-[M交易日]:[条件](&amp;&amp;[‘可选’条件])</Paragraph>
+                                                            <Paragraph></Paragraph>
+                                                            <Paragraph>可用代码：</Paragraph>
+                                                            <Paragraph>&#160;&#160;o：开盘价&#160;&#160;h：最高价</Paragraph>
+                                                            <Paragraph>&#160;&#160;l：最低价&#160;&#160;e：收盘价</Paragraph>
+                                                            <Paragraph>&#160;&#160;td：本次交易日&#160;&#160;yd：前一个交易日</Paragraph>
+                                                            <Paragraph>&#160;&#160;op：溢价&#160;&#160;zd：涨跌</Paragraph>
+                                                            <Paragraph>&#160;&#160;bsp：最佳止盈</Paragraph>
+                                                            <Paragraph>&#160;&#160;d：天数</Paragraph>
+                                                            <Paragraph></Paragraph>
+                                                            <Paragraph>例：</Paragraph>
+                                                            <Paragraph>&#160;&#160;L10-L0D:ZD&lt;5&amp;&amp;ZD&gt;&#45;5&amp;&amp;OP%>=0@80</Paragraph>
+                                                            <Paragraph>&#160;&#160;=>筛选出前10个交易日到今天，涨跌小于5%，大于-5%，正溢价天数大于8天的股票</Paragraph>
+                                                            <Paragraph></Paragraph>
+                                                        </RichTextBlock>
+                                                    </StackPanel>
+                                                </TeachingTip>
+                                                <TextBox x:Name="FilterTextBox" 
+                                                         Text="{x:Bind ViewModel.CurrentTrackFilterCondition.TrackContent,Mode=TwoWay}" 
+                                                         KeyDown="FilterTextBox_OnKeyDown"
+                                                         CharacterCasing="Upper"/>
+                                            </Grid>
+                                            <Grid Grid.Row="1">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <AppBarButton x:Name="HelperAppBarButton"
+                                                                  Width="42" Height="48"
+                                                                  HorizontalAlignment="Center"
+                                                                  VerticalAlignment="Center"
+                                                                  Click="HelperAppBarButton_OnClick">
+                                                        <AppBarButton.Icon>
+                                                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" 
+                                                                      Glyph="&#xE11B;"/>
+                                                        </AppBarButton.Icon>
+                                                    </AppBarButton>
+                                                    <!-- <TextBlock Text="状态："  -->
+                                                    <!--            VerticalAlignment="Center"/> -->
+                                                    <!-- <TextBlock Text="未输入"  -->
+                                                    <!--            VerticalAlignment="Center"/> -->
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1" 
+                                                            Orientation="Horizontal"
+                                                            HorizontalAlignment="Right">
+                                                    <Button Content="检查可用性" 
+                                                            Command="{x:Bind ViewModel.CheckUseabilityCommand}"/>
+                                                    <Button x:Name="SaveCondition" 
+                                                            Content="保存条件" 
+                                                            IsEnabled="{x:Bind ViewModel.CurrentTrackFilterCondition.IsValid,Mode=OneWay}"
+                                                            Margin="{StaticResource StandardButtonMargin}">
+                                                        <Button.Flyout>
+                                                            <Flyout>
+                                                                <Grid>
+                                                                    <Grid.Resources>
+                                                                        <Style TargetType="Grid">
+                                                                            <Setter Property="Margin" Value="2"></Setter>
+                                                                        </Style>
+                                                                        <Style TargetType="TextBlock">
+                                                                            <Setter Property="HorizontalAlignment" Value="Right"></Setter>
+                                                                            <Setter Property="VerticalAlignment" Value="Top"></Setter>
+                                                                        </Style>
+                                                                    </Grid.Resources>
+                                                                    <Grid.RowDefinitions>
+                                                                        <RowDefinition Height="*"/>
+                                                                        <RowDefinition Height="2*"/>
+                                                                        <RowDefinition Height="Auto"/>
+                                                                    </Grid.RowDefinitions>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="2*" MinWidth="180"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <Grid Grid.Row="0"
+                                                                          Grid.Column="0">
+                                                                        <TextBlock Text="名称："
+                                                                                   TextWrapping="Wrap"/>
+                                                                    </Grid>
+                                                                    <Grid Grid.Row="0"
+                                                                          Grid.Column="1">
+                                                                        <TextBox Text="{x:Bind ViewModel.CurrentTrackFilterCondition.TrackName,Mode=TwoWay}"/>
+                                                                    </Grid>
+                                                                    <Grid Grid.Row="1"
+                                                                          Grid.Column="0">
+                                                                        <TextBlock Text="描述："
+                                                                                   TextWrapping="Wrap"/>
+                                                                    </Grid>
+                                                                    <Grid Grid.Row="1"
+                                                                          Grid.Column="1">
+                                                                        <TextBox Text="{x:Bind ViewModel.CurrentTrackFilterCondition.TrackSummary,Mode=TwoWay}" 
+                                                                                 TextWrapping="Wrap"
+                                                                                 MinHeight="60"/>
+                                                                    </Grid>
+                                                                    <Grid Grid.Row="2"
+                                                                          Grid.Column="0">
+                                                                    </Grid>
+                                                                    <Grid Grid.Row="2"
+                                                                          Grid.Column="1">
+                                                                        <StackPanel Orientation="Horizontal">
+                                                                            <Button Content="保存"
+                                                                                    Style="{StaticResource AccentButtonStyle}"
+                                                                                    Click="SaveFilterConditionButton_OnClick"
+                                                                                    Command="{x:Bind ViewModel.SaveFilterConditionCommand}"/>
+                                                                        </StackPanel>
+                                                                    </Grid>
+                                                                </Grid>
+                                                            </Flyout>
+                                                        </Button.Flyout>
+                                                    </Button>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Grid>
+                                    </Grid>
+                                    <Grid Grid.Column="1">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid Grid.Row="0"
+                                              Margin="8 4 4 0">
+                                            <TextBox x:Name="TaskNameTextBox" 
+                                                     PlaceholderText="输入任务名："
+                                                     Text="{x:Bind ViewModel.CurrentTaskFilterData.TaskName,Mode=TwoWay}" 
+                                                     KeyDown="FilterTextBox_OnKeyDown"
+                                                     CharacterCasing="Upper"/>
+                                        </Grid>
+                                        <Grid Grid.Row="1">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Button x:Name="SaveFilterTask" 
+                                                        Content="保存任务" 
+                                                        Command="{x:Bind ViewModel.SaveFilterTaskCommand}"
+                                                        Margin="8,8,0,5"
+                                                        Style="{StaticResource AccentButtonStyle}"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
+                                <Grid Grid.Row="1">
+                                    <GridView ItemsSource="{x:Bind ViewModel.FilterConditions}"
+                                              ItemTemplate="{StaticResource FilterConditionDataTemplate}"/>
+                                </Grid>
+                            </Grid>
+                        </PivotItem>
+                        <PivotItem Header="监控" Padding="{StaticResource DefaultPivotBorderPadding}">
+                            <TextBlock Text="in dev." />
+                        </PivotItem>
+                    </Pivot>
+                </Grid>
+            </Grid>
+            <Grid Grid.Row="2">
+                <TabView x:Name="FilterResultTabView" 
+                         IsAddTabButtonVisible="False"
+                         Margin="2"
+                         TabCloseRequested="FilterResultTabView_OnTabCloseRequested"
+                         TabWidthMode="SizeToContent">
+                    <TabView.Resources>
+                        <!-- <ResourceDictionary> -->
+                        <!--     <ResourceDictionary.ThemeDictionaries> -->
+                        <!--         <ResourceDictionary x:Key="Light"> -->
+                        <!--             <SolidColorBrush x:Key="TabViewBackground" Color="{ThemeResource SystemAccentColorLight2}"/> -->
+                        <!--         </ResourceDictionary> -->
+                        <!--         <ResourceDictionary x:Key="Dark"> -->
+                        <!--             <SolidColorBrush x:Key="TabViewBackground" Color="{ThemeResource SystemAccentColorDark2}"/> -->
+                        <!--         </ResourceDictionary> -->
+                        <!--     </ResourceDictionary.ThemeDictionaries> -->
+                        <!-- </ResourceDictionary> -->
+                    </TabView.Resources>
+                    <TabView.TabItems>
+                        <TabViewItem Header="任务总览" IsClosable="False">
+                            <TabViewItem.IconSource>
+                                <FontIconSource Glyph="&#xE80F;" />
+                            </TabViewItem.IconSource>
+                            <Grid Padding="{StaticResource DefaultGridBorderPadding}"
+                                  Background="{ThemeResource LayerFillColorDefaultBrush}">
+                                <ListView x:Name="FilterTaskListView"
+                                          MinHeight="350"
+                                          VerticalContentAlignment="Stretch"
+                                          ItemTemplate="{StaticResource TaskDataTemplate}"
+                                          ItemsSource="{x:Bind ViewModel.FilterTasks}"/>
+                            </Grid>
+                        </TabViewItem>
+                    </TabView.TabItems>
+                </TabView>
+            </Grid>
+        </Grid>
+        <Grid Grid.Column="2">
+            <!-- TODO no content yet -->
+        </Grid>
+    </Grid>
+</Page>

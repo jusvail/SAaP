@@ -81,7 +81,53 @@ public static class DbService
         {
             // ignored
         }
+        try
+        {
+            await db.CreateTableAsync<TrackData>();
+            await DefaultTrackConditionInsertAsync();
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
+    }
 
+    private static async Task DefaultTrackConditionInsertAsync()
+    {
+        // db connection
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+
+        var data1 = new TrackData
+        {
+            TrackName = "近20日正溢价率>85%",
+            TrackType = TrackType.Filter,
+            TrackContent = "L20D-L0D:OP%>1@85",
+            TrackSummary = "近20日+1溢价率>85%(可能不包括今天[若为交易日]的数据)"
+        };
+
+        var data2 = new TrackData
+        {
+            TrackName = "连续两天无溢价",
+            TrackType = TrackType.Filter,
+            TrackContent = "L2D-L0D:OP<0",
+            TrackSummary = "连续两交易日无溢价(可能不包括今天[若为交易日]的数据)"
+        };
+
+        var data3 = new TrackData
+        {
+            TrackName = "昨日无溢价",
+            TrackType = TrackType.Filter,
+            TrackContent = "L1D-L0D:OP<0",
+            TrackSummary = "上个交易日无溢价(可能不包括今天[若为交易日]的数据)"
+        };
+
+        await db.BeginTransactionAsync();
+
+        await db.InsertAsync(data1);
+        await db.InsertAsync(data2);
+        await db.InsertAsync(data3);
+
+        await db.CommitTransactionAsync();
     }
 
     private static async Task DefaultMessageInsertAsync()
@@ -93,10 +139,7 @@ public static class DbService
 
         var messagesFromDev = new List<string>
         {
-            "From Dev: 不要冒着下跌10%的风险博取5%的收益。",
-            "From Dev: 如果不知道该不该买入，那么不要买入; 如果不知道该不该卖出，那么立刻卖出。",
-            "From Dev: 散户没有足够的本金去抵挡(甚至可能无限)下跌的风险。",
-            "From Dev: 在A股，对于影响股价的人来说，做空是相当容易的事情。但是对于散户来说，做空只有空仓这一个选择。因此，90%的时间里空仓也许是不错的选择。"
+            "From Dev: 不要冒着下跌10%的风险博取5%的收益。"
         };
 
         await db.BeginTransactionAsync();

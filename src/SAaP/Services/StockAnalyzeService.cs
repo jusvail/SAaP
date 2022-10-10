@@ -1,8 +1,10 @@
-﻿using SAaP.Contracts.Services;
+﻿using System.Runtime.CompilerServices;
+using SAaP.Contracts.Services;
 using SAaP.Core.Models;
 using SAaP.Core.Models.DB;
 using SAaP.Core.Services;
 using SAaP.Core.Services.Analyze;
+using SAaP.Models;
 
 namespace SAaP.Services;
 
@@ -11,13 +13,11 @@ namespace SAaP.Services;
 /// </summary>
 public class StockAnalyzeService : IStockAnalyzeService
 {
-
     /// <summary>
     /// main analyze method
     /// </summary>
     /// <param name="codeName">stock code name</param>
     /// <param name="duration">duration(from last trading day)</param>
-    /// <param name="callback">callback method</param>
     /// <returns></returns>
     public async Task<AnalysisResultDetail> Analyze(string codeName, int duration)
     {
@@ -101,5 +101,45 @@ public class StockAnalyzeService : IStockAnalyzeService
         }
 
         return $"正相关性： {Math.Round(d * 100.0 / c, 2)}%";
+    }
+
+    public async IAsyncEnumerable<Stock> Filter(IEnumerable<Stock> stocks,
+        List<ObservableTrackCondition> trackConditions, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        if (!trackConditions.Any())
+        {
+            yield break;
+        }
+
+        var conditions = trackConditions.SelectMany(trackCondition => Condition.Parse(trackCondition.TrackContent)).ToList();
+
+        var duration = conditions.Max(c => c.FromDays);
+
+        foreach (var stock in stocks)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                throw new TaskCanceledException();
+            }
+
+            // query original data recently
+            var originalData = await DbService.TakeOriginalData(stock.CodeName, stock.BelongTo, duration);
+
+            var filter = new CodeFilter
+            {
+                CodeName = stock.CodeName,
+                TrackCondition = conditions,
+                OriginalDatas = originalData
+            };
+
+            if (filter.FilterAll() && !stock.CompanyName.Contains("退"))
+            {
+                yield return stock;
+            }
+            else
+            {
+                yield return null;
+            }
+        }
     }
 }
