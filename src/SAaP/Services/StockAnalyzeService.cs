@@ -1,6 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
-using Mapster;
 using SAaP.Contracts.Services;
 using SAaP.Core.Models;
 using SAaP.Core.Models.DB;
@@ -105,12 +103,11 @@ public class StockAnalyzeService : IStockAnalyzeService
         return $"正相关性： {Math.Round(d * 100.0 / c, 2)}%";
     }
 
-    public async IAsyncEnumerable<string> Filter(IEnumerable<string> codeNames,
+    public async IAsyncEnumerable<Stock> Filter(IEnumerable<Stock> stocks,
         List<ObservableTrackCondition> trackConditions, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         if (!trackConditions.Any())
         {
-            yield return string.Empty;
             yield break;
         }
 
@@ -118,7 +115,7 @@ public class StockAnalyzeService : IStockAnalyzeService
 
         var duration = conditions.Max(c => c.FromDays);
 
-        foreach (var codeName in codeNames)
+        foreach (var stock in stocks)
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -126,22 +123,22 @@ public class StockAnalyzeService : IStockAnalyzeService
             }
 
             // query original data recently
-            var originalData = await DbService.TakeOriginalData(codeName[1..], Convert.ToInt32(codeName[..1]), duration);
+            var originalData = await DbService.TakeOriginalData(stock.CodeName, stock.BelongTo, duration);
 
             var filter = new CodeFilter
             {
-                CodeName = codeName,
+                CodeName = stock.CodeName,
                 TrackCondition = conditions,
                 OriginalDatas = originalData
             };
 
-            if (filter.Filter())
+            if (filter.FilterAll() && !stock.CompanyName.Contains("退"))
             {
-                yield return codeName;
+                yield return stock;
             }
             else
             {
-                yield return string.Empty;
+                yield return null;
             }
         }
     }

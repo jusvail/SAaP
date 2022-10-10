@@ -3,19 +3,40 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Text;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using SAaP.Core.Models.DB;
 
 namespace SAaP.Models;
 
 public class ObservableTaskDetail : ObservableRecipient
 {
-    private bool _isCompleted = true;
-    private string _execStatus = "准备就绪。";
-    private string _execProgress;
-    private bool _isCancelled = true;
-    private string _execButtonText = ButtonText[0];
+    #region class field
 
     private static readonly string[] ButtonText = { "执行", "取消" };
+
+    private bool _isCompleted;
+    private bool _isCancelled;
+    private bool _isTaskStart;
+
+    private double _progressBarValue;
+
+    private string _execProgress;
+    private string _execStatus = "准备就绪。";
+    private string _execButtonText = ButtonText[0];
+
+    private CancellationTokenSource _cts;
+    private Visibility _progressRingVisibility = Visibility.Collapsed;
+    private Visibility _resultButtonVisibility = Visibility.Collapsed;
+
+    public ObservableCollection<Stock> FilteredStock { get; set; } = new();
+
+    public IAsyncRelayCommand StartTaskCommand { get; }
+
+    public event EventHandler<TaskStartEventArgs> TaskStartEventHandler;
+
+    public event EventHandler<NavigateToTabViewEventArgs> NavigateToTabViewEventHandler;
+
+    #endregion
 
     public List<ObservableTrackCondition> TrackConditions { get; set; } = new();
 
@@ -34,7 +55,7 @@ public class ObservableTaskDetail : ObservableRecipient
 
             foreach (var trackData in TrackConditions)
             {
-                s.Append(trackData.TrackName).Append(" | ");
+                s.Append(trackData.TrackName).Append(" && ");
             }
 
             if (s.Length > 0)
@@ -45,7 +66,6 @@ public class ObservableTaskDetail : ObservableRecipient
             return s.ToString();
         }
     }
-
 
     public string ExecStatus
     {
@@ -58,10 +78,15 @@ public class ObservableTaskDetail : ObservableRecipient
         get => _execProgress;
         set => SetProperty(ref _execProgress, value);
     }
+
     public bool IsCompleted
     {
         get => _isCompleted;
-        set => SetProperty(ref _isCompleted, value);
+        set
+        {
+            SetProperty(ref _isCompleted, value);
+            OnTaskStatusChanged();
+        }
     }
 
     public bool IsCancelled
@@ -70,8 +95,7 @@ public class ObservableTaskDetail : ObservableRecipient
         set
         {
             SetProperty(ref _isCancelled, value);
-            ExecButtonText = _isCancelled ? ButtonText[0] : ButtonText[1];
-            ProgressRingVisibility = IsCancelled ? Visibility.Collapsed : Visibility.Visible;
+            OnTaskStatusChanged();
         }
     }
 
@@ -81,6 +105,21 @@ public class ObservableTaskDetail : ObservableRecipient
         set => SetProperty(ref _progressRingVisibility, value);
     }
 
+    public bool IsTaskStart
+    {
+        get => _isTaskStart;
+        set
+        {
+            SetProperty(ref _isTaskStart, value);
+            OnTaskStatusChanged();
+        }
+    }
+
+    public Visibility ResultButtonVisibility
+    {
+        get => _resultButtonVisibility;
+        set => SetProperty(ref _resultButtonVisibility, value);
+    }
 
     public string ExecButtonText
     {
@@ -94,19 +133,38 @@ public class ObservableTaskDetail : ObservableRecipient
         set => SetProperty(ref _progressBarValue, value);
     }
 
-    public ObservableCollection<Stock> FilteredStock { get; set; } = new();
-
-    public IAsyncRelayCommand StartTaskCommand { get; }
-
-    public event EventHandler<TaskStartEventArgs> TaskStartEventHandler;
-
-    private CancellationTokenSource _cts;
-    private Visibility _progressRingVisibility;
-    private double _progressBarValue;
+    public IRelayCommand<TabView> ViewResultCommand { get; }
 
     public ObservableTaskDetail()
     {
+        ViewResultCommand = new RelayCommand<TabView>(NavigateToTabView);
         StartTaskCommand = new AsyncRelayCommand(StartTask);
+    }
+
+    private void OnTaskStatusChanged()
+    {
+        ResultButtonVisibility = _isCompleted || _isCancelled ? Visibility.Visible : Visibility.Collapsed;
+
+        ExecButtonText = _isTaskStart ? ButtonText[1] : ButtonText[0];
+        ProgressRingVisibility = _isTaskStart ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void OnTaskStart()
+    {
+        IsCompleted = false;
+        IsCancelled = false;
+
+        IsTaskStart = true;
+
+        FilteredStock.Clear();
+    }
+
+    private void OnTaskFinished()
+    {
+        _cts.Dispose();
+        _cts = null;
+
+        IsTaskStart = false;
     }
 
     private void CancelTask()
@@ -116,11 +174,13 @@ public class ObservableTaskDetail : ObservableRecipient
 
     private async Task StartTask()
     {
-        if (IsCancelled)
+        if (IsTaskStart)
         {
             CancelTask();
             return;
         }
+
+        OnTaskStart();
 
         var cts = new CancellationTokenSource();
 
@@ -141,26 +201,35 @@ public class ObservableTaskDetail : ObservableRecipient
 
     public void OnTaskComplete()
     {
-        IsCancelled = true;
-        _cts.Dispose();
-        _cts = null;
+        IsCompleted = true;
+        OnTaskFinished();
     }
 
     public void OnTaskCancelled()
     {
-        IsCompleted = true;
-        _cts.Dispose();
-        _cts = null;
+        IsCancelled = true;
+        OnTaskFinished();
     }
 
     protected void ExecTask()
     {
         TaskStartEventHandler?.Invoke(this,
             new TaskStartEventArgs
-              {
-                  TitleBarMessage = "开始了！！"
+            {
+                TitleBarMessage = "开始了！！"
                   ,
-                  CancellationToken = _cts.Token
-              });
+                CancellationToken = _cts.Token
+            });
+    }
+
+    protected void NavigateToTabView(TabView tabView)
+    {
+        NavigateToTabViewEventHandler?.Invoke(this,
+            new NavigateToTabViewEventArgs
+            {
+                TaskName = TaskName,
+                Stocks = FilteredStock,
+                Target = tabView
+            });
     }
 }

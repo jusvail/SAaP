@@ -38,8 +38,8 @@ public partial class Condition
     // L10-TD:ZD<5&&ZD>-5&&+OPD>=8
     private const string Syntax = @"^([^&]+?:[^&]+)(&&([^&]+))*";
     private const string SyntaxMainBody = @"^([^:]+?)-([^:]+?):?([^:]+)$";
-    private const string DaysMatch = @"L(\d+)D";
-    private const string ConditionBodyMatch = @"([\w%+-]+)([<>=]+)([\w%+-]+)";
+    private const string DaysMatch = @"L?(\d+)D?";
+    private const string ConditionBodyMatch = @"([\w@%+\-]+)([<>=]+)([\w@%+\-]+)";
 
 
     private static int MatchDays(string input)
@@ -54,11 +54,16 @@ public partial class Condition
     {
         var match = Regex.Match(condition, SyntaxMainBody);
 
-        if (!match.Success) throw new InvalidDataException("语法错误D！");
-
-        FromDays = MatchDays(match.Groups[1].Value);
-        ToDays = MatchDays(match.Groups[2].Value);
-        ConditionBody = match.Groups[3].Value;
+        if (match.Success)
+        {
+            FromDays = MatchDays(match.Groups[1].Value);
+            ToDays = MatchDays(match.Groups[2].Value);
+            ConditionBody = match.Groups[3].Value;
+        }
+        else
+        {
+            ConditionBody = condition;
+        }
 
         var matchBody = Regex.Match(ConditionBody, ConditionBodyMatch);
 
@@ -77,13 +82,12 @@ public partial class Condition
 
         int from = -1, to = -1;
 
-        for (var i = 1; i < match.Groups.Count; i++)
-        {
-            if (i % 2 == 0) continue;
-            if (string.IsNullOrEmpty(match.Groups[i].Value)) continue;
+        var split = condition.Split("&&");
 
+        foreach (var t in split)
+        {
             var con = new Condition();
-            con.AdaptConditionFromString(match.Groups[i].Value);
+            con.AdaptConditionFromString(t);
 
             if (con.FromDays > 0)
             {
@@ -119,14 +123,26 @@ public partial class Condition
 public partial class Condition
 {
     public const string Op = "OP";
+    public const string Zd = "ZD";
+    public const string OpPercent = "OP%";
 
+    public const string To = "TO";
+    public const string Th = "TH";
+    public const string Tl = "TL";
+    public const string Te = "TE";
+    public const string Yo = "YO";
+    public const string Yh = "YH";
+    public const string Yl = "YL";
+    public const string Ye = "YE";
+
+    public const string ValueSeparator = "@";
 }
 
-public  class ConditionOperator
+public class ConditionOperator
 {
     public const string G = ">";
     public const string L = "<";
     public const string E = "=";
-    public const string GE = ">=";
-    public const string LE = "<=";
+    public const string Ge = ">=";
+    public const string Le = "<=";
 }

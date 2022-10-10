@@ -7,6 +7,9 @@ using SAaP.Core.Models.DB;
 using SAaP.Core.Services;
 using SAaP.Models;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
+using Microsoft.UI.Xaml.Controls;
+using SAaP.Core.Services.Analyze;
+using SAaP.Views;
 
 namespace SAaP.ViewModels;
 
@@ -75,7 +78,8 @@ public class MonitorViewModel : ObservableRecipient
             }
         }
 
-        ready.TaskStartEventHandler += ReadyOnTaskStartEventHandler;
+        ready.TaskStartEventHandler += OnTaskStartEventHandler;
+        ready.NavigateToTabViewEventHandler += OnNavigateToTabViewEventHandler;
 
         FilterTasks.Insert(0, ready);
     }
@@ -88,7 +92,33 @@ public class MonitorViewModel : ObservableRecipient
         });
     }
 
-    private async void ReadyOnTaskStartEventHandler(object sender, TaskStartEventArgs e)
+    private static TabViewItem CreateNewTab(Type target, NavigateToTabViewEventArgs e)
+    {
+        var newItem = new TabViewItem
+        {
+            Header = e.TaskName,
+            IconSource = new SymbolIconSource { Symbol = Symbol.Filter }
+        };
+
+        var frame = new Frame();
+
+        frame.Navigate(target, e.Stocks);
+
+        newItem.Content = frame;
+
+        return newItem;
+    }
+
+    private void OnNavigateToTabViewEventHandler(object sender, NavigateToTabViewEventArgs e)
+    {
+        var tabView = e.Target;
+        var newTab = CreateNewTab(typeof(FilterResultViewerPage), e);
+        tabView.TabItems.Add(newTab);
+
+        tabView.SelectedItem = newTab;
+    }
+
+    private async void OnTaskStartEventHandler(object sender, TaskStartEventArgs e)
     {
         if (sender is not ObservableTaskDetail targetTaskObject) return;
 
@@ -107,19 +137,21 @@ public class MonitorViewModel : ObservableRecipient
              {
                  var filtered =
                      _stockAnalyzeService.Filter(
-                         AllSuggestStocks.Select(s => s.CodeNameFull)
+                         AllSuggestStocks
                          , targetTaskObject.TrackConditions
                          , e.CancellationToken);
 
-                 await foreach (var filteredCodeName in filtered)
+                 await foreach (var filteredStock in filtered)
                  {
-                     if (!string.IsNullOrEmpty(filteredCodeName))
+                     // 筛选结果
+                     if (filteredStock != null)
                      {
                          selected++;
                          var selected1 = selected;
                          SetValueCrossThread(() =>
                          {
                              targetTaskObject.ExecProgress = $"筛选结果:{selected1}/{allCount}";
+                             targetTaskObject.FilteredStock.Add(filteredStock);
                          });
                      }
 
@@ -171,7 +203,9 @@ public class MonitorViewModel : ObservableRecipient
 
     private void CheckUseability()
     {
-        CurrentTrackFilterCondition.IsValid = true;
+        var content = CurrentTrackFilterCondition.TrackContent;
+        CurrentTrackFilterCondition.IsValid = Condition.TryParse(ref content);
+        CurrentTrackFilterCondition.TrackContent = content;
     }
 
     private async Task AddOnHoldStock()

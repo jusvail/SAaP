@@ -175,4 +175,37 @@ public static class StockService
             yield return emHotData.Sc;
         }
     }
+
+    public static bool IsStock(string codeName)
+    {
+        if (string.IsNullOrEmpty(codeName)) return false;
+
+        string c;
+
+        switch (codeName.Length)
+        {
+            case TdxCodeLength: c = codeName[1..]; break;
+            case StandardCodeLength: c = codeName; break;
+            default: return false;
+        }
+
+        return c.StartsWith("00") || c.StartsWith("6") || c.StartsWith("30");
+    }
+
+
+    public static bool IsZz(string codeName)
+    {
+        if (string.IsNullOrEmpty(codeName)) return false;
+
+        string c;
+
+        switch (codeName.Length)
+        {
+            case TdxCodeLength: c = codeName[1..]; break;
+            case StandardCodeLength: c = codeName; break;
+            default: return false;
+        }
+
+        return c.StartsWith("11") || c.StartsWith("12");
+    }
 }

@@ -58,7 +58,10 @@ public class ObservableTrackCondition : ObservableRecipient
             SetProperty(ref _isChecked, value);
             if (_isChecked)
             {
-                SelectedTrackIndex.Add(_trackIndex);
+                if (!SelectedTrackIndex.Contains(_trackIndex))
+                {
+                    SelectedTrackIndex.Add(_trackIndex);
+                }
             }
             else
             {

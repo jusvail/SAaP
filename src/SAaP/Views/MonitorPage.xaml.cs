@@ -14,7 +14,7 @@ namespace SAaP.Views;
 public sealed partial class MonitorPage
 {
     public MonitorViewModel ViewModel { get; }
-    
+
     public MonitorPage()
     {
         ViewModel = App.GetService<MonitorViewModel>();
@@ -89,9 +89,20 @@ public sealed partial class MonitorPage
 
     private async void DeleteFilterCondition_OnClick(object sender, RoutedEventArgs e)
     {
-       var dataContext = (e.OriginalSource as MenuFlyoutItem)?.DataContext;
+        var dataContext = (e.OriginalSource as MenuFlyoutItem)?.DataContext;
 
-       await ViewModel.DeleteFilterTrackData(dataContext);
+        await ViewModel.DeleteFilterTrackData(dataContext);
     }
 
+    private void ViewResult_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button) return;
+
+        button.CommandParameter = FilterResultTabView;
+    }
+
+    private void FilterResultTabView_OnTabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)
+    {
+        sender.TabItems.Remove(args.Tab);
+    }
 }

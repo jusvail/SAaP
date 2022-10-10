@@ -99,25 +99,33 @@ public static class DbService
 
         var data1 = new TrackData
         {
-            TrackName = "20D-OP%>85",
+            TrackName = "近20日正溢价率>85%",
             TrackType = TrackType.Filter,
-            TrackContent = "L20D:OP%>85",
-            TrackSummary = "近20交易日溢价率>85"
+            TrackContent = "L20D-L0D:OP%>1@85",
+            TrackSummary = "近20日+1溢价率>85%(可能不包括今天[若为交易日]的数据)"
         };
 
         var data2 = new TrackData
         {
-            TrackName = "连跌5天并反弹",
+            TrackName = "连续两天无溢价",
             TrackType = TrackType.Filter,
-            TrackContent = "[L6D]:[1-5](ZD<0)&&[5-](ZD>0)",
-            TrackSummary = "近6交易日，连续跌5天后反弹"
+            TrackContent = "L2D-L0D:OP<0",
+            TrackSummary = "连续两交易日无溢价(可能不包括今天[若为交易日]的数据)"
         };
 
+        var data3 = new TrackData
+        {
+            TrackName = "昨日无溢价",
+            TrackType = TrackType.Filter,
+            TrackContent = "L1D-L0D:OP<0",
+            TrackSummary = "上个交易日无溢价(可能不包括今天[若为交易日]的数据)"
+        };
 
         await db.BeginTransactionAsync();
 
         await db.InsertAsync(data1);
         await db.InsertAsync(data2);
+        await db.InsertAsync(data3);
 
         await db.CommitTransactionAsync();
     }

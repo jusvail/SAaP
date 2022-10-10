@@ -10,5 +10,5 @@ public interface IStockAnalyzeService
 
     string CalcRelationPercent(IList<IList<double>> compare);
 
-    IAsyncEnumerable<string> Filter(IEnumerable<string> codeNames, List<ObservableTrackCondition> trackConditions, CancellationToken cancellationToken);
+    IAsyncEnumerable<Stock> Filter(IEnumerable<Stock> stocks, List<ObservableTrackCondition> trackConditions, CancellationToken cancellationToken);
 }

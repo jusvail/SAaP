@@ -12,6 +12,7 @@
 
     <Page.Resources>
         <helper:CodeNameFormatConverter x:Key="CodeNameFormatConverter" />
+        <helper:ReverseBooleanConverter x:Key="ReverseBooleanConverter" />
         <helper:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <!-- <helper:SimpleFeedLayout x:Key="SimpleFeedLayout"  -->
         <!--                          ColumnSpacing="5" -->
@@ -43,7 +44,7 @@
         <DataTemplate x:DataType="models:ObservableTrackCondition" x:Key="FilterConditionDataTemplate">
             <Grid>
                 <ToggleButton IsChecked="{x:Bind IsChecked,Mode=TwoWay}">
-                    <StackPanel Width="120"
+                    <StackPanel Width="125"
                                 Height="80"
                                 ToolTipService.ToolTip="{x:Bind TrackContent,Mode=OneWay}">
                         <TextBlock Text="{x:Bind TrackName,Mode=OneWay}" 
@@ -53,7 +54,8 @@
                                    TextWrapping="Wrap"
                                    HorizontalAlignment="Left"/>
                         <TextBlock Text="{x:Bind TrackSummary,Mode=OneWay}"
-                                   TextWrapping="Wrap" 
+                                   TextWrapping="Wrap"
+                                   FontSize="12" 
                                    Margin="{StaticResource DefaultTextBlockContentMargin}"
                                    MinHeight="50"/>
                     </StackPanel>
@@ -72,8 +74,7 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="1.2*"/>
                     </Grid.ColumnDefinitions>
                     <Grid Grid.Column="0">
                         <Grid.RowDefinitions>
@@ -93,21 +94,44 @@
                         </Grid>
                     </Grid>
                     <Grid Grid.Column="1">
-                        <Rectangle Fill="Black" 
-                                   Width="1.5" 
-                                   Opacity=".5"
-                                   HorizontalAlignment="Left"
-                                   Margin="0 15"/>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="当前状态："
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid>
+                                <Rectangle Fill="Black" 
+                                       Width="1.5" 
+                                       Opacity=".5"
+                                       HorizontalAlignment="Left"
+                                       Margin="0 15"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="当前状态："
                                        Margin="10 0 5 0"
                                        VerticalAlignment="Center"/>
-                            <TextBlock Text="{x:Bind ExecStatus}"
+                                    <TextBlock Text="{x:Bind ExecStatus}"
                                        VerticalAlignment="Center"/>
-                            <TextBlock Text="{x:Bind ExecProgress}"
+                                    <TextBlock Text="{x:Bind ExecProgress}"
                                        Margin="{StaticResource XSmallLeftMargin}"
                                        VerticalAlignment="Center"/>
-                        </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                            <Grid Grid.Column="1">
+                                <StackPanel Orientation="Horizontal"
+                                            HorizontalAlignment="Right">
+                                    <Button Content="查看结果" 
+                                            Command="{x:Bind ViewResultCommand}"
+                                            Click="ViewResult_OnClick"
+                                            Margin="{StaticResource XXSmallRightMargin}"
+                                            Visibility="{x:Bind ResultButtonVisibility}"/>
+                                    <ToggleButton Content="{x:Bind ExecButtonText}"
+                                                  IsChecked="{x:Bind IsTaskStart,Converter={StaticResource ReverseBooleanConverter}}"
+                                                  IsEnabled="True"
+                                                  Command="{x:Bind StartTaskCommand}"/>
+                                    <!-- IsEnabled="{x:Bind IsTaskNotActive}" -->
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
                         <ProgressBar Margin="{StaticResource BottomOnlyMargin}"
                                      HorizontalContentAlignment="Stretch"
                                      VerticalAlignment="Bottom"
@@ -115,14 +139,6 @@
                                      Value="{x:Bind ProgressBarValue}"
                                      ShowPaused="False" 
                                      ShowError="False" />
-                    </Grid>
-                    <Grid Grid.Column="2">
-                        <ToggleButton Content="{x:Bind ExecButtonText}"
-                                      IsChecked="{x:Bind IsCancelled,Mode=TwoWay}"
-                                      IsEnabled="True"
-                                      Command="{x:Bind StartTaskCommand}"/> 
-                                      <!-- IsEnabled="{x:Bind IsTaskNotActive}" -->
-
                     </Grid>
                 </Grid>
             </Grid>
@@ -200,6 +216,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <StackPanel Grid.Row="0"
                   Height="48"
@@ -207,20 +224,19 @@
                 <TextBlock x:Name="TitleBarTextBlock" 
                            Text="{x:Bind ViewModel.TitleBarMessage,Mode=OneWay}" 
                            Margin="15 0"></TextBlock>
-                <Rectangle Stretch="Fill" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                           Opacity="0.05"
-                           Margin="0 -48 0 -48"
-                           Fill="Red"/>
+                <!-- <Rectangle Stretch="Fill" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" -->
+                <!--            Opacity="0.05" -->
+                <!--            Margin="0 -48 0 -48" -->
+                <!--            Fill="Red"/> -->
             </StackPanel>
             <Grid Grid.Row="1">
                 <Grid>
-                    <Pivot>
+                    <Pivot Grid.Row="0">
                         <PivotItem Header="筛选" Padding="{StaticResource DefaultPivotBorderPadding}">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
-                                    <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
                                 <Grid Grid.Row="0">
                                     <Grid.ColumnDefinitions>
@@ -254,7 +270,7 @@
                                                             <Paragraph>&#160;&#160;d：天数</Paragraph>
                                                             <Paragraph></Paragraph>
                                                             <Paragraph>例：</Paragraph>
-                                                            <Paragraph>&#160;&#160;L10-TD:ZD&lt;5&amp;&amp;ZD&gt;&#45;5&amp;&amp;+OPD>=8</Paragraph>
+                                                            <Paragraph>&#160;&#160;L10-L0D:ZD&lt;5&amp;&amp;ZD&gt;&#45;5&amp;&amp;OP%>=0@80</Paragraph>
                                                             <Paragraph>&#160;&#160;=>筛选出前10个交易日到今天，涨跌小于5%，大于-5%，正溢价天数大于8天的股票</Paragraph>
                                                             <Paragraph></Paragraph>
                                                         </RichTextBlock>
@@ -271,14 +287,6 @@
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="状态：" 
-                                                               VerticalAlignment="Center"/>
-                                                    <TextBlock Text="未输入" 
-                                                               VerticalAlignment="Center"/>
-                                                </StackPanel>
-                                                <StackPanel Grid.Column="1" 
-                                                            Orientation="Horizontal"
-                                                            HorizontalAlignment="Right">
                                                     <AppBarButton x:Name="HelperAppBarButton"
                                                                   Width="42" Height="48"
                                                                   HorizontalAlignment="Center"
@@ -289,6 +297,14 @@
                                                                       Glyph="&#xE11B;"/>
                                                         </AppBarButton.Icon>
                                                     </AppBarButton>
+                                                    <!-- <TextBlock Text="状态："  -->
+                                                    <!--            VerticalAlignment="Center"/> -->
+                                                    <!-- <TextBlock Text="未输入"  -->
+                                                    <!--            VerticalAlignment="Center"/> -->
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1" 
+                                                            Orientation="Horizontal"
+                                                            HorizontalAlignment="Right">
                                                     <Button Content="检查可用性" 
                                                             Command="{x:Bind ViewModel.CheckUseabilityCommand}"/>
                                                     <Button x:Name="SaveCondition" 
@@ -318,7 +334,8 @@
                                                                     </Grid.ColumnDefinitions>
                                                                     <Grid Grid.Row="0"
                                                                           Grid.Column="0">
-                                                                        <TextBlock Text="名称："/>
+                                                                        <TextBlock Text="名称："
+                                                                                   TextWrapping="Wrap"/>
                                                                     </Grid>
                                                                     <Grid Grid.Row="0"
                                                                           Grid.Column="1">
@@ -326,7 +343,8 @@
                                                                     </Grid>
                                                                     <Grid Grid.Row="1"
                                                                           Grid.Column="0">
-                                                                        <TextBlock Text="描述："/>
+                                                                        <TextBlock Text="描述："
+                                                                                   TextWrapping="Wrap"/>
                                                                     </Grid>
                                                                     <Grid Grid.Row="1"
                                                                           Grid.Column="1">
@@ -357,7 +375,7 @@
                                     <Grid Grid.Column="1">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
                                         </Grid.RowDefinitions>
                                         <Grid Grid.Row="0"
                                               Margin="8 4 4 0">
@@ -372,7 +390,7 @@
                                                 <Button x:Name="SaveFilterTask" 
                                                         Content="保存任务" 
                                                         Command="{x:Bind ViewModel.SaveFilterTaskCommand}"
-                                                        Margin="8,5,0,5"
+                                                        Margin="8,8,0,5"
                                                         Style="{StaticResource AccentButtonStyle}"/>
                                             </StackPanel>
                                         </Grid>
@@ -382,47 +400,48 @@
                                     <GridView ItemsSource="{x:Bind ViewModel.FilterConditions}"
                                               ItemTemplate="{StaticResource FilterConditionDataTemplate}"/>
                                 </Grid>
-                                <Grid Grid.Row="2">
-                                    <TabView x:Name="FilterResultTabView" 
-                                             IsAddTabButtonVisible="False"
-                                             Height="320"
-                                             Margin="-10 0 -8 -3"
-                                             TabWidthMode="SizeToContent">
-                                        <TabView.Resources>
-                                            <!-- <ResourceDictionary> -->
-                                            <!--     <ResourceDictionary.ThemeDictionaries> -->
-                                            <!--         <ResourceDictionary x:Key="Light"> -->
-                                            <!--             <SolidColorBrush x:Key="TabViewBackground" Color="{ThemeResource SystemAccentColorLight2}"/> -->
-                                            <!--         </ResourceDictionary> -->
-                                            <!--         <ResourceDictionary x:Key="Dark"> -->
-                                            <!--             <SolidColorBrush x:Key="TabViewBackground" Color="{ThemeResource SystemAccentColorDark2}"/> -->
-                                            <!--         </ResourceDictionary> -->
-                                            <!--     </ResourceDictionary.ThemeDictionaries> -->
-                                            <!-- </ResourceDictionary> -->
-                                        </TabView.Resources>
-                                        <TabView.TabItems>
-                                            <TabViewItem Header="任务总览" IsClosable="False" >
-                                                <TabViewItem.IconSource>
-                                                    <FontIconSource Glyph="&#xE80F;" />
-                                                </TabViewItem.IconSource>
-                                                <Grid Padding="{StaticResource DefaultGridBorderPadding}"
-                                                      Background="{ThemeResource LayerFillColorDefaultBrush}">
-                                                    <ListView x:Name="FilterTaskListView"
-                                                              ItemTemplate="{StaticResource TaskDataTemplate}"
-                                                              ItemsSource="{x:Bind ViewModel.FilterTasks}"/>
-                                                </Grid>
-                                            </TabViewItem>
-                                        </TabView.TabItems>
-
-                                    </TabView>
-                                </Grid>
                             </Grid>
                         </PivotItem>
                         <PivotItem Header="监控" Padding="{StaticResource DefaultPivotBorderPadding}">
-                            <TextBlock Text="all emails go here." />
+                            <TextBlock Text="in dev." />
                         </PivotItem>
                     </Pivot>
                 </Grid>
+            </Grid>
+            <Grid Grid.Row="2">
+                <TabView x:Name="FilterResultTabView" 
+                         IsAddTabButtonVisible="False"
+                         Margin="2"
+                         TabCloseRequested="FilterResultTabView_OnTabCloseRequested"
+                         TabWidthMode="SizeToContent">
+                    <TabView.Resources>
+                        <!-- <ResourceDictionary> -->
+                        <!--     <ResourceDictionary.ThemeDictionaries> -->
+                        <!--         <ResourceDictionary x:Key="Light"> -->
+                        <!--             <SolidColorBrush x:Key="TabViewBackground" Color="{ThemeResource SystemAccentColorLight2}"/> -->
+                        <!--         </ResourceDictionary> -->
+                        <!--         <ResourceDictionary x:Key="Dark"> -->
+                        <!--             <SolidColorBrush x:Key="TabViewBackground" Color="{ThemeResource SystemAccentColorDark2}"/> -->
+                        <!--         </ResourceDictionary> -->
+                        <!--     </ResourceDictionary.ThemeDictionaries> -->
+                        <!-- </ResourceDictionary> -->
+                    </TabView.Resources>
+                    <TabView.TabItems>
+                        <TabViewItem Header="任务总览" IsClosable="False">
+                            <TabViewItem.IconSource>
+                                <FontIconSource Glyph="&#xE80F;" />
+                            </TabViewItem.IconSource>
+                            <Grid Padding="{StaticResource DefaultGridBorderPadding}"
+                                  Background="{ThemeResource LayerFillColorDefaultBrush}">
+                                <ListView x:Name="FilterTaskListView"
+                                          MinHeight="350"
+                                          VerticalContentAlignment="Stretch"
+                                          ItemTemplate="{StaticResource TaskDataTemplate}"
+                                          ItemsSource="{x:Bind ViewModel.FilterTasks}"/>
+                            </Grid>
+                        </TabViewItem>
+                    </TabView.TabItems>
+                </TabView>
             </Grid>
         </Grid>
         <Grid Grid.Column="2">
