@@ -170,6 +170,11 @@ public static class StockService
         // Deserialize Object
         var response = await Json.ToObjectAsync<EmResponse<EmHotData>>(result);
 
+        if (response == null)
+        {
+            yield break;
+        }
+
         foreach (var emHotData in response.Data)
         {
             yield return emHotData.Sc;

@@ -27,6 +27,7 @@ public class ObservableTaskDetail : ObservableRecipient
     private CancellationTokenSource _cts;
     private Visibility _progressRingVisibility = Visibility.Collapsed;
     private Visibility _resultButtonVisibility = Visibility.Collapsed;
+    private string _taskName;
 
     public ObservableCollection<Stock> FilteredStock { get; set; } = new();
 
@@ -40,8 +41,22 @@ public class ObservableTaskDetail : ObservableRecipient
 
     public List<ObservableTrackCondition> TrackConditions { get; set; } = new();
 
-    public string TaskName { get; set; }
+    private static int _defaultTaskIndex;
 
+    public static string DefaultTaskName
+    {
+        get
+        {
+            _defaultTaskIndex++;
+            return $"默认任务 {_defaultTaskIndex}";
+        }
+    }
+
+    public string TaskName
+    {
+        get => string.IsNullOrEmpty(_taskName) ? DefaultTaskName : _taskName;
+        set => _taskName = value;
+    }
     public string TaskDetail
     {
         get
