@@ -11,7 +11,7 @@ namespace SAaP.Core.Services.Analyze
 
         private int _count;
 
-        private int _actualCount;
+        public int ActualCount;
 
         public IList<double> OverpricedList;
 
@@ -28,15 +28,15 @@ namespace SAaP.Core.Services.Analyze
         {
             _count = _originalData.Count;
             // first day's data is only for calculation so -1
-            _actualCount = _count - 1;
+            ActualCount = _count - 1;
         }
 
         private void InitialList()
         {
             // overpriced list
-            OverpricedList = new List<double>(_actualCount);
+            OverpricedList = new List<double>(ActualCount);
             // ttm list
-            Ttm = new List<double>(_actualCount);
+            Ttm = new List<double>(ActualCount);
 
             for (var i = _count - 1; i > 0; i--)
             {
@@ -53,7 +53,7 @@ namespace SAaP.Core.Services.Analyze
         public double CalcOverPricedPercent()
         {
             // ReSharper disable once PossibleLossOfFraction
-            return CalculationService.Round2(100 * CalcOverPricedDays() / _actualCount);
+            return CalculationService.Round2(100 * CalcOverPricedDays() / ActualCount);
         }
 
         public int CalcOverPricedDays()
@@ -64,7 +64,7 @@ namespace SAaP.Core.Services.Analyze
         public double CalcOverPricedPercentHigherThan1P()
         {
             // ReSharper disable once PossibleLossOfFraction
-            return CalculationService.Round2(100 * CalcOverPricedDaysHigherThan1P() / _actualCount);
+            return CalculationService.Round2(100 * CalcOverPricedDaysHigherThan1P() / ActualCount);
         }
 
         public int CalcOverPricedDaysHigherThan1P()

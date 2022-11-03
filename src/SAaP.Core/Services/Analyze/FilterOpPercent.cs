@@ -27,7 +27,7 @@ public class FilterOpPercent : FilterBase
 
             for (var i = Condition.ToDays; i < Condition.FromDays; i++)
             {
-                if (Compare(bot.OverpricedList[i], Condition.Operator, percent))
+                if (Compare(bot.OverpricedList[bot.ActualCount - i - 1], Condition.Operator, percent))
                 {
                     targetDay++;
                 }

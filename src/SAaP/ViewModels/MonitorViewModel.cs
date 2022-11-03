@@ -66,8 +66,6 @@ public class MonitorViewModel : ObservableRecipient
 
     private void SaveFilterTask()
     {
-        if (string.IsNullOrEmpty(CurrentTaskFilterData.TaskName)) return;
-
         var ready = CurrentTaskFilterData.Adapt<ObservableTaskDetail>();
 
         foreach (var filterCondition in FilterConditions)
@@ -147,19 +145,19 @@ public class MonitorViewModel : ObservableRecipient
                      if (filteredStock != null)
                      {
                          selected++;
-                         var selected1 = selected;
                          SetValueCrossThread(() =>
                          {
-                             targetTaskObject.ExecProgress = $"筛选结果:{selected1}/{allCount}";
                              targetTaskObject.FilteredStock.Add(filteredStock);
                          });
                      }
 
                      var index = curIndex;
+                     var selected1 = selected;
                      SetValueCrossThread(() =>
                          {
                              // ReSharper disable once PossibleLossOfFraction
                              targetTaskObject.ProgressBarValue = 100 * index / allCount;
+                             targetTaskObject.ExecProgress = $"筛选结果:{selected1}/{allCount}";
                          }
                      );
                      curIndex++;
