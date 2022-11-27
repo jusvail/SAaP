@@ -28,7 +28,12 @@ public sealed partial class AnalyzeDetailPage
         ViewModel.CodeName = codeName;
 
         ViewModel.Initialize();
-        ViewModel.DrawStartCommand.ExecuteAsync(MainCan);
+        ViewModel.OnQueryFinishEvent += (_, _) =>
+        {
+            AnalyzeReport.ReportSummary = ViewModel.AnalyzeWeeklySummary;
+            CompareReport.ReportSummary = ViewModel.CompareWeeklySummary;
+        };
+        ViewModel.AnalyzeStartCommand.ExecuteAsync(MainCan);
     }
 
     private void DataGrid_OnSorting(object sender, DataGridColumnEventArgs e)

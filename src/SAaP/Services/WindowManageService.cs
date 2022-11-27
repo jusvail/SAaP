@@ -24,7 +24,7 @@ public class WindowManageService : IWindowManageService
     {
         var hwnd = WindowNative.GetWindowHandle(window);
 
-        RuntimeHelper.ShowWindow(hwnd, 9); // 9 => SW_RESTORE：激活并显示窗口
+        //RuntimeHelper.ShowWindow(hwnd, 9); // 9 => SW_RESTORE：激活并显示窗口
         RuntimeHelper.BringWindowToTop(hwnd);
     }
 

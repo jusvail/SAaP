@@ -2,11 +2,14 @@
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml.Controls;
 using System.Collections.ObjectModel;
+using Mapster;
 using SAaP.Contracts.Services;
 using SAaP.Core.Models;
 using SAaP.Core.Services;
 using SAaP.Chart.Contracts.Services;
 using SAaP.Core.Services.Analyze;
+using SAaP.Models;
+using SAaP.Core.Models.DB;
 
 namespace SAaP.ViewModels;
 
@@ -14,7 +17,7 @@ public class AnalyzeDetailViewModel : ObservableRecipient
 {
     public ObservableCollection<AnalysisResultDetail> AnalyzedResults { get; } = new();
 
-    public readonly IList<int> DefaultDuration = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 40, 50, 80, 100, 120, 150, 200 };
+    public readonly IList<int> DefaultDuration = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 40, 50, 60, 80, 100, 120, 150, 200, 250 };
 
     // analyze main service
     private readonly IStockAnalyzeService _stockAnalyzeService;
@@ -78,7 +81,17 @@ public class AnalyzeDetailViewModel : ObservableRecipient
         set => SetProperty(ref _relationPercent, value);
     }
 
-    public IAsyncRelayCommand<object> DrawStartCommand { get; }
+    public ObservableCollection<InDayDetail> AnalyzeDayDetails { get; set; } = new();
+
+    public ObservableCollection<InDayDetail> CompareDayDetails { get; set; } = new();
+
+    public WeeklyReportSummary AnalyzeWeeklySummary { get; set; } = new();
+
+    public WeeklyReportSummary CompareWeeklySummary { get; set; } = new();
+
+    public event EventHandler OnQueryFinishEvent;
+
+    public IAsyncRelayCommand<object> AnalyzeStartCommand { get; }
 
     public AnalyzeDetailViewModel(IStockAnalyzeService stockAnalyzeService, IChartService chartService, IDbTransferService dbTransferService, IFetchStockDataService fetchStockDataService, IWindowManageService windowManageService)
     {
@@ -88,16 +101,12 @@ public class AnalyzeDetailViewModel : ObservableRecipient
         _fetchStockDataService = fetchStockDataService;
         _windowManageService = windowManageService;
 
-        DrawStartCommand = new AsyncRelayCommand<object>(StartingDraw);
+        AnalyzeStartCommand = new AsyncRelayCommand<object>(StartAnalyze);
     }
 
-    public async Task StartingDraw(object canvas)
+    public async Task StartAnalyze(object canvas)
     {
-        var realCanvas = canvas as Canvas;
-
-        if (realCanvas == null) return;
-
-        var duration = DefaultDuration[SelectedCompareRelationIndex];
+        if (canvas is not Canvas realCanvas) return;
 
         var compareCode = ComparerCheck switch
         {
@@ -110,17 +119,11 @@ public class AnalyzeDetailViewModel : ObservableRecipient
         // fetch stock data from tdx, then store to csv file
         await _fetchStockDataService.FetchStockData(compareCode);
 
+        var duration = DefaultDuration[SelectedCompareRelationIndex];
+
         var codeList = new[] { CodeName, compareCode };
 
-        // transfer stock data to sqlite database
-        await Task.Run(async () =>
-        {
-            await _dbTransferService.TransferCsvDataToDb(codeList);
-        });
-
-        var col = new List<IList<double>>();
-        var names = new List<string>();
-        var days = new List<List<string>>();
+        var originalDatasList = new List<List<OriginalData>>();
 
         foreach (var codeName in codeList)
         {
@@ -131,9 +134,200 @@ public class AnalyzeDetailViewModel : ObservableRecipient
             // query original data recently
             var originalData = await DbService.TakeOriginalData(StockService.CutStockCodeToSix(codeName), belong, duration);
 
-            if (!originalData.Any()) return;
+            if (originalData.Any()) originalDatasList.Add(originalData);
+        }
 
-            names.Add(await DbService.SelectCompanyNameByCode(codeName));
+        await StartDraw(realCanvas, codeList, originalDatasList);
+
+        ListHistory(originalDatasList);
+
+        AnalyzeWeeklySummary.CompanyName = await DbService.SelectCompanyNameByCode(CodeName);
+        CompareWeeklySummary.CompanyName = await DbService.SelectCompanyNameByCode(compareCode);
+
+        OnQueryFinishEvent?.Invoke(null, EventArgs.Empty);
+
+        // bring window back
+        var xamlRoot = _windowManageService.GetWindowForElement(realCanvas.XamlRoot, typeof(AnalyzeDetailViewModel).FullName!);
+        _windowManageService.SetWindowForeground(xamlRoot);
+    }
+
+    private void ListHistory(IReadOnlyList<List<OriginalData>> originalDatasList)
+    {
+        SetHistory(AnalyzeDayDetails, originalDatasList[0]);
+        SetHistory(CompareDayDetails, originalDatasList[1]);
+
+        GenerateWeeklyReport(AnalyzeDayDetails, AnalyzeWeeklySummary);
+        GenerateWeeklyReport(CompareDayDetails, CompareWeeklySummary);
+
+    }
+
+    private static void GenerateWeeklyReport(IReadOnlyCollection<InDayDetail> dayDetails, WeeklyReportSummary summary)
+    {
+        GenerateWeeklyReport(dayDetails.Where(d => d.IsTradingDay && d.DayTime.DayOfWeek == DayOfWeek.Monday).ToList(), summary.Monday);
+        GenerateWeeklyReport(dayDetails.Where(d => d.IsTradingDay && d.DayTime.DayOfWeek == DayOfWeek.Tuesday).ToList(), summary.Tuesday);
+        GenerateWeeklyReport(dayDetails.Where(d => d.IsTradingDay && d.DayTime.DayOfWeek == DayOfWeek.Wednesday).ToList(), summary.Wednesday);
+        GenerateWeeklyReport(dayDetails.Where(d => d.IsTradingDay && d.DayTime.DayOfWeek == DayOfWeek.Thursday).ToList(), summary.Thursday);
+        GenerateWeeklyReport(dayDetails.Where(d => d.IsTradingDay && d.DayTime.DayOfWeek == DayOfWeek.Friday).ToList(), summary.Friday);
+    }
+
+    private static void GenerateWeeklyReport(ICollection<InDayDetail> dayDetails, WeeklyReport summary)
+    {
+        if (!dayDetails.Any()) return;
+
+        var detailsCount = dayDetails.Count;
+
+        var g0d = dayDetails.Count(inDayDetail => inDayDetail.Zd > 0);
+        var l0d = dayDetails.Count - g0d;
+
+        summary.ZdDistribute = $"{g0d}/{l0d}";
+
+        // ReSharper disable once PossibleLossOfFraction
+        summary.ZdPercent = CalculationService.Round2(100 * g0d / detailsCount) + "%";
+
+        var sumG0 = dayDetails.Where(inDayDetail => inDayDetail.Zd > 0).Sum(inDayDetail => inDayDetail.Zd);
+
+        summary.AverageZf = CalculationService.Round2(sumG0 / g0d);
+
+        var sumL0 = dayDetails.Where(inDayDetail => inDayDetail.Zd < 0).Sum(inDayDetail => inDayDetail.Zd);
+
+        summary.AverageDf = CalculationService.Round2(sumL0 / l0d);
+
+        summary.ZtCount = dayDetails.Count(inDayDetail => inDayDetail.Zd > 9.8);
+        summary.DtCount = dayDetails.Count(inDayDetail => inDayDetail.Zd < -9.8);
+
+        var opg0d = dayDetails.Count(inDayDetail => inDayDetail.Op > 0);
+        var opg1d = dayDetails.Count(inDayDetail => inDayDetail.Op > 1);
+        var opl0d = dayDetails.Count - opg0d;
+
+        summary.OpDistribute = $"{opg0d}/{opl0d}";
+        // ReSharper disable once PossibleLossOfFraction
+        summary.OpPercent = CalculationService.Round2(100 * opg0d / detailsCount) + "%";
+        // ReSharper disable once PossibleLossOfFraction
+        summary.Op1PPercent = CalculationService.Round2(100 * opg1d / detailsCount) + "%";
+        summary.AverageOp = CalculationService.Round2(dayDetails.Sum(inDayDetail => inDayDetail.Op) / detailsCount);
+    }
+
+    private static void SetHistory(IList<InDayDetail> details, IReadOnlyList<OriginalData> originalDatas)
+    {
+        details.Clear();
+
+        var tmpDetail = new List<InDayDetail>();
+
+        for (var i = originalDatas.Count - 2; i >= 0; i--)
+        {
+            var originalData = originalDatas[i];
+            var day = originalData.Adapt<InDayDetail>();
+
+            day.YesterdaysEnding = originalDatas[i + 1].Ending;
+
+            day.Zd = CalculationService.CalcTtm(day.YesterdaysEnding, day.Ending);
+            day.Op = CalculationService.CalcTtm(day.YesterdaysEnding, day.High);
+            day.Zf = CalculationService.CalcTtm(day.Low, day.High);
+
+            day.DayOfWeek = day.DayTime.DayOfWeek;
+
+            tmpDetail.Add(day);
+        }
+
+        if (!tmpDetail.Any()) return;
+
+        // 填充开头的工作日
+        while (tmpDetail[0].DayTime.DayOfWeek != DayOfWeek.Monday)
+        {
+            var blankDay = new InDayDetail();
+
+            var newDate = tmpDetail[0].DayTime.AddDays(-1);
+
+            blankDay.DayTime = newDate;
+            blankDay.DayOfWeek = newDate.DayOfWeek;
+
+            tmpDetail.Insert(0, blankDay);
+        }
+
+        details.Add(tmpDetail[0]);
+
+        var j = 1;
+        while (j < tmpDetail.Count)
+        {
+            var curDw = (int)tmpDetail[j].DayTime.DayOfWeek;
+            var prevDw = (int)details[^1].DayTime.DayOfWeek;
+
+            var range = CheckNeededRange(prevDw, curDw);
+
+            for (var k = 0; k < range; k++)
+            {
+                var blankDay = new InDayDetail();
+
+                var newDate = details[^1].DayTime.AddDays(1);
+
+                while (newDate.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+                {
+                    newDate = newDate.AddDays(1);
+                }
+
+                blankDay.DayTime = newDate;
+                blankDay.DayOfWeek = newDate.DayOfWeek;
+
+                details.Add(blankDay);
+            }
+
+            details.Add(tmpDetail[j]);
+
+            j++;
+        }
+    }
+
+    private static int MoveNext(int target)
+    {
+        return target switch
+        {
+            < 1 or > 5 => 1,
+            5 => 1,
+            _ => target + 1
+        };
+    }
+
+    private static int CheckNeededRange(int start, int end)
+    {
+        var nxt = MoveNext(start);
+
+        if (nxt == end) return 0;
+
+        var range = 0;
+
+        range++;
+
+        while (true)
+        {
+            nxt = MoveNext(nxt);
+
+            if (nxt == end)
+            {
+                 break;
+            }
+
+            range++;
+        }
+
+        return range;
+    }
+
+    private async Task StartDraw(Canvas realCanvas, IReadOnlyList<string> codeList, IReadOnlyList<List<OriginalData>> originalDatasList)
+    {
+        // transfer stock data to sqlite database
+        await Task.Run(async () =>
+        {
+            await _dbTransferService.TransferCsvDataToDb(codeList);
+        });
+
+        var col = new List<IList<double>>();
+        var names = new List<string>();
+        var days = new List<List<string>>();
+
+        for (var i = 0; i < originalDatasList.Count; i++)
+        {
+            var originalData = originalDatasList[i];
+            names.Add(await DbService.SelectCompanyNameByCode(codeList[i]));
             days.Add(originalData.Select(o => o.Day).Reverse().ToList());
 
             var bot = new AnalyzeBot(originalData);
@@ -151,9 +345,6 @@ public class AnalyzeDetailViewModel : ObservableRecipient
 
         RelationPercent = _stockAnalyzeService.CalcRelationPercent(col);
 
-        // bring window back
-        var xamlRoot = _windowManageService.GetWindowForElement(realCanvas.XamlRoot, typeof(AnalyzeDetailViewModel).FullName!);
-        _windowManageService.SetWindowForeground(xamlRoot);
     }
 
     public async void Initialize()
@@ -174,6 +365,6 @@ public class AnalyzeDetailViewModel : ObservableRecipient
         ComparerCheck = "1";
         ComparerModeCheck = "0";
 
-        _selectedCompareRelationIndex = 9;
+        _selectedCompareRelationIndex = 11; // 最近20天
     }
 }
