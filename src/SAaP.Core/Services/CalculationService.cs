@@ -32,7 +32,6 @@ public static class CalculationService
     public static double CalcOverprice(OriginalData yesterday, OriginalData today)
         => CalcTtm(yesterday.Ending, today.High);
 
-
     public static double TryParseStringToDouble(string input)
     {
         return double.TryParse(input, out var result) ? result : 0;
