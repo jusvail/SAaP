@@ -29,8 +29,8 @@
                       Margin="3">
                     <Grid.Resources>
                         <Style TargetType="TextBlock">
-                            <Setter Property="Margin" Value="1"></Setter>
-                            <Setter Property="HorizontalAlignment" Value="Center"></Setter>
+                            <Setter Property="Margin" Value="1.5 0 0 0"></Setter>
+                            <Setter Property="HorizontalAlignment" Value="Left"></Setter>
                             <Setter Property="VerticalAlignment" Value="Center"></Setter>
                         </Style>
                     </Grid.Resources>
@@ -162,8 +162,16 @@
                     </Style>
                 </StackPanel.Resources>
                 <StackPanel Margin="10">
-                    <TextBlock Text="比较对象："  Margin="5">
-                    </TextBlock>
+                    <StackPanel>
+                        <ToggleSwitch x:Name="CustomRange" Header="自定义时间段：" OffContent="否" OnContent="是" IsOn="{x:Bind ViewModel.IsCustomRangeOn,Mode=TwoWay}" 
+                                      Toggled="CustomRange_OnToggled"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <CalendarDatePicker x:Name="PickerStart" Date="{x:Bind ViewModel.CustomDateStart,Mode=TwoWay}" IsEnabled="False"/>
+                        <TextBlock Text="~" VerticalAlignment="Center" Margin="5 0"/>
+                        <CalendarDatePicker x:Name="PickerEnd" Date="{x:Bind ViewModel.CustomDateEnd,Mode=TwoWay}" IsEnabled="False"/>
+                    </StackPanel>
+                    <TextBlock Text="比较对象：" Margin="5" />
                     <StackPanel Orientation="Horizontal">
                         <RadioButton x:Name="ShComparer" Content="上证指数" Tag="1" 
                                      IsChecked="{x:Bind ViewModel.ComparerCheck,
@@ -212,10 +220,12 @@
                     <Grid Grid.Row="0" Margin="0 5 0 10">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="近" VerticalAlignment="Center"/>
-                            <ComboBox x:Name="CompareRelation" IsEditable="False" Margin="2"
-                                      ItemsSource="{x:Bind ViewModel.DefaultDuration}" SelectedIndex="{x:Bind ViewModel.SelectedCompareRelationIndex,Mode=TwoWay}"
+                            <ComboBox x:Name="CompareRelation" IsEditable="True" Margin="2"
+                                      Text="{x:Bind ViewModel.SelectedCompareRelationValue,Mode=TwoWay}"
+                                      ItemsSource="{x:Bind ViewModel.DefaultDuration}" 
+                                      SelectedIndex="{x:Bind ViewModel.SelectedCompareRelationIndex,Mode=TwoWay}"
                                       SelectionChanged="CompareRelation_OnSelectionChanged"/>
-                            <TextBlock Text="天同期正关联度:" VerticalAlignment="Center"/>
+                            <TextBlock Text="交易日同期正关联度:" VerticalAlignment="Center"/>
                             <HyperlinkButton Content="查询"
                                              IsEnabled="{x:Bind ViewModel.AnalyzeStartCommand.IsRunning, Converter={StaticResource ReverseBooleanConverter}, Mode=OneWay}"
                                              Command="{x:Bind ViewModel.AnalyzeStartCommand}"
