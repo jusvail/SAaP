@@ -426,6 +426,6 @@ public class AnalyzeDetailViewModel : ObservableRecipient
         ComparerCheck = "1";
         ComparerModeCheck = "0";
 
-        _selectedCompareRelationIndex = 11; // 最近20天
+        _selectedCompareRelationIndex = 13; // 最近40天
     }
 }
