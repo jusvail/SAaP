@@ -21,4 +21,13 @@ public class WeeklyReportSummary : ObservableRecipient
         get => _companyName;
         set => SetProperty(ref _companyName, value);
     }
+
+    public void Clear()
+    {
+        Monday = new WeeklyReport();
+        Tuesday = new WeeklyReport();
+        Wednesday = new WeeklyReport();
+        Thursday = new WeeklyReport();
+        Friday = new WeeklyReport();
+    }
 }

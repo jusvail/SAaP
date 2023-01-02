@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.WinUI.UI.Controls;
 using SAaP.ViewModels;
 using System.Linq.Dynamic.Core;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 
@@ -34,6 +35,8 @@ public sealed partial class AnalyzeDetailPage
             CompareReport.ReportSummary = ViewModel.CompareWeeklySummary;
         };
         ViewModel.AnalyzeStartCommand.ExecuteAsync(MainCan);
+
+        PickerEnd.Date = DateTime.Now;
     }
 
     private void DataGrid_OnSorting(object sender, DataGridColumnEventArgs e)
@@ -71,5 +74,19 @@ public sealed partial class AnalyzeDetailPage
     private void CompareRelation_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
 
+    }
+
+    private void CustomRange_OnToggled(object sender, RoutedEventArgs e)
+    {
+        if (CustomRange.IsOn)
+        {
+            PickerStart.IsEnabled = true;
+            PickerEnd.IsEnabled = true;
+        }
+        else
+        {
+            PickerStart.IsEnabled = false;
+            PickerEnd.IsEnabled = false;
+        }
     }
 }

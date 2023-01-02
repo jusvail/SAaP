@@ -244,4 +244,20 @@ public static class DbService
                 .OrderByDescending(o => o.Day)
                 .Take(duration + 1).ToListAsync(); // +1 cause ... u know y
     }
+
+    public static async Task<List<OriginalData>> TakeOriginalData(string codeName, int belong, DateTime start, DateTime end)
+    {
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+
+        // query original data recently [duration]
+        var selected = await db.OriginalData
+            .Where(o =>
+                o.CodeName == codeName
+                && o.BelongTo == belong
+            )
+            .OrderByDescending(o => o.Day)
+            .ToListAsync(); // +1 cause ... u know y
+
+        return selected.Where(selectData => DateTime.Compare(Convert.ToDateTime(selectData.Day), start) >= 0 && DateTime.Compare(Convert.ToDateTime(selectData.Day), end) < 0).ToList();
+    }
 }

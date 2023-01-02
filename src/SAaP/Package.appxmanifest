@@ -9,7 +9,7 @@
   <Identity
     Name="64853FutureLabs.223396D9A159E"
     Publisher="CN=719F3C23-0383-4AD8-96B2-6754FF308155"
-    Version="0.2.3.0" />
+    Version="0.2.4.0" />
 
   <Properties>
     <DisplayName>SAaP - 股票溢价分析</DisplayName>

@@ -32,6 +32,10 @@ public class AnalyzeDetailViewModel : ObservableRecipient
     private string _comparerModeCheck;
     private string _otherComparer;
     private string _relationPercent;
+    private string _selectedCompareRelationValue;
+    private bool _isCustomRangeOn;
+    private DateTimeOffset _customDateStart = DateTimeOffset.Now.AddDays(-28);
+    private DateTimeOffset _customDateEnd = DateTimeOffset.Now;
 
     public string CodeName
     {
@@ -43,6 +47,12 @@ public class AnalyzeDetailViewModel : ObservableRecipient
     {
         get => _selectedCompareRelationIndex;
         set => SetProperty(ref _selectedCompareRelationIndex, value);
+    }
+
+    public string SelectedCompareRelationValue
+    {
+        get => _selectedCompareRelationValue;
+        set => SetProperty(ref _selectedCompareRelationValue, value);
     }
 
     public string ComparerCheck
@@ -79,6 +89,24 @@ public class AnalyzeDetailViewModel : ObservableRecipient
     {
         get => _relationPercent;
         set => SetProperty(ref _relationPercent, value);
+    }
+
+    public bool IsCustomRangeOn
+    {
+        get => _isCustomRangeOn;
+        set => SetProperty(ref _isCustomRangeOn, value);
+    }
+
+    public DateTimeOffset CustomDateStart
+    {
+        get => _customDateStart;
+        set => SetProperty(ref _customDateStart, value);
+    }
+
+    public DateTimeOffset CustomDateEnd
+    {
+        get => _customDateEnd;
+        set => SetProperty(ref _customDateEnd, value);
     }
 
     public ObservableCollection<InDayDetail> AnalyzeDayDetails { get; set; } = new();
@@ -119,7 +147,23 @@ public class AnalyzeDetailViewModel : ObservableRecipient
         // fetch stock data from tdx, then store to csv file
         await _fetchStockDataService.FetchStockData(compareCode);
 
-        var duration = DefaultDuration[SelectedCompareRelationIndex];
+        int duration;
+
+        if (SelectedCompareRelationIndex > 0 && SelectedCompareRelationIndex < DefaultDuration.Count - 1)
+        {
+            duration = DefaultDuration[SelectedCompareRelationIndex];
+        }
+        else
+        {
+            try
+            {
+                duration = Convert.ToInt32(SelectedCompareRelationValue);
+            }
+            catch (Exception)
+            {
+                duration = 20;
+            }
+        }
 
         var codeList = new[] { CodeName, compareCode };
 
@@ -131,10 +175,24 @@ public class AnalyzeDetailViewModel : ObservableRecipient
 
             var belong = await _fetchStockDataService.TryGetBelongByCode(codeName);
 
-            // query original data recently
-            var originalData = await DbService.TakeOriginalData(StockService.CutStockCodeToSix(codeName), belong, duration);
+            List<OriginalData> originalData;
 
-            if (originalData.Any()) originalDatasList.Add(originalData);
+            if (IsCustomRangeOn)
+            {
+                // query original data range
+                originalData = await DbService.TakeOriginalData(StockService.CutStockCodeToSix(codeName), belong, CustomDateStart.LocalDateTime, CustomDateEnd.LocalDateTime);
+
+                if (originalData.Any()) SelectedCompareRelationValue = originalData.Count.ToString();
+            }
+            else
+            {
+                // query original data recently
+                originalData = await DbService.TakeOriginalData(StockService.CutStockCodeToSix(codeName), belong, duration);
+            }
+
+            if (!originalData.Any()) return;
+
+            originalDatasList.Add(originalData);
         }
 
         await StartDraw(realCanvas, codeList, originalDatasList);
@@ -155,6 +213,9 @@ public class AnalyzeDetailViewModel : ObservableRecipient
     {
         SetHistory(AnalyzeDayDetails, originalDatasList[0]);
         SetHistory(CompareDayDetails, originalDatasList[1]);
+
+        AnalyzeWeeklySummary.Clear();
+        CompareWeeklySummary.Clear();
 
         GenerateWeeklyReport(AnalyzeDayDetails, AnalyzeWeeklySummary);
         GenerateWeeklyReport(CompareDayDetails, CompareWeeklySummary);
@@ -303,7 +364,7 @@ public class AnalyzeDetailViewModel : ObservableRecipient
 
             if (nxt == end)
             {
-                 break;
+                break;
             }
 
             range++;
@@ -365,6 +426,6 @@ public class AnalyzeDetailViewModel : ObservableRecipient
         ComparerCheck = "1";
         ComparerModeCheck = "0";
 
-        _selectedCompareRelationIndex = 11; // 最近20天
+        _selectedCompareRelationIndex = 13; // 最近40天
     }
 }
