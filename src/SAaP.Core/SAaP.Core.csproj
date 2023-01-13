@@ -23,11 +23,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Py\tdx_min_reader.py">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Py\tdx_reader.py">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Py\tushare_reader.py">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Services\Monitor\" />
   </ItemGroup>
 </Project>
