@@ -8,11 +8,16 @@
       "program": "${file}",
       "console": "integratedTerminal",
       "justMyCode": true,
-      "args": [
-        "C:/Stock/TDX",
-        "C:/Workspace/WK/outData",
-        "1000001,1600657，002411"
-      ]
+      "args": ["C:/Stock/TDX", "C:/Workspace/WK/outData", "110052"]
+    },
+    {
+      "name": "Python: min line run",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": ["C:/Stock/TDX", "C:/Workspace/WK/outData", "5", "110052,110044,113585"]
     },
     {
       // Use IntelliSense to find out which attributes exist for C# debugging
