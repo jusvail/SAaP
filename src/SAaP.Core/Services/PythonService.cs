@@ -10,6 +10,8 @@ public static class PythonService
     public const string PyFolder = "py";
     // tdx script location
     public const string TdxReader = "tdx_reader.py";
+    // tdx minute script location
+    public const string TdxMinuteReader = "tdx_min_reader.py";
 
     public const string PyName = "python.exe";
 

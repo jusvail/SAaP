@@ -23,7 +23,10 @@ public class MonitorViewModel : ObservableRecipient
 
     private readonly Stock _noFoundStock = new() { CompanyName = "找不到对象", CodeName = ">_<0" };
 
+    public readonly IList<double> DefaultStopProfitList = new List<double> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+
     private string _titleBarMessage;
+    private string _currentStatus;
 
     public ObservableCollection<Stock> AllSuggestStocks { get; } = new();
 
@@ -37,18 +40,29 @@ public class MonitorViewModel : ObservableRecipient
 
     public ObservableCollection<ObservableTaskDetail> FilterTasks { get; set; } = new();
 
+    public ObservableCollection<ObservableMonitorDetail> MonitorTasks { get; set; } = new();
+    
     public ObservableTaskDetail CurrentTaskFilterData { get; set; } = new();
+
+    public ObservableMonitorDetail CurrentMonitorData { get; set; } = new();
 
     public IRelayCommand<object> AddToMonitorCommand { get; }
     public IRelayCommand CheckUseabilityCommand { get; }
     public IRelayCommand SaveFilterTaskCommand { get; }
     public IAsyncRelayCommand AddOnHoldStockCommand { get; }
     public IAsyncRelayCommand SaveFilterConditionCommand { get; }
+    public IAsyncRelayCommand HistoryMinDataImportCommand { get; }
 
     public string TitleBarMessage
     {
         get => _titleBarMessage;
         set => SetProperty(ref _titleBarMessage, value);
+    }
+
+    public string CurrentStatus
+    {
+        get => _currentStatus;
+        set => SetProperty(ref _currentStatus, value);
     }
 
     public MonitorViewModel(IDbTransferService dbTransferService, IFetchStockDataService fetchStockDataService, IStockAnalyzeService stockAnalyzeService)
@@ -62,6 +76,22 @@ public class MonitorViewModel : ObservableRecipient
         CheckUseabilityCommand = new RelayCommand(CheckUseability);
         SaveFilterConditionCommand = new AsyncRelayCommand(SaveFilterCondition);
         SaveFilterTaskCommand = new RelayCommand(SaveFilterTask);
+        HistoryMinDataImportCommand = new AsyncRelayCommand(ImportHistoryMinData);
+    }
+
+    private async Task ImportHistoryMinData()
+    {
+        if (!MonitorStocks.Any()) return;
+
+        var pyArgs = StockService.FormatPyArgument(MonitorStocks.Select(m => m.CodeNameFull));
+
+        CurrentStatus = "正在导入1分钟线数据";
+        await _fetchStockDataService.FetchStockMinuteData(pyArgs, 1);
+
+        CurrentStatus = "正在导入5分钟线数据";
+        await _fetchStockDataService.FetchStockMinuteData(pyArgs, 5);
+
+        CurrentStatus = string.Empty;
     }
 
     private void SaveFilterTask()
@@ -107,7 +137,7 @@ public class MonitorViewModel : ObservableRecipient
         return newItem;
     }
 
-    private void OnNavigateToTabViewEventHandler(object sender, NavigateToTabViewEventArgs e)
+    private static void OnNavigateToTabViewEventHandler(object sender, NavigateToTabViewEventArgs e)
     {
         var tabView = e.Target;
         var newTab = CreateNewTab(typeof(FilterResultViewerPage), e);

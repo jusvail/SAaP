@@ -155,7 +155,7 @@
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Column="0" Margin="10" Padding="10"
                         HorizontalAlignment="Center" VerticalAlignment="Center"
-                         CornerRadius="5" BorderThickness="1" BorderBrush="{StaticResource DefaultBorderBrush}">
+                        CornerRadius="5" BorderThickness="1" BorderBrush="{StaticResource DefaultBorderBrush}">
                 <StackPanel.Resources>
                     <Style TargetType="RadioButton">
                         <Setter Property="Margin" Value="15 0 -20  0" />

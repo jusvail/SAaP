@@ -2,7 +2,6 @@
 using System.IO;
 using System.Threading.Tasks;
 using Windows.Storage;
-using ABI.Windows.Devices.AllJoyn;
 
 namespace SAaP.Core.Services;
 
@@ -14,6 +13,8 @@ public static class StartupService
     private const string WorkFolder = "saap";
     private const string WorkFolderSubDbContainer = "db";
     private const string WorkFolderSubPyData = "pydata";
+    private const string WorkFolderSubLogData = "log";
+    private const string WorkFolderSubMinData = "mindata";
 
     private static string WorkSpacePath => Path.Combine(LocalApplicationData, WorkFolder);
 
@@ -22,6 +23,8 @@ public static class StartupService
     public static string DbConnectionString => "Data Source=" + DbFilePath + ";Version=3;";
 
     public static string PyDataPath => Path.Combine(WorkSpacePath, WorkFolderSubPyData);
+    public static string LogPath => Path.Combine(WorkSpacePath, WorkFolderSubLogData);
+    public static string MinDataPath => Path.Combine(WorkSpacePath, WorkFolderSubMinData);
 
     private static async Task<StorageFolder> EnsureFolderExist(StorageFolder top, string name)
     {
@@ -49,6 +52,8 @@ public static class StartupService
         var workSpace = await EnsureFolderExist(localAppDataFolder, WorkFolder);
 
         await EnsureFolderExist(workSpace, WorkFolderSubPyData);
+        await EnsureFolderExist(workSpace, WorkFolderSubLogData);
+        await EnsureFolderExist(workSpace, WorkFolderSubMinData);
 
         var dbFolder = await EnsureFolderExist(workSpace, WorkFolderSubDbContainer);
 

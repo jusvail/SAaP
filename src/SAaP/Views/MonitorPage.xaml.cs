@@ -1,16 +1,16 @@
-﻿using Microsoft.UI.Xaml.Navigation;
+﻿using Mapster;
+using Microsoft.UI.Xaml.Navigation;
 using SAaP.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using SAaP.Core.Models.DB;
 using SAaP.Helper;
+using SAaP.Models;
+using SAaP.Contracts.Enum;
 
 namespace SAaP.Views;
 
-/// <summary>
-/// An empty page that can be used on its own or navigated to within a Frame.
-/// </summary>
 public sealed partial class MonitorPage
 {
     public MonitorViewModel ViewModel { get; }
@@ -28,6 +28,8 @@ public sealed partial class MonitorPage
 
         await ViewModel.InitializeSuggestData();
         await ViewModel.InitializeTrackData();
+
+        ViewModel.CurrentMonitorData.BuyModes[0].IsChecked = true;
     }
 
     private void AddToMonitorAppBarButton_OnClick(object sender, RoutedEventArgs e)
@@ -104,5 +106,52 @@ public sealed partial class MonitorPage
     private void FilterResultTabView_OnTabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)
     {
         sender.TabItems.Remove(args.Tab);
+    }
+
+    private void AllStartButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        DoNotOpenTooMuch.IsOpen = true;
+    }
+
+    private void HistoryDeduce_OnClick(object sender, RoutedEventArgs e)
+    {
+        var dataContext = ((FrameworkElement)e.OriginalSource).DataContext;
+
+        if (dataContext is not Stock stock) return;
+
+        var newItem = new TabViewItem
+        {
+            Header = stock.CodeName + "(" + stock.CompanyName + ")",
+            IconSource = new SymbolIconSource { Symbol = Symbol.ThreeBars }
+        };
+
+        var frame = new Frame();
+
+        var detail = ViewModel.CurrentMonitorData.Adapt<ObservableMonitorDetail>();
+
+        detail.Stock = stock;
+        detail.MonitorType = MonitorType.HistoryDataDeduce;
+        
+        frame.Navigate(typeof(HistoryDataDeducePage), detail);
+
+        newItem.Content = frame;
+
+        LiveMonitorTabView.TabItems.Add(newItem);
+    }
+
+    private void BuyModeSelect_OnChecked(object sender, RoutedEventArgs e)
+    {
+        foreach (var buyMode in ViewModel.CurrentMonitorData.BuyModes)
+        {
+            buyMode.IsChecked = true;
+        }
+    }
+
+    private void BuyModeSelect_OnUnchecked(object sender, RoutedEventArgs e)
+    {
+        foreach (var buyMode in ViewModel.CurrentMonitorData.BuyModes)
+        {
+            buyMode.IsChecked = false;
+        }
     }
 }
