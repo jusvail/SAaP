@@ -9,11 +9,11 @@ using SAaP.Core.Services;
 using SAaP.Models;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using Microsoft.UI.Xaml.Controls;
+using SAaP.Core.Helpers;
 using SAaP.Core.Services.Analyze;
 using SAaP.Views;
 using SAaP.Core.Models;
 using SAaP.Core.Models.Monitor;
-using SAaP.Core.Services.Monitor;
 
 namespace SAaP.ViewModels;
 
@@ -33,6 +33,8 @@ public class MonitorViewModel : ObservableRecipient
 
     private string _titleBarMessage;
     private string _currentStatus;
+    private string _importStockText;
+    private DateTime _currentDateTime;
 
     public ObservableCollection<Stock> AllSuggestStocks { get; } = new();
 
@@ -40,7 +42,11 @@ public class MonitorViewModel : ObservableRecipient
 
     public ObservableCollection<ObservableTrackCondition> FilterConditions { get; } = new();
 
+    public ObservableCollection<MonitorNotification> RealtimeResultCollection { get; } = new();
+
     public ObservableCollection<MonitorNotification> SimulationResultCollection { get; } = new();
+
+    public ObservableCollection<MonitorNotification> LoggingCollection { get; } = new();
 
     public ObservableCollection<ObservableTrackCondition> MonitorConditions { get; } = new();
 
@@ -62,6 +68,10 @@ public class MonitorViewModel : ObservableRecipient
     public IAsyncRelayCommand AddOnHoldStockCommand { get; }
     public IAsyncRelayCommand SaveFilterConditionCommand { get; }
     public IAsyncRelayCommand HistoryMinDataImportCommand { get; }
+    public IAsyncRelayCommand OnSimulationStartCommand { get; }
+    public IAsyncRelayCommand ImportStockFromTextCommand { get; }
+    public IRelayCommand<IList<object>> DeleteMonitorItemsCommand { get; }
+    public IAsyncRelayCommand RealtimeMonitorStartCommand { get; }
 
     public string TitleBarMessage
     {
@@ -75,7 +85,17 @@ public class MonitorViewModel : ObservableRecipient
         set => SetProperty(ref _currentStatus, value);
     }
 
-    public IAsyncRelayCommand OnSimulationStartCommand { get; }
+    public string ImportStockText
+    {
+        get => _importStockText;
+        set => SetProperty(ref _importStockText, value);
+    }
+
+    public DateTime CurrentDateTime
+    {
+        get => _currentDateTime;
+        set => SetProperty(ref _currentDateTime, value);
+    }
 
     public MonitorViewModel(IDbTransferService dbTransferService, IFetchStockDataService fetchStockDataService, IStockAnalyzeService stockAnalyzeService, IRestoreSettingsService restoreSettingsService, IMonitorService monitorService)
     {
@@ -92,6 +112,139 @@ public class MonitorViewModel : ObservableRecipient
         SaveFilterTaskCommand = new RelayCommand(SaveFilterTask);
         HistoryMinDataImportCommand = new AsyncRelayCommand(ImportHistoryMinData);
         OnSimulationStartCommand = new AsyncRelayCommand(OnSimulationStart);
+        ImportStockFromTextCommand = new AsyncRelayCommand(ImportStockFromText);
+        DeleteMonitorItemsCommand = new RelayCommand<IList<object>>(DeleteMonitorItems);
+        RealtimeMonitorStartCommand = new AsyncRelayCommand(RealtimeMonitorStart);
+    }
+
+    public async Task LiveTask()
+    {
+        while (true)
+        {
+            SetValueCrossThread(
+                () =>
+                {
+                    CurrentDateTime = DateTime.Now;
+                }
+            );
+            await Task.Delay(1000);
+        }
+    }
+
+    private async Task RealtimeMonitorStart()
+    {
+        var mealtimes = Time.GetTradeWallTime();
+
+        while (Time.GetTimeRightNow() > mealtimes[3])
+        {
+            // 盘后
+            // TODO sth
+            LoggingCollection.Insert(0, MonitorNotification.SystemNotification("下班了"));
+
+            return;
+        }
+
+        bool pqStaff = false, noonStaff = false;
+
+        while (Time.GetTimeRightNow() > mealtimes[1] && Time.GetTimeRightNow() < mealtimes[2])
+        {
+            // 午休
+            if (!noonStaff)
+            {
+                // TODO sth
+                LoggingCollection.Insert(0, MonitorNotification.SystemNotification("午休"));
+                noonStaff = true;
+            }
+
+            await Task.Delay(1000);
+        }
+
+        while (Time.GetTimeRightNow() < mealtimes[0])
+        {
+            // 盘前
+
+            if (!pqStaff)
+            {
+                // TODO sth
+                LoggingCollection.Insert(0, MonitorNotification.SystemNotification("准备中。。。"));
+                pqStaff = true;
+            }
+
+            await Task.Delay(1000);
+        }
+
+        // 盘中
+        foreach (var stock in MonitorStocks)
+        {
+            var dayData = (await DbService.TakeOriginalData(stock.CodeName, stock.BelongTo, 10)).ToList();
+
+            var oldDataStartAt = dayData.Count > 0 ? DateTime.Parse(dayData.First().Day) : DateTime.Now;
+
+            var minutesData =
+                await _monitorService.ReadMinuteDateSince(stock, CurrentMonitorData.MinuteType, oldDataStartAt);
+
+            var stock1 = stock;
+            await Task.Run(() =>
+                {
+                    // run 里不要用async await！
+                    _monitorService.RealTimeTrack(stock1, CurrentMonitorData, minutesData,
+                        notification => { SetValueCrossThread(() => { PrintRealTimeTrackResult(notification); }); });
+                }
+            );
+        }
+
+        while (Time.GetTimeRightNow() > mealtimes[0] && Time.GetTimeRightNow() < mealtimes[2])
+        {
+            // 上班时间！
+            await Task.Delay(60000);
+        }
+    }
+
+    private void PrintRealTimeTrackResult(MonitorNotification notification)
+    {
+        if (string.IsNullOrEmpty(notification.CodeName))
+        {
+            LoggingCollection.Insert(0, MonitorNotification.SystemNotification(notification.Message));
+        }
+        else
+        {
+            RealtimeResultCollection.Add(notification);
+            LoggingCollection.Insert(0, notification);
+        }
+    }
+
+    private void DeleteMonitorItems(IList<object> selectedItems)
+    {
+        if (!selectedItems.Any()) return;
+
+        foreach (var selectedItem in selectedItems)
+        {
+            DeleteMonitorItem(selectedItem);
+        }
+    }
+
+    private async Task ImportStockFromText()
+    {
+        if (string.IsNullOrEmpty(ImportStockText)) return;
+
+        var codes = await _fetchStockDataService.FormatInputCode(ImportStockText);
+
+        foreach (var stock in
+                 from code in codes
+                 select AllSuggestStocks.Where(s => s.CodeNameFull == code).ToList()
+                 into stocks
+                 where stocks.Any()
+                 select stocks.First()
+                 into stock
+                 where !MonitorStocks.Contains(stock)
+                 select stock)
+        {
+            MonitorStocks.Add(stock);
+        }
+
+        ImportStockText = string.Empty;
+
+        ReinsertToDb(ActivityData.RealTimeMonitor, MonitorStocks);
     }
 
     private async Task OnSimulationStart()
@@ -109,7 +262,7 @@ public class MonitorViewModel : ObservableRecipient
         foreach (var monitorStock in HistoryDeduceData.MonitorStocks)
         {
 
-            var minutesData = _monitorService.ReadMinuteDate(monitorStock, HistoryDeduceData);
+            var minutesData = _monitorService.ReadMinuteDateForSimulate(monitorStock, HistoryDeduceData);
 
             var datas = new List<MinuteData>();
 

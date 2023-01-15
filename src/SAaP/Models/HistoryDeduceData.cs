@@ -11,7 +11,7 @@ public class HistoryDeduceData : ObservableRecipient
     private DateTimeOffset _perLoadDateEnd = DateTimeOffset.Now.AddHours(DateTimeOffset.Now.Hour * -1).AddDays(-1);
     private DateTimeOffset _analyzeEndDate = DateTimeOffset.Now.AddHours(DateTimeOffset.Now.Hour * -1);
 
-    public MonitorCondition MonitorCondition { get; set; }
+    public MonitorCondition MonitorCondition { get; set; } = new();
 
     public DateTimeOffset PreLoadDateStart
     {

@@ -7,7 +7,11 @@ namespace SAaP.Contracts.Services;
 
 public interface IMonitorService
 {
-    IAsyncEnumerable<MinuteData> ReadMinuteDate(Stock stock, HistoryDeduceData historyDeduceData);
+    IAsyncEnumerable<MinuteData> ReadMinuteDateForSimulate(Stock stock, HistoryDeduceData historyDeduceData);
+
+    Task<List<MinuteData>> ReadMinuteDateSince(Stock stock, string minuteType, DateTime since);
+
+    Task RealTimeTrack(Stock stock, MonitorCondition monitorCondition, List<MinuteData> historyMinuteDatas, Action<MonitorNotification> callBack);
 
     MonitorReport StartDeduce(Stock stock, HistoryDeduceData historyDeduceData, List<MinuteData> minuteDatas);
 }

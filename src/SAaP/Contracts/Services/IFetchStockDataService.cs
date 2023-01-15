@@ -7,4 +7,6 @@ public interface IFetchStockDataService
     Task FetchStockMinuteData(string pyArg, int minType);
 
     Task<int> TryGetBelongByCode(string code);
+
+    Task<List<string>> FormatInputCode(string input);
 }

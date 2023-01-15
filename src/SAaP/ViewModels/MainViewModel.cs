@@ -497,36 +497,7 @@ public class MainViewModel : ObservableRecipient
 
     public async void FormatCodeInput(string input)
     {
-        // check code accuracy
-        var accuracyCodes = StringHelper.FormatInputCode(input);
-        // check null input
-        if (accuracyCodes == null) return;
-
-        var allCodes = new List<string>();
-
-        foreach (var accuracyCode in accuracyCodes)
-        {
-            if (accuracyCode.Length == StockService.TdxCodeLength) allCodes.Add(accuracyCode);
-            if (accuracyCode.Length != StockService.StandardCodeLength) continue;
-
-            var belong = await _fetchStockDataService.TryGetBelongByCode(accuracyCode);
-
-            switch (belong)
-            {
-                case StockService.MultiFlg:
-                    allCodes.Add(StockService.ShFlag + accuracyCode);
-                    allCodes.Add(StockService.SzFlag + accuracyCode);
-                    break;
-                case StockService.ShFlag:
-                case StockService.SzFlag:
-                    allCodes.Add(belong + accuracyCode);
-                    break;
-                case StockService.NotExistFlg:
-                    break;
-            }
-        }
-
-        // add comma
-        CodeInput = StockService.FormatPyArgument(allCodes);
+        var list = await _fetchStockDataService.FormatInputCode(input);
+        CodeInput = StockService.FormatPyArgument(list);
     }
 }

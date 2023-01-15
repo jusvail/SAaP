@@ -57,6 +57,23 @@ public static class Http
         }
     }
 
+
+    public static async Task<string> GetStringWithoutUserAgentAsync(string uri)
+    {
+        using var client = new HttpClient();
+
+        try
+        {
+            return await client.GetStringAsync(new Uri(uri));
+        }
+        catch (Exception)
+        {
+            return string.Empty;
+
+            //throw;
+        }
+    }
+
     public static async Task<IBuffer> GetBufferAsync(string uri)
     {
         using var client = CreateHttpClientWithUserAgent();

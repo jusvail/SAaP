@@ -37,6 +37,8 @@
     <Thickness x:Key="SettingsPageGridElementMargin">4,4,0,0</Thickness>
 
     <Thickness x:Key="StandardButtonMargin">5,5,0,5</Thickness>
+    <Thickness x:Key="LTopMargin">5,5,0,2</Thickness>
+    <Thickness x:Key="LBotMargin">5,2,0,5</Thickness>
     <Thickness x:Key="DefaultButtonFlyOutMargin">-6,-6,-6,-6</Thickness>
 
     <CornerRadius x:Key="DefaultThickness">4</CornerRadius>
