@@ -3,6 +3,7 @@ using SAaP.Core.Models;
 using SAaP.Core.Services;
 using SAaP.Models;
 using Windows.Storage;
+using Mapster;
 using SAaP.Core.Models.DB;
 using SAaP.Core.Models.Monitor;
 using SAaP.Core.Services.Monitor;
@@ -18,7 +19,7 @@ public class MonitorService : IMonitorService
         var manager = MonitorFactory.Create(historyDeduceData.MonitorCondition.BuyModes);
 
         manager.Stock = stock;
-        manager.Condition = historyDeduceData.MonitorCondition;
+        manager.Condition = historyDeduceData.MonitorCondition.Adapt<MonitorCondition>();
 
         var index = 0;
 
@@ -26,7 +27,7 @@ public class MonitorService : IMonitorService
         do
         {
             manager.MinuteDatas.Add(minuteDatas[index++]);
-        } while (manager.MinuteDatas[^1].FullTime <= historyDeduceData.PerLoadDateEnd);
+        } while (manager.MinuteDatas[^1].FullTime < historyDeduceData.PerLoadDateEnd && index < minuteDatas.Count);
 
         // pre work
         manager.PrepareForWork();
@@ -35,7 +36,8 @@ public class MonitorService : IMonitorService
 
         while (index < minuteDatas.Count - 1)
         {
-            var notifications = manager.ReceiveAMinuteData(minuteDatas[index]).ToList();
+            var notifications = manager.AnalyzeAMinuteData(minuteDatas[index]).ToList();
+            manager.ReceiveAMinuteData(minuteDatas[index]);
 
             if (notifications.Any())
             {
@@ -43,6 +45,14 @@ public class MonitorService : IMonitorService
             }
 
             index++;
+        }
+
+        if (!report.Notifications.Any())
+        {
+            report.Notifications.Add(new MonitorNotification
+            {
+                Message = "无结果"
+            });
         }
 
         return report;
@@ -80,6 +90,7 @@ public class MonitorService : IMonitorService
             var minuteData = new MinuteData
             {
                 CodeName = stock.CodeName,
+                CompanyName = stock.CompanyName,
                 BelongTo = stock.BelongTo,
                 FullTime = dateTime,
                 Opening = CalculationService.TryParseStringToDouble(lineObj[1]),

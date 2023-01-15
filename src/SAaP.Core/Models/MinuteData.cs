@@ -6,6 +6,8 @@ public class MinuteData
 {
     public string CodeName { get; set; }
 
+    public string CompanyName { get; set; }
+
     public int BelongTo { get; set; }
 
     public DateTimeOffset FullTime { get; set; }
@@ -19,5 +21,10 @@ public class MinuteData
     public double Low { get; set; }
 
     public double Ending { get; set; }
+
+    public double Zd()
+    {
+        return 100 * (Ending - Opening) / Opening;
+    }
 
 }

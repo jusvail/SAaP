@@ -88,6 +88,37 @@
                 </Grid.ContextFlyout>
             </Grid>
         </DataTemplate>
+        <DataTemplate x:DataType="monitor:MonitorNotification" x:Key="SimulationResultDataTemplate">
+            <Grid>
+                <Grid.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="FontSize" Value="12"></Setter>
+                    </Style>
+                </Grid.Resources>
+                <StackPanel ToolTipService.ToolTip="{x:Bind Message,Mode=OneWay}" Padding="5">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{x:Bind CodeName,Mode=OneWay}"/>
+                        <TextBlock Text="("/>
+                        <TextBlock Text="{x:Bind CompanyName,Mode=OneWay}"/>
+                        <TextBlock Text=")"/>
+                    </StackPanel>
+                    <TextBlock Text="{x:Bind SubmittedByMode,Mode=OneWay}"/>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{x:Bind FullTime,Mode=OneWay}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{x:Bind Price,Mode=OneWay}"/>
+                        <TextBlock Text="{x:Bind Direction,Mode=OneWay}" Margin="5 0"/>
+                    </StackPanel>
+                    <TextBlock Text="{x:Bind Message,Mode=OneWay}"/>
+                </StackPanel>
+                <Grid.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="详细" />
+                    </MenuFlyout>
+                </Grid.ContextFlyout>
+            </Grid>
+        </DataTemplate>
         <DataTemplate x:Key="TaskDataTemplate" x:DataType="models:ObservableTaskDetail" x:DefaultBindMode="OneWay">
             <Grid Margin="0 2 12 2">
                 <controlPages:BackgroundTransparentColoredRectangle Margin="-8 3 -15 4"/>
@@ -277,7 +308,6 @@
 
                                 <Grid Grid.Column="1">
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="*"/>
@@ -492,20 +522,17 @@
                                                                     IsEnabled="{x:Bind ViewModel.OnSimulationStartCommand.IsRunning, Converter={StaticResource ReverseBooleanConverter}, Mode=OneWay}"
                                                                     Command="{x:Bind ViewModel.OnSimulationStartCommand}"></Button>
                                                         </StackPanel>
-                                                        <StackPanel Grid.Row="5" Orientation="Horizontal" Margin="0 5">
-                                                            <GridView>
-
+                                                        <Grid Grid.Row="5" Margin="0 5">
+                                                            <GridView x:Name="SimGridView" 
+                                                                      ItemsSource="{x:Bind ViewModel.SimulationResultCollection}"
+                                                                      ItemTemplate="{StaticResource SimulationResultDataTemplate}">
                                                             </GridView>
-                                                        </StackPanel>
-
+                                                        </Grid>
                                                     </Grid>
                                                 </TabViewItem>
                                             </TabView.TabItems>
                                         </TabView>
                                     </Grid>
-                                    <Grid Grid.Row="3" 
-                                          Margin="5 0 0 0"
-                                          Background="{ThemeResource LayerFillColorDefaultBrush}"></Grid>
                                 </Grid>
 
                                 <Grid Grid.Column="2"

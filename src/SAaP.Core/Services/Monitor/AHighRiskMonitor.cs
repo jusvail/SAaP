@@ -1,11 +1,13 @@
-﻿using SAaP.Core.Models.Monitor;
+﻿using System.Collections.Generic;
+using SAaP.Core.Models;
+using SAaP.Core.Models.Monitor;
 
 namespace SAaP.Core.Services.Monitor;
 
 public class AHighRiskMonitor : RiskMonitorBase
 {
-    public override MonitorNotification AnalyzeCurrentMinuteData()
+    public override MonitorNotification AnalyzeCurrentMinuteData(List<MinuteData> passDatas, MinuteData thisMinuteData, ExtraInfoOfPassData extraInfo)
     {
-        throw new System.NotImplementedException();
+        return null;
     }
 }

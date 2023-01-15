@@ -40,6 +40,8 @@ public class MonitorViewModel : ObservableRecipient
 
     public ObservableCollection<ObservableTrackCondition> FilterConditions { get; } = new();
 
+    public ObservableCollection<MonitorNotification> SimulationResultCollection { get; } = new();
+
     public ObservableCollection<ObservableTrackCondition> MonitorConditions { get; } = new();
 
     public ObservableTrackCondition CurrentTrackFilterCondition { get; set; } = new();
@@ -100,6 +102,8 @@ public class MonitorViewModel : ObservableRecipient
             return;
         }
 
+        SimulationResultCollection.Clear();
+
         HistoryDeduceData.MonitorCondition = CurrentMonitorData.Adapt<MonitorCondition>();
 
         foreach (var monitorStock in HistoryDeduceData.MonitorStocks)
@@ -114,10 +118,22 @@ public class MonitorViewModel : ObservableRecipient
                 datas.Add(data);
             }
 
+            if (!datas.Any()) continue;
+
             await Task.Run(() =>
             {
-                _monitorService.StartDeduce(monitorStock, HistoryDeduceData, datas);
+                var report = _monitorService.StartDeduce(monitorStock, HistoryDeduceData, datas);
+
+                ReportCallback(report);
             });
+        }
+    }
+
+    private void ReportCallback(MonitorReport report)
+    {
+        foreach (var notification in report.Notifications)
+        {
+            SetValueCrossThread(() => { SimulationResultCollection.Add(notification); });
         }
     }
 

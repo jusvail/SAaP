@@ -15,14 +15,14 @@ public class ActivationService : IActivationService
 
 #if DEBUG
         // navigate to main page
-        //App.MainWindow.NavigateTo<MonitorPage>("MonitorPageTitle".GetLocalized(), null);
+        App.MainWindow.NavigateTo<MonitorPage>("MonitorPageTitle".GetLocalized(), null);
 
 #else
         // navigate to main page
         App.MainWindow.NavigateTo<MainPage>(PjConstant.AppTitle.GetLocalized(), null);
 
 #endif
-        App.MainWindow.NavigateTo<MainPage>(PjConstant.AppTitle.GetLocalized(), null);
+        //App.MainWindow.NavigateTo<MainPage>(PjConstant.AppTitle.GetLocalized(), null);
 
         // active main window
         App.MainWindow.Activate();
