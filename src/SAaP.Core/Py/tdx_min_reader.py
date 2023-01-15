@@ -84,8 +84,6 @@ def store_stock_data_to_csv(filepath, name):
             stock_vol = f.read(4)
             stock_reserv = f.read(4)
 
-            # date,open,high,low,close,amount,vol,reservation
-
             if not stock_date:
                 break
             stock_date = struct.unpack("h", stock_date)       # 2字节 20
@@ -106,7 +104,7 @@ def store_stock_data_to_csv(filepath, name):
 
             full_dt = datetime.datetime(year, month, day, hour, min)
 
-            list = full_dt.strftime('%Y/%m/%d') + "," + full_dt.strftime('%H:%M') + ',' + '{:.3f}'.format(stock_open[0]) + "," + '{:.3f}'.format(stock_high[0]) + "," + '{:.3f}'.format(
+            list = full_dt.strftime('%Y/%m/%d %H:%M') + ',' + '{:.3f}'.format(stock_open[0]) + "," + '{:.3f}'.format(stock_high[0]) + "," + '{:.3f}'.format(
             stock_low[0]) + "," + '{:.3f}'.format(stock_close[0]) + "," + str(stock_vol[0]) + "\n"
 
             file_object.writelines(list)
@@ -153,8 +151,8 @@ if 'quest_code' in globals():
                 logging.info("neither shanghai or shenzhen =>" + i)
                 print('neither shanghai or shenzhen')
                 continue
-            f_name = hd + code_name + '.day'
-            f_path = tdx_path + '/vipdoc/' + hd + '/lday/' + f_name
+            f_name = hd + code_name + '.lc' + line_type
+            f_path = tdx_path + '/vipdoc/' + hd + '/' + ex_dir + '/' + f_name
             if os.path.exists(f_path):
                 store_stock_data_to_csv(f_path, hd + code_name)
                 continue

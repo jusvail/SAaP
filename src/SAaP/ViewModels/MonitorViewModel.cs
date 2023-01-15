@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using SAaP.Contracts.Services;
 using System.Collections.ObjectModel;
+using System.Text;
 using Mapster;
 using SAaP.Core.Models.DB;
 using SAaP.Core.Services;
@@ -10,6 +11,9 @@ using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using Microsoft.UI.Xaml.Controls;
 using SAaP.Core.Services.Analyze;
 using SAaP.Views;
+using SAaP.Core.Models;
+using SAaP.Core.Models.Monitor;
+using SAaP.Core.Services.Monitor;
 
 namespace SAaP.ViewModels;
 
@@ -20,10 +24,15 @@ public class MonitorViewModel : ObservableRecipient
     private readonly IDbTransferService _dbTransferService;
     private readonly IStockAnalyzeService _stockAnalyzeService;
     private readonly IFetchStockDataService _fetchStockDataService;
+    private readonly IRestoreSettingsService _restoreSettingsService;
+    private readonly IMonitorService _monitorService;
 
     private readonly Stock _noFoundStock = new() { CompanyName = "找不到对象", CodeName = ">_<0" };
 
+    public readonly IList<double> DefaultStopProfitList = new List<double> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+
     private string _titleBarMessage;
+    private string _currentStatus;
 
     public ObservableCollection<Stock> AllSuggestStocks { get; } = new();
 
@@ -31,19 +40,28 @@ public class MonitorViewModel : ObservableRecipient
 
     public ObservableCollection<ObservableTrackCondition> FilterConditions { get; } = new();
 
+    public ObservableCollection<MonitorNotification> SimulationResultCollection { get; } = new();
+
     public ObservableCollection<ObservableTrackCondition> MonitorConditions { get; } = new();
 
     public ObservableTrackCondition CurrentTrackFilterCondition { get; set; } = new();
 
     public ObservableCollection<ObservableTaskDetail> FilterTasks { get; set; } = new();
 
+    public ObservableCollection<MonitorCondition> MonitorTasks { get; set; } = new();
+
     public ObservableTaskDetail CurrentTaskFilterData { get; set; } = new();
+
+    public MonitorCondition CurrentMonitorData { get; set; } = new();
+
+    public HistoryDeduceData HistoryDeduceData { get; set; } = new();
 
     public IRelayCommand<object> AddToMonitorCommand { get; }
     public IRelayCommand CheckUseabilityCommand { get; }
     public IRelayCommand SaveFilterTaskCommand { get; }
     public IAsyncRelayCommand AddOnHoldStockCommand { get; }
     public IAsyncRelayCommand SaveFilterConditionCommand { get; }
+    public IAsyncRelayCommand HistoryMinDataImportCommand { get; }
 
     public string TitleBarMessage
     {
@@ -51,17 +69,87 @@ public class MonitorViewModel : ObservableRecipient
         set => SetProperty(ref _titleBarMessage, value);
     }
 
-    public MonitorViewModel(IDbTransferService dbTransferService, IFetchStockDataService fetchStockDataService, IStockAnalyzeService stockAnalyzeService)
+    public string CurrentStatus
+    {
+        get => _currentStatus;
+        set => SetProperty(ref _currentStatus, value);
+    }
+
+    public IAsyncRelayCommand OnSimulationStartCommand { get; }
+
+    public MonitorViewModel(IDbTransferService dbTransferService, IFetchStockDataService fetchStockDataService, IStockAnalyzeService stockAnalyzeService, IRestoreSettingsService restoreSettingsService, IMonitorService monitorService)
     {
         _dbTransferService = dbTransferService;
         _fetchStockDataService = fetchStockDataService;
         _stockAnalyzeService = stockAnalyzeService;
+        _restoreSettingsService = restoreSettingsService;
+        _monitorService = monitorService;
 
         AddToMonitorCommand = new RelayCommand<object>(AddToMonitor);
         AddOnHoldStockCommand = new AsyncRelayCommand(AddOnHoldStock);
         CheckUseabilityCommand = new RelayCommand(CheckUseability);
         SaveFilterConditionCommand = new AsyncRelayCommand(SaveFilterCondition);
         SaveFilterTaskCommand = new RelayCommand(SaveFilterTask);
+        HistoryMinDataImportCommand = new AsyncRelayCommand(ImportHistoryMinData);
+        OnSimulationStartCommand = new AsyncRelayCommand(OnSimulationStart);
+    }
+
+    private async Task OnSimulationStart()
+    {
+        if (HistoryDeduceData.PreLoadDateStart > HistoryDeduceData.PerLoadDateEnd
+            || HistoryDeduceData.PerLoadDateEnd > HistoryDeduceData.AnalyzeEndDate)
+        {
+            return;
+        }
+
+        SimulationResultCollection.Clear();
+
+        HistoryDeduceData.MonitorCondition = CurrentMonitorData.Adapt<MonitorCondition>();
+
+        foreach (var monitorStock in HistoryDeduceData.MonitorStocks)
+        {
+
+            var minutesData = _monitorService.ReadMinuteDate(monitorStock, HistoryDeduceData);
+
+            var datas = new List<MinuteData>();
+
+            await foreach (var data in minutesData)
+            {
+                datas.Add(data);
+            }
+
+            if (!datas.Any()) continue;
+
+            await Task.Run(() =>
+            {
+                var report = _monitorService.StartDeduce(monitorStock, HistoryDeduceData, datas);
+
+                ReportCallback(report);
+            });
+        }
+    }
+
+    private void ReportCallback(MonitorReport report)
+    {
+        foreach (var notification in report.Notifications)
+        {
+            SetValueCrossThread(() => { SimulationResultCollection.Add(notification); });
+        }
+    }
+
+    private async Task ImportHistoryMinData()
+    {
+        if (!MonitorStocks.Any()) return;
+
+        var pyArgs = StockService.FormatPyArgument(MonitorStocks.Select(m => m.CodeNameFull));
+
+        CurrentStatus = "正在导入1分钟线数据";
+        await _fetchStockDataService.FetchStockMinuteData(pyArgs, 1);
+
+        CurrentStatus = "正在导入5分钟线数据";
+        await _fetchStockDataService.FetchStockMinuteData(pyArgs, 5);
+
+        CurrentStatus = string.Empty;
     }
 
     private void SaveFilterTask()
@@ -107,7 +195,7 @@ public class MonitorViewModel : ObservableRecipient
         return newItem;
     }
 
-    private void OnNavigateToTabViewEventHandler(object sender, NavigateToTabViewEventArgs e)
+    private static void OnNavigateToTabViewEventHandler(object sender, NavigateToTabViewEventArgs e)
     {
         var tabView = e.Target;
         var newTab = CreateNewTab(typeof(FilterResultViewerPage), e);
@@ -221,10 +309,27 @@ public class MonitorViewModel : ObservableRecipient
         if (obj is not Stock stock) return;
         if (stock == _noFoundStock) return;
 
-        if (MonitorStocks.All(s => s.CodeNameFull != stock.CodeNameFull))
+        if (MonitorStocks.Any(s => s.CodeNameFull == stock.CodeNameFull)) return;
+
+        MonitorStocks.Add(stock);
+        ReinsertToDb(ActivityData.RealTimeMonitor, MonitorStocks);
+    }
+
+    public void ReinsertToDb(string type, ObservableCollection<Stock> stocks)
+    {
+        var sb = new StringBuilder();
+
+        foreach (var code in stocks.Select(a => a.CodeNameFull))
         {
-            MonitorStocks.Add(stock);
+            sb.Append(code).Append(",");
         }
+
+        if (sb.Length < 2) return;
+
+        sb.Remove(sb.Length - 1, 1);
+
+        _dbTransferService.DeleteActivityByAnalyzeData(type);
+        _dbTransferService.StoreActivityDataToDb(DateTime.Now, sb.ToString(), type);
     }
 
     public async void AddToMonitor(string code)
@@ -280,6 +385,24 @@ public class MonitorViewModel : ObservableRecipient
             }
         }
     }
+
+    public async Task InitializeMonitorStockData()
+    {
+        var realtimeStocks = _restoreSettingsService.RestoreRecentlyActivityListByAnalyzeData(ActivityData.RealTimeMonitor);
+
+        var historyDeduce = _restoreSettingsService.RestoreRecentlyActivityListByAnalyzeData(ActivityData.HistoryDeduce);
+
+        await foreach (var realtimeStock in realtimeStocks)
+        {
+            MonitorStocks.Add(realtimeStock);
+        }
+
+        await foreach (var realtimeStock in historyDeduce)
+        {
+            HistoryDeduceData.MonitorStocks.Add(realtimeStock);
+        }
+    }
+
     public ObservableCollection<Stock> GetCodeSelectSuggest(string[] splitText)
     {
         var itemSource = new ObservableCollection<Stock>();
@@ -307,5 +430,16 @@ public class MonitorViewModel : ObservableRecipient
         if (dataContext is not Stock stock) return;
 
         MonitorStocks.Remove(stock);
+
+        ReinsertToDb(ActivityData.RealTimeMonitor, MonitorStocks);
+    }
+
+    public void DeleteHistoryDeduce(object dataContext)
+    {
+        if (dataContext is not Stock stock) return;
+
+        HistoryDeduceData.MonitorStocks.Remove(stock);
+
+        ReinsertToDb(ActivityData.HistoryDeduce, HistoryDeduceData.MonitorStocks);
     }
 }

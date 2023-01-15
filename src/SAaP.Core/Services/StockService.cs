@@ -1,4 +1,5 @@
-﻿using SAaP.Core.Services.Api;
+﻿using System;
+using SAaP.Core.Services.Api;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -54,6 +55,18 @@ public static class StockService
         return codeName
                 .Replace(Sh, ShFlag.ToString())
                 .Replace(Sz, SzFlag.ToString());
+    }
+
+    public static string ReplaceFlagToLocString(string codeName , int belong)
+    {
+        if (string.IsNullOrEmpty(codeName)) return string.Empty;
+
+        return belong switch
+        {
+            ShFlag => Sh + codeName,
+            SzFlag => Sz + codeName,
+            _ => throw new IndexOutOfRangeException()
+        };
     }
 
     public static IEnumerable<string> CutStockCodeToSix(IEnumerable<string> inputs)

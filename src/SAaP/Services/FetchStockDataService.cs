@@ -43,6 +43,33 @@ public class FetchStockDataService : IFetchStockDataService
             , isCheckAll ? string.Empty : pyArg);
     }
 
+    public async Task FetchStockMinuteData(string pyArg, int minType)
+    {
+        var pyPath = await _localSettingsService.ReadSettingAsync<string>(PjConstant.PythonInstallationPath);
+
+        if (string.IsNullOrEmpty(pyPath)) return;
+
+        var tdxPath = await _localSettingsService.ReadSettingAsync<string>(PjConstant.TdxInstallationPath);
+
+        if (string.IsNullOrEmpty(tdxPath)) return;
+
+        var pyExecPath = Path.Combine(pyPath, PythonService.PyName);
+
+        var pyScriptPath = Path.Combine(AppDomain.CurrentDomain.SetupInformation.ApplicationBase!, PythonService.PyFolder, PythonService.TdxMinuteReader);
+
+        var f = await StorageFile.GetFileFromPathAsync(pyScriptPath);
+
+        if (f == null) return;
+
+        // python script execution
+        await PythonService.RunPythonScript(pyExecPath
+            , pyScriptPath
+            , tdxPath
+            , StartupService.MinDataPath
+            , minType.ToString()
+            , pyArg);
+    }
+
     public async Task<int> TryGetBelongByCode(string code)
     {
         var belongTo = -1;

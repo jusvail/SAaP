@@ -68,6 +68,7 @@ public partial class App
                     services.AddSingleton<IStockAnalyzeService, StockAnalyzeService>();
                     services.AddSingleton<IWindowManageService, WindowManageService>();
                     services.AddSingleton<IChartService, ChartService>();
+                    services.AddSingleton<IMonitorService, MonitorService>();
 
                     services.AddSingleton<IFileService, FileService>();
 

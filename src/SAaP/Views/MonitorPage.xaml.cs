@@ -5,12 +5,10 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using SAaP.Core.Models.DB;
 using SAaP.Helper;
+using LinqToDB;
 
 namespace SAaP.Views;
 
-/// <summary>
-/// An empty page that can be used on its own or navigated to within a Frame.
-/// </summary>
 public sealed partial class MonitorPage
 {
     public MonitorViewModel ViewModel { get; }
@@ -28,6 +26,9 @@ public sealed partial class MonitorPage
 
         await ViewModel.InitializeSuggestData();
         await ViewModel.InitializeTrackData();
+        await ViewModel.InitializeMonitorStockData();
+
+        ViewModel.CurrentMonitorData.BuyModes[0].IsChecked = true;
     }
 
     private void AddToMonitorAppBarButton_OnClick(object sender, RoutedEventArgs e)
@@ -72,6 +73,11 @@ public sealed partial class MonitorPage
         ViewModel.DeleteMonitorItem(((FrameworkElement)e.OriginalSource).DataContext);
     }
 
+    private void DeleteHistoryDeduceData_OnClick(object sender, RoutedEventArgs e)
+    {
+        ViewModel.DeleteHistoryDeduce(((FrameworkElement)e.OriginalSource).DataContext);
+    }
+
     private void HelperAppBarButton_OnClick(object sender, RoutedEventArgs e)
     {
         FilterTextBoxTeachingTip.IsOpen = true;
@@ -104,5 +110,41 @@ public sealed partial class MonitorPage
     private void FilterResultTabView_OnTabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)
     {
         sender.TabItems.Remove(args.Tab);
+    }
+
+    private void AllStartButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        DoNotOpenTooMuch.IsOpen = true;
+    }
+
+    private void HistoryDeduce_OnClick(object sender, RoutedEventArgs e)
+    {
+        var dataContext = ((FrameworkElement)e.OriginalSource).DataContext;
+
+        if (dataContext is not Stock stock) return;
+
+        if (!ViewModel.HistoryDeduceData.MonitorStocks.Contains(stock))
+        {
+            ViewModel.HistoryDeduceData.MonitorStocks.Add(stock);
+            ViewModel.ReinsertToDb(ActivityData.HistoryDeduce, ViewModel.HistoryDeduceData.MonitorStocks);
+        }
+
+        LiveMonitorTabView.SelectedIndex = 1;
+    }
+
+    private void BuyModeSelect_OnChecked(object sender, RoutedEventArgs e)
+    {
+        foreach (var buyMode in ViewModel.CurrentMonitorData.BuyModes)
+        {
+            buyMode.IsChecked = true;
+        }
+    }
+
+    private void BuyModeSelect_OnUnchecked(object sender, RoutedEventArgs e)
+    {
+        foreach (var buyMode in ViewModel.CurrentMonitorData.BuyModes)
+        {
+            buyMode.IsChecked = false;
+        }
     }
 }
