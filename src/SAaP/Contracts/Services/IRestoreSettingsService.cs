@@ -13,6 +13,8 @@ public interface IRestoreSettingsService
 
     IAsyncEnumerable<ActivityData> RestoreRecentlyActivityListByDate(string day);
 
+    IAsyncEnumerable<Stock> RestoreRecentlyActivityListByAnalyzeData(string analyzeData);
+
     Task<Dictionary<string, IEnumerable<FavoriteDetail>>> RestoreAllFavoriteGroupsString();
 
     Task<IEnumerable<string>> GetFavoriteGroupsName();

@@ -15,6 +15,8 @@ public interface IDbTransferService
 
     Task DeleteActivity(string date);
 
+    Task DeleteActivityByAnalyzeData(string date);
+
     Task DeleteFavoriteCodes(FavoriteData favorite);
 
     Task AddToFavorite(string codeName, string groupName);

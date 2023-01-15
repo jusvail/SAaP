@@ -35,7 +35,7 @@ public class RestoreSettingsService : IRestoreSettingsService
                          on new { a = f.Code, b = f.BelongTo } equals new { a = s.CodeName, b = s.BelongTo }
                      where f.GroupName == groupName
                      orderby s.CodeName
-                     select new FavoriteDetail()
+                     select new FavoriteDetail
                      {
                          CodeName = f.BelongTo + f.Code,
                          BelongTo = f.BelongTo,
@@ -56,6 +56,7 @@ public class RestoreSettingsService : IRestoreSettingsService
         await using var db = new DbSaap(StartupService.DbConnectionString);
         // query from db
         var dates = db.ActivityData.Select(a => a)
+            .Where(a => string.IsNullOrEmpty(a.AnalyzeData))
             .OrderByDescending(a => a.Date);
 
         var existDate = new List<string>();
@@ -85,7 +86,7 @@ public class RestoreSettingsService : IRestoreSettingsService
         await using var db = new DbSaap(StartupService.DbConnectionString);
         // query from db
         var datas = db.ActivityData
-            .Where(a => a.Date > thisDay && a.Date < dayOfTomorrow)
+            .Where(a => a.Date > thisDay && a.Date < dayOfTomorrow && string.IsNullOrEmpty(a.AnalyzeData))
             .OrderByDescending(a => a.Date);
 
         // no data return
@@ -95,6 +96,36 @@ public class RestoreSettingsService : IRestoreSettingsService
         foreach (var activityData in datas)
         {
             yield return activityData;
+        }
+    }
+
+    public async IAsyncEnumerable<Stock> RestoreRecentlyActivityListByAnalyzeData(string analyzeData)
+    {
+        if (string.IsNullOrEmpty(analyzeData)) yield break;
+
+        if (analyzeData != ActivityData.HistoryDeduce && analyzeData != ActivityData.RealTimeMonitor) yield break;
+
+        // db connection
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+
+        var datas = db.ActivityData
+            .Where(a => a.AnalyzeData == analyzeData).ToList();
+
+        if (!datas.Any()) yield break;
+
+        var codes = datas.First().QueryString;
+
+        foreach (var code in codes.Split(","))
+        {
+            var stock = new Stock
+            {
+                BelongTo = Convert.ToInt32(code[..1]),
+                CodeName = code.Substring(1, code.Length - 1)
+            };
+
+            stock.CompanyName = await StockService.FetchCompanyNameByCode(stock.CodeName, stock.BelongTo);
+
+            yield return stock;
         }
     }
 

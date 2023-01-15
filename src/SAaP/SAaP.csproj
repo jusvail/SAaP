@@ -26,9 +26,6 @@
 	<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
 	<AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
   </PropertyGroup>
-  <ItemGroup>
-    <None Remove="Views\HistoryDataDeducePage.xaml" />
-  </ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -65,11 +62,6 @@
   <ItemGroup>
     <ProjectReference Include="..\SAaP.Chart\SAaP.Chart.csproj" />
     <ProjectReference Include="..\SAaP.Core\SAaP.Core.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Views\HistoryDataDeducePage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="ControlPages\WeeklyReportRow.xaml">

@@ -15,4 +15,7 @@ public class ActivityData
 
     [Column]
     public string AnalyzeData { get; set; }
+
+    public static readonly string RealTimeMonitor = "r";
+    public static readonly string HistoryDeduce = "h";
 }

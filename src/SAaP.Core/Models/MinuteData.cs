@@ -8,7 +8,7 @@ public class MinuteData
 
     public int BelongTo { get; set; }
 
-    public DateTime FullTime { get; set; }
+    public DateTimeOffset FullTime { get; set; }
 
     public int Volume { get; set; }
 

@@ -1,13 +1,14 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.Generic;
+using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace SAaP.Models
+namespace SAaP.Core.Models.Monitor
 {
     public class BuyMode
     {
-        public static readonly int NLowRisk = 0;
-        public static readonly int NHighRisk = 1;
-        public static readonly int AHighRisk = 2;
-        public static readonly int WMiddleRisk = 3;
+        public const int NLowRisk = 0;
+        public const int NHighRisk = 1;
+        public const int AHighRisk = 2;
+        public const int WMiddleRisk = 3;
 
         public static readonly List<string> ModeDetails = new()
         {

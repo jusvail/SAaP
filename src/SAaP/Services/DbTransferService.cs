@@ -227,7 +227,24 @@ public class DbTransferService : IDbTransferService
 
         await using var db = new DbSaap(StartupService.DbConnectionString);
 
-        var ready = db.ActivityData.Where(a => a.Date > thisDay && a.Date < dayOfTomorrow);
+        var ready = db.ActivityData.Where(a => a.Date > thisDay && a.Date < dayOfTomorrow && string.IsNullOrEmpty(a.AnalyzeData));
+
+        if (!ready.Any()) return;
+
+        foreach (var deleteData in ready)
+        {
+            await db.DeleteAsync(deleteData);
+        }
+    }
+
+    public async Task DeleteActivityByAnalyzeData(string date)
+    {
+        // don't pass a strange stuff
+        if (string.IsNullOrEmpty(date)) return;
+
+        await using var db = new DbSaap(StartupService.DbConnectionString);
+
+        var ready = db.ActivityData.Where(a => a.AnalyzeData == date);
 
         if (!ready.Any()) return;
 

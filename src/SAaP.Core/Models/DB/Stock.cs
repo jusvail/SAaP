@@ -20,4 +20,5 @@ public class Stock
     public int GroupId { get; set; }
 
     public string CodeNameFull => BelongTo + CodeName;
+
 }

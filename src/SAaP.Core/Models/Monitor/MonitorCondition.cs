@@ -1,24 +1,19 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.Generic;
+using System.Linq;
+using CommunityToolkit.Mvvm.ComponentModel;
 using SAaP.Contracts.Enum;
-using SAaP.Core.Models.DB;
 
-namespace SAaP.Models;
+namespace SAaP.Core.Models.Monitor;
 
-public class ObservableMonitorDetail : ObservableRecipient
+public class MonitorCondition : ObservableRecipient
 {
     private double _stopLoss;
-    private Stock _stock;
     private MonitorType _monitorType;
-    private List<ObservableBuyMode> _buyModes =  BuyMode.All().ToList();
+    private List<ObservableBuyMode> _buyModes = BuyMode.All().ToList();
     private double _stopProfitL;
     private double _stopProfitI;
     private double _stopProfitA;
-
-    public Stock Stock
-    {
-        get => _stock;
-        set => SetProperty(ref _stock, value);
-    }
+    private string _minuteType = "1";
 
     public MonitorType MonitorType
     {
@@ -54,5 +49,17 @@ public class ObservableMonitorDetail : ObservableRecipient
     {
         get => _stopProfitA;
         set => SetProperty(ref _stopProfitA, value);
+    }
+
+    public string MinuteType
+    {
+        get => _minuteType;
+        set
+        {
+            if (value != null)
+            {
+                SetProperty(ref _minuteType, value);
+            }
+        }
     }
 }

@@ -8,11 +8,13 @@
     xmlns:db="using:SAaP.Core.Models.DB"
     xmlns:models="using:SAaP.Models"
     xmlns:controlPages="using:SAaP.ControlPages"
+    xmlns:monitor="using:SAaP.Core.Models.Monitor"
     mc:Ignorable="d">
 
     <Page.Resources>
         <helper:CodeNameFormatConverter x:Key="CodeNameFormatConverter" />
         <helper:ReverseBooleanConverter x:Key="ReverseBooleanConverter" />
+        <helper:ComparerCheckConverter x:Key="ComparerCheckConverter"/>
         <!-- <helper:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" /> -->
         <!-- <helper:SimpleFeedLayout x:Key="SimpleFeedLayout"  -->
         <!--                          ColumnSpacing="5" -->
@@ -42,6 +44,22 @@
                     </MenuFlyout>
                 </StackPanel.ContextFlyout>
             </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:DataType="db:Stock" x:Key="StockMonitorDataTemplate">
+            <ToggleButton>
+                <StackPanel>
+                    <TextBlock Text="{x:Bind CompanyName}" 
+                               Margin="{StaticResource DefaultTextBlockHeaderMargin}"
+                               FontWeight="Bold"/>
+                    <TextBlock Text="{x:Bind CodeNameFull,Converter={StaticResource CodeNameFormatConverter}}"
+                               Margin="{StaticResource DefaultTextBlockContentMargin}"/>
+                    <StackPanel.ContextFlyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem Text="删除" Click="DeleteHistoryDeduceData_OnClick"/>
+                        </MenuFlyout>
+                    </StackPanel.ContextFlyout>
+                </StackPanel>
+            </ToggleButton>
         </DataTemplate>
         <DataTemplate x:DataType="models:ObservableTrackCondition" x:Key="FilterConditionDataTemplate">
             <Grid>
@@ -145,7 +163,7 @@
                 </Grid>
             </Grid>
         </DataTemplate>
-        <DataTemplate x:Key="MonitorTaskDataTemplate" x:DataType="models:ObservableMonitorDetail" x:DefaultBindMode="OneWay">
+        <DataTemplate x:Key="MonitorTaskDataTemplate" x:DataType="monitor:MonitorCondition" x:DefaultBindMode="OneWay">
             <Grid Margin="0 2 12 2">
                 <controlPages:BackgroundTransparentColoredRectangle Margin="-8 3 -15 4"/>
                 <Grid>
@@ -153,7 +171,7 @@
                 </Grid>
             </Grid>
         </DataTemplate>
-        <DataTemplate x:Key="MonitorBuyModeDataTemplate" x:DataType="models:ObservableBuyMode" x:DefaultBindMode="OneWay">
+        <DataTemplate x:Key="MonitorBuyModeDataTemplate" x:DataType="monitor:ObservableBuyMode" x:DefaultBindMode="OneWay">
             <Grid>
                 <CheckBox Content="{x:Bind ModeDetail}"
                           IsChecked="{x:Bind IsChecked,Mode=TwoWay}"/>
@@ -325,8 +343,14 @@
                                                     <StackPanel Grid.Row="2">
                                                         <TextBlock Text="分析依据:" />
                                                         <StackPanel Orientation="Horizontal" Margin="8 0 0 0">
-                                                            <RadioButton Content="1Min线" IsChecked="True"></RadioButton>
-                                                            <RadioButton Content="5Min线"></RadioButton>
+                                                            <RadioButton Content="1Min线" Tag="1"
+                                                                         IsChecked="{x:Bind ViewModel.CurrentMonitorData.MinuteType,
+                                                                         Converter={StaticResource ComparerCheckConverter},
+                                                                         ConverterParameter=1, Mode=TwoWay}"></RadioButton>
+                                                            <RadioButton Content="5Min线" Tag="5"
+                                                                         IsChecked="{x:Bind ViewModel.CurrentMonitorData.MinuteType,
+                                                                         Converter={StaticResource ComparerCheckConverter},
+                                                                         ConverterParameter=5, Mode=TwoWay}"></RadioButton>
                                                         </StackPanel>
                                                     </StackPanel>
                                                     <StackPanel Grid.Row="3">
@@ -383,7 +407,7 @@
                                              TabCloseRequested="FilterResultTabView_OnTabCloseRequested"
                                              TabWidthMode="SizeToContent">
                                             <TabView.TabItems>
-                                                <TabViewItem Header="任务总览" IsClosable="False">
+                                                <TabViewItem Header="实时监控" IsClosable="False">
                                                     <TabViewItem.IconSource>
                                                         <FontIconSource Glyph="&#xE80F;" />
                                                     </TabViewItem.IconSource>
@@ -424,6 +448,58 @@
                                                         </Grid>
                                                     </Grid>
                                                 </TabViewItem>
+                                                <TabViewItem Header="历史数据模拟分析" IsClosable="False">
+                                                    <TabViewItem.IconSource>
+                                                        <FontIconSource Glyph="&#xEA63;" />
+                                                    </TabViewItem.IconSource>
+                                                    <Grid Padding="{StaticResource DefaultGridThickness}">
+                                                        <Grid.Resources>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="VerticalAlignment" Value="Center"></Setter>
+                                                            </Style>
+                                                        </Grid.Resources>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="*"/>
+                                                        </Grid.RowDefinitions>
+                                                        <StackPanel>
+                                                            <TextBlock Text="务必先导入完整的盘后数据，再进行模拟分析"></TextBlock>
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Row="1">
+                                                            <GridView x:Name="HistoryDeduceStockData"
+                                                                      Margin="0 12 0 -12"
+                                                                      ItemTemplate="{StaticResource StockMonitorDataTemplate}"
+                                                                      ItemsSource="{x:Bind ViewModel.HistoryDeduceData.MonitorStocks}">
+                                                            </GridView>
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0 5">
+                                                            <TextBlock Text="预加载盘前数据："></TextBlock>
+                                                            <CalendarDatePicker Date="{x:Bind ViewModel.HistoryDeduceData.PreLoadDateStart,Mode=TwoWay}"/>
+                                                            <TextBlock Text="~" VerticalAlignment="Center" Margin="5 0"/>
+                                                            <CalendarDatePicker Date="{x:Bind ViewModel.HistoryDeduceData.PerLoadDateEnd,Mode=TwoWay}"/>
+                                                            <TextBlock Text="分析结束交易日："></TextBlock>
+                                                            <CalendarDatePicker Date="{x:Bind ViewModel.HistoryDeduceData.AnalyzeEndDate,Mode=TwoWay}"/>
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0 5">
+                                                            <CheckBox Content="模拟实时交易"></CheckBox>
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0 5">
+                                                            <Button Content="开始分析" 
+                                                                    IsEnabled="{x:Bind ViewModel.OnSimulationStartCommand.IsRunning, Converter={StaticResource ReverseBooleanConverter}, Mode=OneWay}"
+                                                                    Command="{x:Bind ViewModel.OnSimulationStartCommand}"></Button>
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Row="5" Orientation="Horizontal" Margin="0 5">
+                                                            <GridView>
+
+                                                            </GridView>
+                                                        </StackPanel>
+
+                                                    </Grid>
+                                                </TabViewItem>
                                             </TabView.TabItems>
                                         </TabView>
                                     </Grid>
@@ -447,7 +523,6 @@
                                                    FontWeight="Bold"></TextBlock>
                                     </Grid>
                                     <ListView Grid.Row="1">
-
                                     </ListView>
                                 </Grid>
                             </Grid>

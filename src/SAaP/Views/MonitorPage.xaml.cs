@@ -1,13 +1,11 @@
-﻿using Mapster;
-using Microsoft.UI.Xaml.Navigation;
+﻿using Microsoft.UI.Xaml.Navigation;
 using SAaP.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using SAaP.Core.Models.DB;
 using SAaP.Helper;
-using SAaP.Models;
-using SAaP.Contracts.Enum;
+using LinqToDB;
 
 namespace SAaP.Views;
 
@@ -28,6 +26,7 @@ public sealed partial class MonitorPage
 
         await ViewModel.InitializeSuggestData();
         await ViewModel.InitializeTrackData();
+        await ViewModel.InitializeMonitorStockData();
 
         ViewModel.CurrentMonitorData.BuyModes[0].IsChecked = true;
     }
@@ -72,6 +71,11 @@ public sealed partial class MonitorPage
     private void DeleteMonitor_OnClick(object sender, RoutedEventArgs e)
     {
         ViewModel.DeleteMonitorItem(((FrameworkElement)e.OriginalSource).DataContext);
+    }
+
+    private void DeleteHistoryDeduceData_OnClick(object sender, RoutedEventArgs e)
+    {
+        ViewModel.DeleteHistoryDeduce(((FrameworkElement)e.OriginalSource).DataContext);
     }
 
     private void HelperAppBarButton_OnClick(object sender, RoutedEventArgs e)
@@ -119,24 +123,13 @@ public sealed partial class MonitorPage
 
         if (dataContext is not Stock stock) return;
 
-        var newItem = new TabViewItem
+        if (!ViewModel.HistoryDeduceData.MonitorStocks.Contains(stock))
         {
-            Header = stock.CodeName + "(" + stock.CompanyName + ")",
-            IconSource = new SymbolIconSource { Symbol = Symbol.ThreeBars }
-        };
+            ViewModel.HistoryDeduceData.MonitorStocks.Add(stock);
+            ViewModel.ReinsertToDb(ActivityData.HistoryDeduce, ViewModel.HistoryDeduceData.MonitorStocks);
+        }
 
-        var frame = new Frame();
-
-        var detail = ViewModel.CurrentMonitorData.Adapt<ObservableMonitorDetail>();
-
-        detail.Stock = stock;
-        detail.MonitorType = MonitorType.HistoryDataDeduce;
-        
-        frame.Navigate(typeof(HistoryDataDeducePage), detail);
-
-        newItem.Content = frame;
-
-        LiveMonitorTabView.TabItems.Add(newItem);
+        LiveMonitorTabView.SelectedIndex = 1;
     }
 
     private void BuyModeSelect_OnChecked(object sender, RoutedEventArgs e)
