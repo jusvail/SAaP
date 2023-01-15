@@ -24,5 +24,14 @@ namespace SAaP.Core.Models.Monitor
 
         public int SubmittedByMode { get; set; }
 
+        public static MonitorNotification SystemNotification(string message)
+        {
+            return new MonitorNotification
+            {
+                CompanyName = "来自系统的消息:",
+                FullTime = DateTimeOffset.Now,
+                Message = message
+            };
+        }
     }
 }

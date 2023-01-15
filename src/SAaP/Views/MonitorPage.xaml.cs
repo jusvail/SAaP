@@ -16,7 +16,7 @@ public sealed partial class MonitorPage
     {
         ViewModel = App.GetService<MonitorViewModel>();
 
-        this.InitializeComponent();
+        InitializeComponent();
     }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -27,9 +27,9 @@ public sealed partial class MonitorPage
         await ViewModel.InitializeTrackData();
         await ViewModel.InitializeMonitorStockData();
 
-        await ViewModel.LiveTask();
-
         ViewModel.CurrentMonitorData.BuyModes[0].IsChecked = true;
+
+        await ViewModel.LiveTask();
     }
 
     private void AddToMonitorAppBarButton_OnClick(object sender, RoutedEventArgs e)

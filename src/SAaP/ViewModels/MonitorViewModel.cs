@@ -9,6 +9,7 @@ using SAaP.Core.Services;
 using SAaP.Models;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using Microsoft.UI.Xaml.Controls;
+using SAaP.Core.Helpers;
 using SAaP.Core.Services.Analyze;
 using SAaP.Views;
 using SAaP.Core.Models;
@@ -130,81 +131,85 @@ public class MonitorViewModel : ObservableRecipient
         }
     }
 
-
-    private static DateTime GetTimeRightNow()
-    {
-        // return DateTime.Parse("2023/01/15 09:09:09");
-        return DateTime.Now;
-    }
-
-    private static List<DateTime> GetTradeWallTime()
-    {
-        var now = GetTimeRightNow().ToString("yyyy/MM/dd");
-
-        string[] walls = { " 09:30", " 11:30", " 13:00", " 15:00" };
-
-        return walls.Select(wall => DateTime.Parse(now + wall)).ToList();
-    }
-
-    private static MonitorNotification SystemNotification(string message)
-    {
-        return new MonitorNotification
-        {
-            CompanyName = "来自系统的消息:",
-            FullTime = DateTimeOffset.Now,
-            Message = message
-        };
-    }
-
     private async Task RealtimeMonitorStart()
     {
-        var mealtimes = GetTradeWallTime();
+        var mealtimes = Time.GetTradeWallTime();
+
+        while (Time.GetTimeRightNow() > mealtimes[3])
+        {
+            // 盘后
+            // TODO sth
+            LoggingCollection.Insert(0, MonitorNotification.SystemNotification("下班了"));
+
+            return;
+        }
 
         bool pqStaff = false, noonStaff = false;
 
-        while (true)
+        while (Time.GetTimeRightNow() > mealtimes[1] && Time.GetTimeRightNow() < mealtimes[2])
         {
-            while (GetTimeRightNow() > mealtimes[3])
+            // 午休
+            if (!noonStaff)
             {
-                // 盘后
                 // TODO sth
-                LoggingCollection.Insert(0, SystemNotification("下班了"));
-
-                return;
+                LoggingCollection.Insert(0, MonitorNotification.SystemNotification("午休"));
+                noonStaff = true;
             }
-            while (GetTimeRightNow() > mealtimes[1] && GetTimeRightNow() < mealtimes[2])
+
+            await Task.Delay(1000);
+        }
+
+        while (Time.GetTimeRightNow() < mealtimes[0])
+        {
+            // 盘前
+
+            if (!pqStaff)
             {
-                // 午休
-                if (!noonStaff)
-                {
-                    // TODO sth
-                    LoggingCollection.Insert(0, SystemNotification("午休"));
-                    noonStaff = true;
-                }
-
-                await Task.Delay(1000);
+                // TODO sth
+                LoggingCollection.Insert(0, MonitorNotification.SystemNotification("准备中。。。"));
+                pqStaff = true;
             }
 
-            while (GetTimeRightNow() < mealtimes[0])
-            {
-                // 盘前
+            await Task.Delay(1000);
+        }
 
-                if (!pqStaff)
+        // 盘中
+        foreach (var stock in MonitorStocks)
+        {
+            var dayData = (await DbService.TakeOriginalData(stock.CodeName, stock.BelongTo, 10)).ToList();
+
+            var oldDataStartAt = dayData.Count > 0 ? DateTime.Parse(dayData.First().Day) : DateTime.Now;
+
+            var minutesData =
+                await _monitorService.ReadMinuteDateSince(stock, CurrentMonitorData.MinuteType, oldDataStartAt);
+
+            var stock1 = stock;
+            await Task.Run(() =>
                 {
-                    // TODO sth
-                    LoggingCollection.Insert(0, SystemNotification("准备中。。。"));
-                    pqStaff = true;
+                    // run 里不要用async await！
+                    _monitorService.RealTimeTrack(stock1, CurrentMonitorData, minutesData,
+                        notification => { SetValueCrossThread(() => { PrintRealTimeTrackResult(notification); }); });
                 }
+            );
+        }
 
-                await Task.Delay(1000);
-            }
+        while (Time.GetTimeRightNow() > mealtimes[0] && Time.GetTimeRightNow() < mealtimes[2])
+        {
+            // 上班时间！
+            await Task.Delay(60000);
+        }
+    }
 
-            // 盘中
-
-
-
-
-            await Task.Delay(3000);
+    private void PrintRealTimeTrackResult(MonitorNotification notification)
+    {
+        if (string.IsNullOrEmpty(notification.CodeName))
+        {
+            LoggingCollection.Insert(0, MonitorNotification.SystemNotification(notification.Message));
+        }
+        else
+        {
+            RealtimeResultCollection.Add(notification);
+            LoggingCollection.Insert(0, notification);
         }
     }
 
@@ -257,7 +262,7 @@ public class MonitorViewModel : ObservableRecipient
         foreach (var monitorStock in HistoryDeduceData.MonitorStocks)
         {
 
-            var minutesData = _monitorService.ReadMinuteDate(monitorStock, HistoryDeduceData);
+            var minutesData = _monitorService.ReadMinuteDateForSimulate(monitorStock, HistoryDeduceData);
 
             var datas = new List<MinuteData>();
 
