@@ -51,6 +51,8 @@ public class MonitorService : IMonitorService
         {
             report.Notifications.Add(new MonitorNotification
             {
+                CodeName = stock.CodeName,
+                CompanyName = stock.CompanyName,
                 Message = "无结果"
             });
         }

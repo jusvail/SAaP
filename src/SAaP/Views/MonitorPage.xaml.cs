@@ -5,7 +5,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using SAaP.Core.Models.DB;
 using SAaP.Helper;
-using LinqToDB;
 
 namespace SAaP.Views;
 
@@ -27,6 +26,8 @@ public sealed partial class MonitorPage
         await ViewModel.InitializeSuggestData();
         await ViewModel.InitializeTrackData();
         await ViewModel.InitializeMonitorStockData();
+
+        await ViewModel.LiveTask();
 
         ViewModel.CurrentMonitorData.BuyModes[0].IsChecked = true;
     }
@@ -112,11 +113,6 @@ public sealed partial class MonitorPage
         sender.TabItems.Remove(args.Tab);
     }
 
-    private void AllStartButton_OnClick(object sender, RoutedEventArgs e)
-    {
-        DoNotOpenTooMuch.IsOpen = true;
-    }
-
     private void HistoryDeduce_OnClick(object sender, RoutedEventArgs e)
     {
         var dataContext = ((FrameworkElement)e.OriginalSource).DataContext;
@@ -145,6 +141,23 @@ public sealed partial class MonitorPage
         foreach (var buyMode in ViewModel.CurrentMonitorData.BuyModes)
         {
             buyMode.IsChecked = false;
+        }
+    }
+
+    private void ImportConfirm_OnClick(object sender, RoutedEventArgs e)
+    {
+        ReadyToImportButton.Flyout.Hide();
+    }
+
+    private void MonitorSelectAll_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (MonitorStocksListView.SelectedItems.Count == MonitorStocksListView.Items.Count)
+        {
+            MonitorStocksListView.SelectedValue = false;
+        }
+        else
+        {
+            MonitorStocksListView.SelectAll();
         }
     }
 }

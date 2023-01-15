@@ -42,6 +42,9 @@ public class NLowRiskMonitor : RiskMonitorBase
     public bool Step3 { get; set; }
     public bool Step4 { get; set; }
 
+    public double Percent = 0.0;
+    public string VolSpeedLowerMessage { get; set; }
+
     public int StartCount;
     public MinuteData StartData { get; set; } = new();
     public MinuteData BuyData { get; set; } = new();
@@ -149,6 +152,13 @@ public class NLowRiskMonitor : RiskMonitorBase
             if (CalculationService.CalcTtm(StartData.Ending, ne) > 5 && thisMinuteData.FullTime.Hour > 14)
             {
                 return false;
+            }
+
+            Percent = pc;
+
+            if (pc >= 0.9)
+            {
+                return true;
             }
 
             if (thisMinuteData.Zd() < 0.5 && thisMinuteData.Zd() > -0.5 && ExtraInfo.BbiList.Count > 0 && Math.Abs(thisMinuteData.Ending - ExtraInfo.BbiList[^1]) < 0.15)
@@ -270,10 +280,10 @@ public class NLowRiskMonitor : RiskMonitorBase
                     Direction = DealDirection.Buy,
                     FullTime = thisMinuteData.FullTime,
                     Price = thisMinuteData.Ending,
-                    // SuccessPercent = pc,
-                    // Positions = pc,
+                    SuccessPercent = Percent,
+                    Positions = Percent,
                     ExpectedProfit = 2,
-                    Message = "buy",
+                    Message = VolSpeedLowerMessage,
                     SubmittedByMode = BuyMode.NLowRisk
                 };
 
@@ -399,26 +409,31 @@ public class NLowRiskMonitor : RiskMonitorBase
     {
         if (VolumeLowerInMinutes(thisMinuteData.Volume * 20))
         {
+            VolSpeedLowerMessage = "10min内交易量↓20倍";
             return .9;
         }
 
         if (VolumeLowerInMinutes(thisMinuteData.Volume * 10))
         {
+            VolSpeedLowerMessage = "10min内交易量↓10倍";
             return .8;
         }
 
         if (VolumeLowerInMinutes(thisMinuteData.Volume * 5))
         {
+            VolSpeedLowerMessage = "10min内交易量↓5倍";
             return .7;
         }
 
         if (VolumeLowerInMinutes(thisMinuteData.Volume * 4))
         {
+            VolSpeedLowerMessage = "10min内交易量↓4倍";
             return .6;
         }
 
         if (VolumeLowerInMinutes((int)(thisMinuteData.Volume * 3.5)))
         {
+            VolSpeedLowerMessage = "10min内交易量↓3.5倍";
             return .5;
         }
 

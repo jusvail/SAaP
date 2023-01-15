@@ -3,6 +3,7 @@ using CommunityToolkit.WinUI.Helpers;
 using SAaP.Constant;
 using SAaP.Contracts.Services;
 using SAaP.Core.Services;
+using SAaP.Core.Helpers;
 
 namespace SAaP.Services;
 
@@ -121,5 +122,40 @@ public class FetchStockDataService : IFetchStockDataService
         }
 
         return belongTo;
+    }
+
+    public async Task<List<string>> FormatInputCode(string input)
+    {
+        // check code accuracy
+        var accuracyCodes = StringHelper.FormatInputCode(input);
+        // check null input
+        if (accuracyCodes == null) return null;
+
+        var allCodes = new List<string>();
+
+        foreach (var accuracyCode in accuracyCodes)
+        {
+            if (accuracyCode.Length == StockService.TdxCodeLength) allCodes.Add(accuracyCode);
+            if (accuracyCode.Length != StockService.StandardCodeLength) continue;
+
+            var belong = await TryGetBelongByCode(accuracyCode);
+
+            switch (belong)
+            {
+                case StockService.MultiFlg:
+                    allCodes.Add(StockService.ShFlag + accuracyCode);
+                    allCodes.Add(StockService.SzFlag + accuracyCode);
+                    break;
+                case StockService.ShFlag:
+                case StockService.SzFlag:
+                    allCodes.Add(belong + accuracyCode);
+                    break;
+                case StockService.NotExistFlg:
+                    break;
+            }
+        }
+
+        // add comma 
+        return allCodes;
     }
 }
