@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Text;
 
 namespace SAaP.Core.Models.Monitor
 {
@@ -32,6 +34,24 @@ namespace SAaP.Core.Models.Monitor
                 FullTime = DateTimeOffset.Now,
                 Message = message
             };
+        }
+
+        public override string ToString()
+        {
+            return new StringBuilder(FullTime.ToString("[yyyy/MM/dd HH:mm:ss]->"))
+                .Append(CodeName)
+                .Append("(")
+                .Append(CompanyName)
+                .Append(") ")
+                .Append(Direction)
+                .Append("价： ")
+                .Append(Price)
+                .Append("  ")
+                .Append(BuyMode.ModeDetails[SubmittedByMode])
+                .Append("  ")
+                .Append("其他信息: ")
+                .Append(Message)
+                .ToString();
         }
     }
 }

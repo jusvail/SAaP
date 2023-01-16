@@ -211,7 +211,7 @@
             </Grid>
         </DataTemplate>
         <DataTemplate x:Key="LoggingDataTemplate" x:DataType="monitor:MonitorNotification">
-            <Grid Margin="{StaticResource DefaultGridBorderMargin}">
+            <Grid Margin="{StaticResource SecondaryGridThickness}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -323,6 +323,10 @@
                                                             <MenuFlyout>
                                                                 <MenuFlyoutItem Text="添加所有交易中的股票" 
                                                                                 Command="{x:Bind ViewModel.AddOnHoldStockCommand}"/>
+                                                                <MenuFlyoutSeparator></MenuFlyoutSeparator>
+                                                                <MenuFlyoutItem Text="加入模拟分析" 
+                                                                    Command="{x:Bind ViewModel.AddToSimulateCommand}"
+                                                                    CommandParameter="{x:Bind MonitorStocksListView.SelectedItems}"/>
                                                             </MenuFlyout>
                                                         </Button.Flyout>
                                                     </Button>
@@ -558,6 +562,12 @@
                                                         </Grid.RowDefinitions>
                                                         <StackPanel>
                                                             <TextBlock Text="务必先导入完整的盘后数据，再进行模拟分析"></TextBlock>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <CheckBox Content="分析所有监控中股票" 
+                                                                      Margin="2"
+                                                                      IsChecked="{x:Bind ViewModel.SimulateAllMonitorCode, Mode=TwoWay}"></CheckBox>
+                                                                <HyperlinkButton Content="清空" Command="{x:Bind ViewModel.ClearSimulateCodesCommand}"></HyperlinkButton>
+                                                            </StackPanel>
                                                         </StackPanel>
                                                         <StackPanel Grid.Row="1">
                                                             <GridView x:Name="HistoryDeduceStockData"
@@ -576,10 +586,12 @@
                                                         </StackPanel>
                                                         <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0 5">
                                                             <Button Content="开始分析" 
+                                                                    Style="{StaticResource AccentButtonStyle}"
                                                                     IsEnabled="{x:Bind ViewModel.OnSimulationStartCommand.IsRunning, Converter={StaticResource ReverseBooleanConverter}, Mode=OneWay}"
                                                                     Command="{x:Bind ViewModel.OnSimulationStartCommand}"></Button>
-                                                            <CheckBox Content="模拟实时交易"
-                                                                      Margin="10 0"></CheckBox>
+                                                            <Button Content="复制结果"
+                                                                    Margin="{StaticResource StandardButtonMargin}"
+                                                                    Click="CopyResult_OnClick"></Button>
                                                         </StackPanel>
                                                         <Grid Grid.Row="4" Margin="0 5">
                                                             <GridView x:Name="SimGridView" 

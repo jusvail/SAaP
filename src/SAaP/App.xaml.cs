@@ -46,6 +46,8 @@ public partial class App
 
     public string Version { get; set; }
 
+    public static ILogger Logger { get; set; }
+
     /// <summary>
     /// Initializes the singleton application object.  This is the first line of authored code
     /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -69,6 +71,7 @@ public partial class App
                     services.AddSingleton<IWindowManageService, WindowManageService>();
                     services.AddSingleton<IChartService, ChartService>();
                     services.AddSingleton<IMonitorService, MonitorService>();
+                    services.AddSingleton<ILogger, Logger>();
 
                     services.AddSingleton<IFileService, FileService>();
 
@@ -107,6 +110,10 @@ public partial class App
     protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
         base.OnLaunched(args);
+
+        Logger = GetService<ILogger>();
+
+        SAaP.Services.Logger.EnsuredLogEnv();
 
         await GetService<IActivationService>().ActivateAsync(args);
     }

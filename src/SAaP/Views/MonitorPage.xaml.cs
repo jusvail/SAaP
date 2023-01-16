@@ -5,6 +5,9 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using SAaP.Core.Models.DB;
 using SAaP.Helper;
+using System.Text;
+using Windows.ApplicationModel.DataTransfer;
+using SAaP.Core.Models.Monitor;
 
 namespace SAaP.Views;
 
@@ -50,33 +53,33 @@ public sealed partial class MonitorPage
         CodeSelectSuggestBox.ItemsSource = ViewModel.GetCodeSelectSuggest(splitText);
     }
 
-    private void CodeSelectSuggestBox_OnQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+    private async void CodeSelectSuggestBox_OnQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
     {
         if (args.ChosenSuggestion is Stock stock)
         {
-            ViewModel.AddToMonitor(stock);
+            await ViewModel.AddToMonitor(stock);
         }
         else if (!string.IsNullOrEmpty(args.QueryText))
         {
-            ViewModel.AddToMonitor(args.QueryText);
+            await ViewModel.AddToMonitor(args.QueryText);
         }
         sender.Text = string.Empty;
     }
 
-    private void CodeSelectSuggestBox_OnSuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+    private async void CodeSelectSuggestBox_OnSuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
     {
-        ViewModel.AddToMonitor(args.SelectedItem);
+        await ViewModel.AddToMonitor(args.SelectedItem);
         sender.Text = string.Empty;
     }
 
-    private void DeleteMonitor_OnClick(object sender, RoutedEventArgs e)
+    private  void DeleteMonitor_OnClick(object sender, RoutedEventArgs e)
     {
-        ViewModel.DeleteMonitorItem(((FrameworkElement)e.OriginalSource).DataContext);
+         ViewModel.DeleteMonitorItem(((FrameworkElement)e.OriginalSource).DataContext);
     }
 
-    private void DeleteHistoryDeduceData_OnClick(object sender, RoutedEventArgs e)
+    private async void DeleteHistoryDeduceData_OnClick(object sender, RoutedEventArgs e)
     {
-        ViewModel.DeleteHistoryDeduce(((FrameworkElement)e.OriginalSource).DataContext);
+        await ViewModel.DeleteHistoryDeduce(((FrameworkElement)e.OriginalSource).DataContext);
     }
 
     private void HelperAppBarButton_OnClick(object sender, RoutedEventArgs e)
@@ -113,7 +116,7 @@ public sealed partial class MonitorPage
         sender.TabItems.Remove(args.Tab);
     }
 
-    private void HistoryDeduce_OnClick(object sender, RoutedEventArgs e)
+    private async void HistoryDeduce_OnClick(object sender, RoutedEventArgs e)
     {
         var dataContext = ((FrameworkElement)e.OriginalSource).DataContext;
 
@@ -122,7 +125,7 @@ public sealed partial class MonitorPage
         if (!ViewModel.HistoryDeduceData.MonitorStocks.Contains(stock))
         {
             ViewModel.HistoryDeduceData.MonitorStocks.Add(stock);
-            ViewModel.ReinsertToDb(ActivityData.HistoryDeduce, ViewModel.HistoryDeduceData.MonitorStocks);
+            await ViewModel.ReinsertToDb(ActivityData.HistoryDeduce, ViewModel.HistoryDeduceData.MonitorStocks);
         }
 
         LiveMonitorTabView.SelectedIndex = 1;
@@ -159,5 +162,46 @@ public sealed partial class MonitorPage
         {
             MonitorStocksListView.SelectAll();
         }
+    }
+
+    private async void CopyResult_OnClick(object sender, RoutedEventArgs e)
+    {
+        var dataPackage = new DataPackage
+        {
+            RequestedOperation = DataPackageOperation.Copy
+        };
+
+        var sb = new StringBuilder();
+
+        var button = (Button)sender;
+
+        try
+        {
+            foreach (MonitorNotification t in SimGridView.Items)
+            {
+                sb.Append(t.FullTime.ToString("yyyy/MM/dd HH:mm:ss")).Append("\t")
+                    .Append(t.CodeName).Append("\t")
+                    .Append(t.CompanyName).Append("\t")
+                    .Append(t.Direction).Append("\t")
+                    .Append(t.Price).Append("\t")
+                    .Append(BuyMode.ModeDetails[t.SubmittedByMode]).Append("\t")
+                    .Append(t.Message).Append("\t")
+                    .Append(Environment.NewLine);
+            }
+
+            dataPackage.SetText(sb.ToString());
+            Clipboard.SetContent(dataPackage);
+
+        }
+        catch (Exception)
+        {
+            button.Content = "复制出错！";
+        }
+
+        button.Content = "完成！";
+
+        await Task.Delay(1000);
+
+        button.Content = "复制结果";
     }
 }

@@ -105,6 +105,16 @@ public class NLowRiskMonitor : RiskMonitorBase
                 return false;
             }
 
+            if (RecentlyVolume.Max() < 3000)
+            {
+                return false;
+            }
+
+            // if (RecentlyVolume10.Max() < 3000)
+            // {
+            //     return false;
+            // }
+
             if (CalculationService.CalcTtm(StartData.Opening, thisMinuteData.Ending) >= 1.1)
             {
                 return true;
@@ -232,6 +242,8 @@ public class NLowRiskMonitor : RiskMonitorBase
     public override MonitorNotification AnalyzeCurrentMinuteData(List<MinuteData> passDatas, MinuteData thisMinuteData, ExtraInfoOfPassData extraInfo)
     {
         RecentlyVolume = passDatas.TakeLast(60).Select(i => i.Volume).ToList();
+        // higher the  rec
+        //RecentlyVolume10 = passDatas.TakeLast(15).Select(i => i.Volume).ToList();
         RecentlyVolume10 = passDatas.TakeLast(10).Select(i => i.Volume).ToList();
         RecentlyEnding60 = passDatas.TakeLast(60).Select(i => i.Ending).ToList();
         RecentlyEnding10 = passDatas.TakeLast(10).Select(i => i.Ending).ToList();

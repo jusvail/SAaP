@@ -252,7 +252,7 @@ public sealed partial class MainPage
     private void DeleteFavoriteCodesButton_OnClick(object sender, RoutedEventArgs e)
     {
         DeleteFavoriteCodesButton.Flyout.Hide();
-        FavoriteCodeManageSelectAll.IsChecked = false;
+        //FavoriteCodeManageSelectAll.IsChecked = false;
     }
 
     private void FavoriteGroups_OnSelectionChanged(object sender, SelectionChangedEventArgs e)

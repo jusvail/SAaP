@@ -15,6 +15,15 @@ public static class Time
 #endif
     }
 
+    public static DateTimeOffset GetTimeOffsetRightNow()
+    {
+#if DEBUG
+        return DateTimeOffset.Parse("2023/01/15 09:55:56");
+#else
+        return DateTimeOffset.Now;
+#endif
+    }
+
     public static List<DateTime> Mealtimes = GetTradeWallTime();
 
     public static List<DateTime> GetTradeWallTime()

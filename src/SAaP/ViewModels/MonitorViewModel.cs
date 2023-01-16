@@ -35,6 +35,7 @@ public class MonitorViewModel : ObservableRecipient
     private string _currentStatus;
     private string _importStockText;
     private DateTime _currentDateTime;
+    private bool _simulateAllMonitorCode;
 
     public ObservableCollection<Stock> AllSuggestStocks { get; } = new();
 
@@ -62,7 +63,7 @@ public class MonitorViewModel : ObservableRecipient
 
     public HistoryDeduceData HistoryDeduceData { get; set; } = new();
 
-    public IRelayCommand<object> AddToMonitorCommand { get; }
+    public IAsyncRelayCommand<object> AddToMonitorCommand { get; }
     public IRelayCommand CheckUseabilityCommand { get; }
     public IRelayCommand SaveFilterTaskCommand { get; }
     public IAsyncRelayCommand AddOnHoldStockCommand { get; }
@@ -70,8 +71,10 @@ public class MonitorViewModel : ObservableRecipient
     public IAsyncRelayCommand HistoryMinDataImportCommand { get; }
     public IAsyncRelayCommand OnSimulationStartCommand { get; }
     public IAsyncRelayCommand ImportStockFromTextCommand { get; }
-    public IRelayCommand<IList<object>> DeleteMonitorItemsCommand { get; }
+    public IAsyncRelayCommand<IList<object>> DeleteMonitorItemsCommand { get; }
     public IAsyncRelayCommand RealtimeMonitorStartCommand { get; }
+    public IRelayCommand<IList<object>> AddToSimulateCommand { get; }
+    public IRelayCommand ClearSimulateCodesCommand { get; }
 
     public string TitleBarMessage
     {
@@ -97,6 +100,13 @@ public class MonitorViewModel : ObservableRecipient
         set => SetProperty(ref _currentDateTime, value);
     }
 
+    public bool SimulateAllMonitorCode
+    {
+        get => _simulateAllMonitorCode;
+        set => SetProperty(ref _simulateAllMonitorCode, value);
+    }
+
+
     public MonitorViewModel(IDbTransferService dbTransferService, IFetchStockDataService fetchStockDataService, IStockAnalyzeService stockAnalyzeService, IRestoreSettingsService restoreSettingsService, IMonitorService monitorService)
     {
         _dbTransferService = dbTransferService;
@@ -105,7 +115,7 @@ public class MonitorViewModel : ObservableRecipient
         _restoreSettingsService = restoreSettingsService;
         _monitorService = monitorService;
 
-        AddToMonitorCommand = new RelayCommand<object>(AddToMonitor);
+        AddToMonitorCommand = new AsyncRelayCommand<object>(AddToMonitor);
         AddOnHoldStockCommand = new AsyncRelayCommand(AddOnHoldStock);
         CheckUseabilityCommand = new RelayCommand(CheckUseability);
         SaveFilterConditionCommand = new AsyncRelayCommand(SaveFilterCondition);
@@ -113,8 +123,31 @@ public class MonitorViewModel : ObservableRecipient
         HistoryMinDataImportCommand = new AsyncRelayCommand(ImportHistoryMinData);
         OnSimulationStartCommand = new AsyncRelayCommand(OnSimulationStart);
         ImportStockFromTextCommand = new AsyncRelayCommand(ImportStockFromText);
-        DeleteMonitorItemsCommand = new RelayCommand<IList<object>>(DeleteMonitorItems);
+        DeleteMonitorItemsCommand = new AsyncRelayCommand<IList<object>>(DeleteMonitorItems);
         RealtimeMonitorStartCommand = new AsyncRelayCommand(RealtimeMonitorStart);
+        AddToSimulateCommand = new RelayCommand<IList<object>>(AddToSimulate);
+        ClearSimulateCodesCommand = new RelayCommand(ClearSimulateCodes);
+    }
+
+    private void ClearSimulateCodes()
+    {
+        HistoryDeduceData.MonitorStocks.Clear();
+    }
+
+    private void AddToSimulate(IList<object> obj)
+    {
+        if (obj == null || !obj.Any())
+        {
+            return;
+        }
+
+        foreach (Stock stock in obj)
+        {
+            if (!HistoryDeduceData.MonitorStocks.Contains(stock))
+            {
+                HistoryDeduceData.MonitorStocks.Add(stock);
+            }
+        }
     }
 
     public async Task LiveTask()
@@ -129,6 +162,7 @@ public class MonitorViewModel : ObservableRecipient
             );
             await Task.Delay(1000);
         }
+        // ReSharper disable once FunctionNeverReturns
     }
 
     private async Task RealtimeMonitorStart()
@@ -162,11 +196,10 @@ public class MonitorViewModel : ObservableRecipient
         while (Time.GetTimeRightNow() < mealtimes[0])
         {
             // 盘前
-
             if (!pqStaff)
             {
                 // TODO sth
-                LoggingCollection.Insert(0, MonitorNotification.SystemNotification("准备中。。。"));
+                LoggingCollection.Insert(0, MonitorNotification.SystemNotification("准备中。。。不要关掉窗口啊！！"));
                 pqStaff = true;
             }
 
@@ -213,14 +246,18 @@ public class MonitorViewModel : ObservableRecipient
         }
     }
 
-    private void DeleteMonitorItems(IList<object> selectedItems)
+    private async Task DeleteMonitorItems(IList<object> selectedItems)
     {
         if (!selectedItems.Any()) return;
 
-        foreach (var selectedItem in selectedItems)
+        var codeNames = (from Stock stock in selectedItems select stock.CodeNameFull).ToList();
+
+        foreach (var first in codeNames.Select(codeName => MonitorStocks.First(s => s.CodeNameFull == codeName)))
         {
-            DeleteMonitorItem(selectedItem);
+            MonitorStocks.Remove(first);
         }
+
+        await ReinsertToDb(ActivityData.RealTimeMonitor, MonitorStocks);
     }
 
     private async Task ImportStockFromText()
@@ -244,7 +281,7 @@ public class MonitorViewModel : ObservableRecipient
 
         ImportStockText = string.Empty;
 
-        ReinsertToDb(ActivityData.RealTimeMonitor, MonitorStocks);
+        await ReinsertToDb(ActivityData.RealTimeMonitor, MonitorStocks);
     }
 
     private async Task OnSimulationStart()
@@ -259,7 +296,9 @@ public class MonitorViewModel : ObservableRecipient
 
         HistoryDeduceData.MonitorCondition = CurrentMonitorData.Adapt<MonitorCondition>();
 
-        foreach (var monitorStock in HistoryDeduceData.MonitorStocks)
+        var monitorStocks = SimulateAllMonitorCode ? MonitorStocks : HistoryDeduceData.MonitorStocks;
+
+        foreach (var monitorStock in monitorStocks)
         {
 
             var minutesData = _monitorService.ReadMinuteDateForSimulate(monitorStock, HistoryDeduceData);
@@ -271,11 +310,41 @@ public class MonitorViewModel : ObservableRecipient
                 datas.Add(data);
             }
 
-            if (!datas.Any()) continue;
+            if (!datas.Any())
+            {
+                SetValueCrossThread(() =>
+                {
+                    LoggingCollection.Insert(0,
+                        new MonitorNotification
+                        {
+                            CodeName = monitorStock.CodeName,
+                            CompanyName = monitorStock.CompanyName,
+                            FullTime = Time.GetTimeOffsetRightNow(),
+                            Message = "未导入历史数据/未上市/已退市/休市"
+                        });
+                });
+                continue;
+            }
 
             await Task.Run(() =>
             {
                 var report = _monitorService.StartDeduce(monitorStock, HistoryDeduceData, datas);
+
+                if (!report.Notifications.Any() && !SimulateAllMonitorCode)
+                {
+                    SetValueCrossThread(() =>
+                    {
+                        LoggingCollection.Insert(0,
+                            new MonitorNotification
+                            {
+                                CodeName = monitorStock.CodeName,
+                                CompanyName = monitorStock.CompanyName,
+                                FullTime = Time.GetTimeOffsetRightNow(),
+                                Message = "无结果"
+                            });
+                    });
+                    return;
+                }
 
                 ReportCallback(report);
             });
@@ -453,11 +522,11 @@ public class MonitorViewModel : ObservableRecipient
 
         await foreach (var stock in onHold)
         {
-            AddToMonitor(stock);
+            await AddToMonitor(stock);
         }
     }
 
-    public void AddToMonitor(object obj)
+    public async Task AddToMonitor(object obj)
     {
         if (obj is not Stock stock) return;
         if (stock == _noFoundStock) return;
@@ -465,10 +534,10 @@ public class MonitorViewModel : ObservableRecipient
         if (MonitorStocks.Any(s => s.CodeNameFull == stock.CodeNameFull)) return;
 
         MonitorStocks.Add(stock);
-        ReinsertToDb(ActivityData.RealTimeMonitor, MonitorStocks);
+        await ReinsertToDb(ActivityData.RealTimeMonitor, MonitorStocks);
     }
 
-    public void ReinsertToDb(string type, ObservableCollection<Stock> stocks)
+    public async Task ReinsertToDb(string type, ObservableCollection<Stock> stocks)
     {
         var sb = new StringBuilder();
 
@@ -481,11 +550,11 @@ public class MonitorViewModel : ObservableRecipient
 
         sb.Remove(sb.Length - 1, 1);
 
-        _dbTransferService.DeleteActivityByAnalyzeData(type);
-        _dbTransferService.StoreActivityDataToDb(DateTime.Now, sb.ToString(), type);
+        await _dbTransferService.DeleteActivityByAnalyzeData(type);
+        await _dbTransferService.StoreActivityDataToDb(DateTime.Now, sb.ToString(), type);
     }
 
-    public async void AddToMonitor(string code)
+    public async Task AddToMonitor(string code)
     {
         if (string.IsNullOrEmpty(code)) return;
 
@@ -500,7 +569,7 @@ public class MonitorViewModel : ObservableRecipient
             CompanyName = await DbService.SelectCompanyNameByCode(code, belongTo)
         };
 
-        AddToMonitor(stock);
+        await AddToMonitor(stock);
     }
 
     public async Task InitializeSuggestData()
@@ -582,17 +651,17 @@ public class MonitorViewModel : ObservableRecipient
     {
         if (dataContext is not Stock stock) return;
 
-        MonitorStocks.Remove(stock);
+        var s = MonitorStocks.First(s => s.CodeNameFull == stock.CodeNameFull);
 
-        ReinsertToDb(ActivityData.RealTimeMonitor, MonitorStocks);
+        MonitorStocks.Remove(s);
     }
 
-    public void DeleteHistoryDeduce(object dataContext)
+    public async Task DeleteHistoryDeduce(object dataContext)
     {
         if (dataContext is not Stock stock) return;
 
         HistoryDeduceData.MonitorStocks.Remove(stock);
 
-        ReinsertToDb(ActivityData.HistoryDeduce, HistoryDeduceData.MonitorStocks);
+        await ReinsertToDb(ActivityData.HistoryDeduce, HistoryDeduceData.MonitorStocks);
     }
 }

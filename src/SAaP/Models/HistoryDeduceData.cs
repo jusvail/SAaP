@@ -9,7 +9,7 @@ public class HistoryDeduceData : ObservableRecipient
 {
     private DateTimeOffset _preLoadDateStart = DateTimeOffset.Now.AddHours(DateTimeOffset.Now.Hour * -1).AddDays(-6);
     private DateTimeOffset _perLoadDateEnd = DateTimeOffset.Now.AddHours(DateTimeOffset.Now.Hour * -1).AddDays(-1);
-    private DateTimeOffset _analyzeEndDate = DateTimeOffset.Now.AddHours(DateTimeOffset.Now.Hour * -1);
+    private DateTimeOffset _analyzeEndDate = DateTimeOffset.Now;
 
     public MonitorCondition MonitorCondition { get; set; } = new();
 
