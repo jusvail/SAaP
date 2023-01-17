@@ -9,7 +9,6 @@ using SAaP.Core.Models.Monitor;
 using SAaP.Core.Services.Monitor;
 using SAaP.Core.Helpers;
 using SAaP.Core.Services.Api;
-using Windows.UI.Notifications;
 
 namespace SAaP.Services;
 
@@ -17,7 +16,7 @@ public class MonitorService : IMonitorService
 {
     public static readonly string Stx = "min.csv";
 
-    const string TxRtDataPattern = "\\d+\\.\\d+";
+    // const string TxRtDataPattern = "\\d+\\.\\d+";
 
     private static bool _noonStaff;
 
@@ -143,7 +142,7 @@ public class MonitorService : IMonitorService
             foreach (var notification in notifications)
             {
                 callBack(notification);
-                await App.Logger.Log(notification.ToString());
+                //await App.Logger.Log(notification.ToString());
             }
         }
     }
@@ -218,7 +217,7 @@ public class MonitorService : IMonitorService
 
             index++;
         }
-        
+
         return report;
     }
 

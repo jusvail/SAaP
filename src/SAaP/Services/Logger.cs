@@ -24,15 +24,41 @@ namespace SAaP.Services
             try
             {
                 LogWriteLock.EnterWriteLock();
-
-                if (_uncommittedCount < MaxCommittedCount)
-                {
-                    Messages[_uncommittedCount++] = message;
-                    return;
-                }
+                //
+                // if (_uncommittedCount < MaxCommittedCount)
+                // {
+                //     Messages[_uncommittedCount++] = message;
+                //     return;
+                // }
 
                 await File.AppendAllTextAsync(LogFilePath, Time.GetTimeRightNow() + ": " + message + Environment.NewLine);
-                _uncommittedCount = 0;
+                // await File.AppendAllLinesAsync(LogFilePath, Messages);
+                //_uncommittedCount = 0;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            finally
+            {
+                LogWriteLock.ExitWriteLock();
+            }
+        }
+
+        public async Task Log(List<string> message)
+        {
+            try
+            {
+                LogWriteLock.EnterWriteLock();
+
+                for (var i = 0; i < message.Count; i++)
+                {
+                    message[i] = Time.GetTimeRightNow() + ": " + message[i] + Environment.NewLine;
+                }
+
+                await File.AppendAllLinesAsync(LogFilePath, message);
+                // await File.AppendAllLinesAsync(LogFilePath, Messages);
+                //_uncommittedCount = 0;
             }
             catch (Exception e)
             {

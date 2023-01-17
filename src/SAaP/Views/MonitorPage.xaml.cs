@@ -8,6 +8,7 @@ using SAaP.Helper;
 using System.Text;
 using Windows.ApplicationModel.DataTransfer;
 using SAaP.Core.Models.Monitor;
+using SAaP.Core.Services;
 
 namespace SAaP.Views;
 
@@ -72,9 +73,9 @@ public sealed partial class MonitorPage
         sender.Text = string.Empty;
     }
 
-    private  void DeleteMonitor_OnClick(object sender, RoutedEventArgs e)
+    private void DeleteMonitor_OnClick(object sender, RoutedEventArgs e)
     {
-         ViewModel.DeleteMonitorItem(((FrameworkElement)e.OriginalSource).DataContext);
+        ViewModel.DeleteMonitorItem(((FrameworkElement)e.OriginalSource).DataContext);
     }
 
     private async void DeleteHistoryDeduceData_OnClick(object sender, RoutedEventArgs e)
@@ -203,5 +204,70 @@ public sealed partial class MonitorPage
         await Task.Delay(1000);
 
         button.Content = "复制结果";
+    }
+
+    private async void CopySumResult_OnClick(object sender, RoutedEventArgs e)
+    {
+        var dataPackage = new DataPackage
+        {
+            RequestedOperation = DataPackageOperation.Copy
+        };
+
+        var sb = new StringBuilder();
+
+        var button = (Button)sender;
+
+        try
+        {
+            var profits = new List<double>();
+
+            foreach (MonitorNotification t in SimGridView.Items)
+            {
+                if (t.Direction == DealDirection.Sell)
+                {
+                    sb.Append(t.FullTime.ToString("yyyy/MM/dd HH:mm:ss")).Append("\t")
+                        .Append(t.CodeName).Append("\t")
+                        .Append(t.CompanyName).Append("\t")
+                        .Append(BuyMode.ModeDetails[t.SubmittedByMode]).Append("\t")
+                        .Append(t.Profit).Append("\t")
+                        .Append("持股时间(min):").Append("\t")
+                        .Append(t.HoldTime).Append("\t")
+                        .Append(t.Message).Append("\t")
+                        .Append(Environment.NewLine);
+
+                    profits.Add(t.Profit);
+                }
+            }
+
+            var av = profits.Average();
+            var avP = profits.Where(p => p >= 0).Average();
+            var avK = profits.Where(p => p < 0).Average();
+
+            var mP = profits.Max();
+            var mk = profits.Min();
+
+            // ReSharper disable once PossibleLossOfFraction
+            var success = CalculationService.Round2(100 * profits.Count(p => p >= 0) / profits.Count);
+
+            sb.Append("平均收益(%)：").Append("\t").Append(av).Append("\t").Append(Environment.NewLine);
+            sb.Append("平均正收益(%)：").Append("\t").Append(avP).Append("\t").Append(Environment.NewLine);
+            sb.Append("平均负收益(%)：").Append("\t").Append(avK).Append("\t").Append(Environment.NewLine);
+            sb.Append("最大正收益(%)：").Append("\t").Append(mP).Append("\t").Append(Environment.NewLine);
+            sb.Append("最大负收益(%)：").Append("\t").Append(mk).Append("\t").Append(Environment.NewLine);
+            sb.Append("胜率(%)：").Append("\t").Append(success).Append("\t").Append(Environment.NewLine);
+
+            dataPackage.SetText(sb.ToString());
+            Clipboard.SetContent(dataPackage);
+        }
+        catch (Exception)
+        {
+            button.Content = "复制出错！";
+        }
+
+        button.Content = "完成！";
+
+        await Task.Delay(1000);
+
+        button.Content = "复制统计结果";
     }
 }

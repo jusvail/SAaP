@@ -99,7 +99,9 @@
             </Grid>
         </DataTemplate>
         <DataTemplate x:DataType="monitor:MonitorNotification" x:Key="SimulationResultDataTemplate">
-            <Grid Background="{x:Bind Direction, Converter={StaticResource BsColorFormatConverter}}">
+            <Grid Background="{x:Bind Direction, Converter={StaticResource BsColorFormatConverter}}"
+                  MinHeight="100"
+                  MinWidth="150">
                 <Grid.Resources>
                     <Style TargetType="TextBlock">
                         <Setter Property="FontSize" Value="12"></Setter>
@@ -112,7 +114,8 @@
                         <TextBlock Text="{x:Bind CompanyName,Mode=OneWay}" FontWeight="Bold"/>
                         <TextBlock Text=")"/>
                     </StackPanel>
-                    <TextBlock Text="{x:Bind SubmittedByMode,Converter={StaticResource DirectionModeConverter},Mode=OneWay}"/>
+                    <TextBlock Text="{x:Bind SubmittedByMode,Converter={StaticResource DirectionModeConverter},Mode=OneWay}"
+                               FontSize="11"/>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{x:Bind FullTime,Converter={StaticResource DateTimeOffsetToRegularFormatConverter},Mode=OneWay}"/>
                     </StackPanel>
@@ -120,7 +123,9 @@
                         <TextBlock Text="{x:Bind Price,Mode=OneWay}" FontWeight="Bold"/>
                         <TextBlock Text="{x:Bind Direction,Mode=OneWay}" Margin="5 0"/>
                     </StackPanel>
-                    <TextBlock Text="{x:Bind Message,Mode=OneWay}"/>
+                    <TextBlock Text="{x:Bind Message,Mode=OneWay}"
+                               FontSize="11"
+                               TextWrapping="Wrap"/>
                 </StackPanel>
                 <Grid.ContextFlyout>
                     <MenuFlyout>
@@ -592,6 +597,9 @@
                                                             <Button Content="复制结果"
                                                                     Margin="{StaticResource StandardButtonMargin}"
                                                                     Click="CopyResult_OnClick"></Button>
+                                                            <Button Content="复制统计结果"
+                                                                    Margin="{StaticResource StandardButtonMargin}"
+                                                                    Click="CopySumResult_OnClick"></Button>
                                                         </StackPanel>
                                                         <Grid Grid.Row="4" Margin="0 5">
                                                             <GridView x:Name="SimGridView" 

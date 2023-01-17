@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Text;
 
 namespace SAaP.Core.Models.Monitor
@@ -21,6 +20,10 @@ namespace SAaP.Core.Models.Monitor
         public double Positions { get; set; }
 
         public double ExpectedProfit { get; set; }
+
+        public double Profit { get; set; }
+
+        public int HoldTime { get; set; }
 
         public string Message { get; set; }
 

@@ -14,6 +14,7 @@ using SAaP.Core.Services.Analyze;
 using SAaP.Views;
 using SAaP.Core.Models;
 using SAaP.Core.Models.Monitor;
+using Windows.UI.Notifications;
 
 namespace SAaP.ViewModels;
 
@@ -172,7 +173,6 @@ public class MonitorViewModel : ObservableRecipient
         while (Time.GetTimeRightNow() > mealtimes[3])
         {
             // 盘后
-            // TODO sth
             LoggingCollection.Insert(0, MonitorNotification.SystemNotification("下班了"));
 
             return;
@@ -185,7 +185,6 @@ public class MonitorViewModel : ObservableRecipient
             // 午休
             if (!noonStaff)
             {
-                // TODO sth
                 LoggingCollection.Insert(0, MonitorNotification.SystemNotification("午休"));
                 noonStaff = true;
             }
@@ -198,7 +197,6 @@ public class MonitorViewModel : ObservableRecipient
             // 盘前
             if (!pqStaff)
             {
-                // TODO sth
                 LoggingCollection.Insert(0, MonitorNotification.SystemNotification("准备中。。。不要关掉窗口啊！！"));
                 pqStaff = true;
             }
@@ -226,9 +224,25 @@ public class MonitorViewModel : ObservableRecipient
             );
         }
 
-        while (Time.GetTimeRightNow() > mealtimes[0] && Time.GetTimeRightNow() < mealtimes[2])
+        while (Time.GetTimeRightNow() > mealtimes[0] && Time.GetTimeRightNow() < mealtimes[3])
         {
             // 上班时间！
+
+            while (Time.GetTimeRightNow() > mealtimes[1] && Time.GetTimeRightNow() < mealtimes[2])
+            {
+                // 午休
+                if (!noonStaff)
+                {
+                    LoggingCollection.Insert(0, MonitorNotification.SystemNotification("午休"));
+
+                    await App.Logger.Log(RealtimeResultCollection.Select(n => n.ToString()).ToList());
+                    await App.Logger.Log(LoggingCollection.Select(n => n.ToString()).ToList());
+
+                    noonStaff = true;
+                }
+
+                await Task.Delay(1000);
+            }
             await Task.Delay(60000);
         }
     }
@@ -346,9 +360,17 @@ public class MonitorViewModel : ObservableRecipient
                     return;
                 }
 
+
                 ReportCallback(report);
             });
         }
+
+#if DEBUG
+
+        await App.Logger.Log(SimulationResultCollection.Select(n => n.ToString()).ToList());
+        await App.Logger.Log(LoggingCollection.Select(n => n.ToString()).ToList());
+
+#endif
     }
 
     private void ReportCallback(MonitorReport report)
