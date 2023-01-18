@@ -249,6 +249,7 @@ public sealed partial class MonitorPage
             // ReSharper disable once PossibleLossOfFraction
             var success = CalculationService.Round2(100 * profits.Count(p => p >= 0) / profits.Count);
 
+            sb.Append("总收益(%)：").Append("\t").Append(profits.Sum()).Append("\t").Append(Environment.NewLine);
             sb.Append("平均收益(%)：").Append("\t").Append(av).Append("\t").Append(Environment.NewLine);
             sb.Append("平均正收益(%)：").Append("\t").Append(avP).Append("\t").Append(Environment.NewLine);
             sb.Append("平均负收益(%)：").Append("\t").Append(avK).Append("\t").Append(Environment.NewLine);
@@ -269,5 +270,21 @@ public sealed partial class MonitorPage
         await Task.Delay(1000);
 
         button.Content = "复制统计结果";
+    }
+
+    private void AddToSim_OnClick(object sender, RoutedEventArgs e)
+    {
+        var dataContext = ((FrameworkElement)e.OriginalSource).DataContext;
+
+        if (dataContext is not MonitorNotification notification) return;
+
+        var stock = ViewModel.MonitorStocks.First(s => s.CodeName == notification.CodeName);
+
+        if (!ViewModel.HistoryDeduceData.MonitorStocks.Contains(stock))
+        {
+            ViewModel.HistoryDeduceData.MonitorStocks.Add(stock);
+        }
+
+        LiveMonitorTabView.SelectedIndex = 1;
     }
 }

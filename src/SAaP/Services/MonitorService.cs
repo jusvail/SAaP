@@ -198,6 +198,13 @@ public class MonitorService : IMonitorService
         do
         {
             manager.MinuteDatas.Add(minuteDatas[index++]);
+
+#if DEBUG
+            if (index == 960)
+            {
+                Console.Write("");
+            }
+#endif
         } while (manager.MinuteDatas[^1].FullTime < historyDeduceData.PerLoadDateEnd && index < minuteDatas.Count);
 
         // pre work

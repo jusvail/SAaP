@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using SAaP.Core.Helpers;
 using SAaP.Core.Models.Monitor;
 
 namespace SAaP.Core.Services.Monitor;
@@ -156,8 +155,26 @@ public class NLowRiskMonitor : RiskMonitorBase
 
         if (pc >= .5)
         {
-            var mr = RecentlyEnding10.Max();
+            // var mr = RecentlyEnding10.Max();
+            var mrh = RecentlyEnding60.Max();
             var ne = thisMinuteData.Ending;
+
+            var zdfh = 100 * (mrh - ne) / mrh;
+
+            if (ne >= mrh)
+            {
+                return true;
+            }
+
+            // if (RecentlyVolume.Max() > 4000 && pc >= 0.9)
+            // {
+            //     return true;
+            // }
+
+            if (ne < StartData.Opening)
+            {
+                return false;
+            }
 
             if (RecentlyVolume.Max() < 5000)
             {
@@ -179,9 +196,18 @@ public class NLowRiskMonitor : RiskMonitorBase
                 return false;
             }
 
+            if (zdfh < 1)
+            {
+                return true;
+            }
+
+            if (zdfh > 3)
+            {
+                return true;
+            }
+
             Percent = pc;
 
-            return true;
             //
             // if (pc >= 0.9)
             // {
@@ -495,6 +521,12 @@ public class NLowRiskMonitor : RiskMonitorBase
         var ml60 = RecentlyVolume.Max();
         var ml15 = RecentlyVolume15.Max();
 
+        if (ml60 > thisMinuteData.Volume * 50)
+        {
+            VolSpeedLowerMessage = "60min内交易量↓30倍";
+            return .95;
+        }
+
         if (ml60 > thisMinuteData.Volume * 30)
         {
             VolSpeedLowerMessage = "60min内交易量↓30倍";
@@ -530,7 +562,7 @@ public class NLowRiskMonitor : RiskMonitorBase
 
         if (ml15 > 30000 && ml15 > thisMinuteData.Volume * 4)
         {
-            if (Time.GetTimeRightNow().Hour < 10)
+            if (thisMinuteData.FullTime.Hour < 10)
             {
                 VolSpeedLowerMessage = "巨量且15min内交易量↓4倍";
                 return .5;

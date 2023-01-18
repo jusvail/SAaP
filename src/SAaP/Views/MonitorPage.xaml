@@ -100,8 +100,8 @@
         </DataTemplate>
         <DataTemplate x:DataType="monitor:MonitorNotification" x:Key="SimulationResultDataTemplate">
             <Grid Background="{x:Bind Direction, Converter={StaticResource BsColorFormatConverter}}"
-                  MinHeight="100"
-                  MinWidth="150">
+                  Height="100"
+                  Width="150">
                 <Grid.Resources>
                     <Style TargetType="TextBlock">
                         <Setter Property="FontSize" Value="12"></Setter>
@@ -129,7 +129,8 @@
                 </StackPanel>
                 <Grid.ContextFlyout>
                     <MenuFlyout>
-                        <MenuFlyoutItem Text="详细" />
+                        <MenuFlyoutItem Text="加入模拟" 
+                                        Click="AddToSim_OnClick"/>
                     </MenuFlyout>
                 </Grid.ContextFlyout>
             </Grid>

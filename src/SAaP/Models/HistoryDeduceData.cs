@@ -8,7 +8,7 @@ namespace SAaP.Models;
 public class HistoryDeduceData : ObservableRecipient
 {
     private DateTimeOffset _preLoadDateStart = DateTimeOffset.Now.AddHours(DateTimeOffset.Now.Hour * -1).AddDays(-6);
-    private DateTimeOffset _perLoadDateEnd = DateTimeOffset.Now.AddHours(DateTimeOffset.Now.Hour * -1).AddDays(-1).AddHours(18);
+    private DateTimeOffset _perLoadDateEnd = DateTimeOffset.Parse(DateTimeOffset.Now.ToString("yyyy/MM/dd") + " 15:00:00").AddDays(-1);
     private DateTimeOffset _analyzeEndDate = DateTimeOffset.Now.AddHours(DateTimeOffset.Now.Hour * -1).AddHours(18);
 
     public MonitorCondition MonitorCondition { get; set; } = new();
@@ -28,8 +28,8 @@ public class HistoryDeduceData : ObservableRecipient
         get => _perLoadDateEnd;
         set
         {
-            var newV = value.AddHours(value.Hour * -1).AddHours(18);
-            SetProperty(ref _perLoadDateEnd, newV);
+            var newV = value.ToString("yyyy/MM/dd");
+            SetProperty(ref _perLoadDateEnd, DateTimeOffset.Parse(newV + " 15:00:00"));
         }
     }
 

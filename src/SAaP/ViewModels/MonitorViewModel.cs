@@ -14,7 +14,6 @@ using SAaP.Core.Services.Analyze;
 using SAaP.Views;
 using SAaP.Core.Models;
 using SAaP.Core.Models.Monitor;
-using Windows.UI.Notifications;
 
 namespace SAaP.ViewModels;
 
@@ -235,9 +234,6 @@ public class MonitorViewModel : ObservableRecipient
                 {
                     LoggingCollection.Insert(0, MonitorNotification.SystemNotification("午休"));
 
-                    await App.Logger.Log(RealtimeResultCollection.Select(n => n.ToString()).ToList());
-                    await App.Logger.Log(LoggingCollection.Select(n => n.ToString()).ToList());
-
                     noonStaff = true;
                 }
 
@@ -245,6 +241,10 @@ public class MonitorViewModel : ObservableRecipient
             }
             await Task.Delay(60000);
         }
+
+        // log in 15:00
+        await App.Logger.Log(RealtimeResultCollection.Select(n => n.ToString()).ToList());
+        await App.Logger.Log(LoggingCollection.Select(n => n.ToString()).ToList());
     }
 
     private void PrintRealTimeTrackResult(MonitorNotification notification)
