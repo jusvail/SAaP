@@ -17,6 +17,8 @@ namespace SAaP.Core.Services.Analyze
 
         public IList<double> Ttm;
 
+        public IList<double> Amplitude;
+
         public AnalyzeBot(IList<OriginalData> originalData)
         {
             _originalData = originalData;
@@ -38,6 +40,8 @@ namespace SAaP.Core.Services.Analyze
             // ttm list
             Ttm = new List<double>(ActualCount);
 
+            Amplitude = new List<double>(ActualCount);
+
             for (var i = _count - 1; i > 0; i--)
             {
                 //calc overprice
@@ -47,7 +51,36 @@ namespace SAaP.Core.Services.Analyze
                 //calc ttm
                 var ttm = CalculationService.CalcTtm(_originalData[i].Ending, _originalData[i - 1].Ending);
                 Ttm.Add(ttm);
+
+                var amplitude = CalculationService.CalcTtm(_originalData[i].Low, _originalData[i].High);
+                Amplitude.Add(amplitude);
             }
+        }
+
+        public double CalcMinimalAmplitude()
+        {
+            return Amplitude.Min();
+        }
+
+        public double CalcMaxAmplitude()
+        {
+            return Amplitude.Max();
+        }
+
+        public double CalcMedianAmplitude()
+        {
+            var tp = new List<double>();
+
+            tp.AddRange(Amplitude);
+            tp.Sort();
+
+            return Amplitude[tp.Count / 2];
+        }
+
+        public double CalcAverageAmplitude()
+        {
+            // ReSharper disable once PossibleLossOfFraction
+            return CalculationService.Round2(Amplitude.Average());
         }
 
         public double CalcOverPricedPercent()

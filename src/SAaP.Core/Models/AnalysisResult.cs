@@ -34,6 +34,14 @@ public class AnalysisResult
 
     public double BestEarnings { get; set; }
 
+    public double AverageAmplitude { get; set; }
+
+    public double MedianAmplitude { get; set; }
+
+    public double MinimalAmplitude { get; set; }
+
+    public double MaxAmplitude { get; set; }
+
     public string FirstTradingDay { get; set; }
 
     public string LastTradingDay { get; set; }

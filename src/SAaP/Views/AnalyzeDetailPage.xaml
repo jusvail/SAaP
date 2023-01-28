@@ -406,13 +406,17 @@
                     <controls:DataGridTextColumn Binding="{Binding LastTradingDay}" Header="ltd" Tag="LastTradingDay"/>
                     <controls:DataGridTextColumn Binding="{Binding MaxContinueOverPricedDay}" Header="mc+opD" Tag="MaxContinueOverPricedDay"/>
                     <controls:DataGridTextColumn Binding="{Binding MaxContinueMinusOverPricedDay}" Header="mc-opD" Tag="MaxContinueMinusOverPricedDay"/>
-                    <controls:DataGridTemplateColumn Header="评价">
-                        <controls:DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <HyperlinkButton Content="{Binding Evaluate}" />
-                            </DataTemplate>
-                        </controls:DataGridTemplateColumn.CellTemplate>
-                    </controls:DataGridTemplateColumn>
+                    <controls:DataGridTextColumn Binding="{Binding AverageAmplitude}" Header="平均振幅" Tag="AverageAmplitude"/>
+                    <controls:DataGridTextColumn Binding="{Binding MedianAmplitude}" Header="中位振幅" Tag="MedianAmplitude"/>
+                    <controls:DataGridTextColumn Binding="{Binding MinimalAmplitude}" Header="最小振幅" Tag="MinimalAmplitude"/>
+                    <controls:DataGridTextColumn Binding="{Binding MaxAmplitude}" Header="最大振幅" Tag="MaxAmplitude"/>
+                    <!-- <controls:DataGridTemplateColumn Header="评价"> -->
+                    <!--     <controls:DataGridTemplateColumn.CellTemplate> -->
+                    <!--         <DataTemplate> -->
+                    <!--             <HyperlinkButton Content="{Binding Evaluate}" /> -->
+                    <!--         </DataTemplate> -->
+                    <!--     </controls:DataGridTemplateColumn.CellTemplate> -->
+                    <!-- </controls:DataGridTemplateColumn> -->
                 </controls:DataGrid.Columns>
             </controls:DataGrid>
         </Grid>

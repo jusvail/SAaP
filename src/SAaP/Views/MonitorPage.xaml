@@ -99,7 +99,9 @@
             </Grid>
         </DataTemplate>
         <DataTemplate x:DataType="monitor:MonitorNotification" x:Key="SimulationResultDataTemplate">
-            <Grid Background="{x:Bind Direction, Converter={StaticResource BsColorFormatConverter}}">
+            <Grid Background="{x:Bind Direction, Converter={StaticResource BsColorFormatConverter}}"
+                  Height="100"
+                  Width="150">
                 <Grid.Resources>
                     <Style TargetType="TextBlock">
                         <Setter Property="FontSize" Value="12"></Setter>
@@ -112,7 +114,8 @@
                         <TextBlock Text="{x:Bind CompanyName,Mode=OneWay}" FontWeight="Bold"/>
                         <TextBlock Text=")"/>
                     </StackPanel>
-                    <TextBlock Text="{x:Bind SubmittedByMode,Converter={StaticResource DirectionModeConverter},Mode=OneWay}"/>
+                    <TextBlock Text="{x:Bind SubmittedByMode,Converter={StaticResource DirectionModeConverter},Mode=OneWay}"
+                               FontSize="11"/>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{x:Bind FullTime,Converter={StaticResource DateTimeOffsetToRegularFormatConverter},Mode=OneWay}"/>
                     </StackPanel>
@@ -120,11 +123,14 @@
                         <TextBlock Text="{x:Bind Price,Mode=OneWay}" FontWeight="Bold"/>
                         <TextBlock Text="{x:Bind Direction,Mode=OneWay}" Margin="5 0"/>
                     </StackPanel>
-                    <TextBlock Text="{x:Bind Message,Mode=OneWay}"/>
+                    <TextBlock Text="{x:Bind Message,Mode=OneWay}"
+                               FontSize="11"
+                               TextWrapping="Wrap"/>
                 </StackPanel>
                 <Grid.ContextFlyout>
                     <MenuFlyout>
-                        <MenuFlyoutItem Text="详细" />
+                        <MenuFlyoutItem Text="加入模拟" 
+                                        Click="AddToSim_OnClick"/>
                     </MenuFlyout>
                 </Grid.ContextFlyout>
             </Grid>
@@ -211,7 +217,7 @@
             </Grid>
         </DataTemplate>
         <DataTemplate x:Key="LoggingDataTemplate" x:DataType="monitor:MonitorNotification">
-            <Grid Margin="{StaticResource DefaultGridBorderMargin}">
+            <Grid Margin="{StaticResource SecondaryGridThickness}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -323,6 +329,10 @@
                                                             <MenuFlyout>
                                                                 <MenuFlyoutItem Text="添加所有交易中的股票" 
                                                                                 Command="{x:Bind ViewModel.AddOnHoldStockCommand}"/>
+                                                                <MenuFlyoutSeparator></MenuFlyoutSeparator>
+                                                                <MenuFlyoutItem Text="加入模拟分析" 
+                                                                    Command="{x:Bind ViewModel.AddToSimulateCommand}"
+                                                                    CommandParameter="{x:Bind MonitorStocksListView.SelectedItems}"/>
                                                             </MenuFlyout>
                                                         </Button.Flyout>
                                                     </Button>
@@ -558,6 +568,12 @@
                                                         </Grid.RowDefinitions>
                                                         <StackPanel>
                                                             <TextBlock Text="务必先导入完整的盘后数据，再进行模拟分析"></TextBlock>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <CheckBox Content="分析所有监控中股票" 
+                                                                      Margin="2"
+                                                                      IsChecked="{x:Bind ViewModel.SimulateAllMonitorCode, Mode=TwoWay}"></CheckBox>
+                                                                <HyperlinkButton Content="清空" Command="{x:Bind ViewModel.ClearSimulateCodesCommand}"></HyperlinkButton>
+                                                            </StackPanel>
                                                         </StackPanel>
                                                         <StackPanel Grid.Row="1">
                                                             <GridView x:Name="HistoryDeduceStockData"
@@ -576,10 +592,15 @@
                                                         </StackPanel>
                                                         <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0 5">
                                                             <Button Content="开始分析" 
+                                                                    Style="{StaticResource AccentButtonStyle}"
                                                                     IsEnabled="{x:Bind ViewModel.OnSimulationStartCommand.IsRunning, Converter={StaticResource ReverseBooleanConverter}, Mode=OneWay}"
                                                                     Command="{x:Bind ViewModel.OnSimulationStartCommand}"></Button>
-                                                            <CheckBox Content="模拟实时交易"
-                                                                      Margin="10 0"></CheckBox>
+                                                            <Button Content="复制结果"
+                                                                    Margin="{StaticResource StandardButtonMargin}"
+                                                                    Click="CopyResult_OnClick"></Button>
+                                                            <Button Content="复制统计结果"
+                                                                    Margin="{StaticResource StandardButtonMargin}"
+                                                                    Click="CopySumResult_OnClick"></Button>
                                                         </StackPanel>
                                                         <Grid Grid.Row="4" Margin="0 5">
                                                             <GridView x:Name="SimGridView" 

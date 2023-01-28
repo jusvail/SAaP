@@ -1,5 +1,4 @@
-﻿using System;
-using SAaP.Core.Models;
+﻿using SAaP.Core.Models;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -25,8 +24,12 @@ public class NLowRiskMonitor : RiskMonitorBase
 
     public int ReadyToBuyIn { get; set; } = 4;
 
+    private int _step1Index;
+    public List<double> TodayMoney { get; set; } = new();
+    public List<double> TodayEnding { get; set; } = new();
+    public List<int> TodayVolume { get; set; } = new();
     public List<int> RecentlyVolume { get; set; } = new();
-    public List<int> RecentlyVolume10 { get; set; } = new();
+    public List<int> RecentlyVolume15 { get; set; } = new();
     public List<double> RecentlyEnding60 { get; set; } = new();
     public List<double> RecentlyEnding10 { get; set; } = new();
 
@@ -34,8 +37,23 @@ public class NLowRiskMonitor : RiskMonitorBase
 
     private int _index;
 
-    public int Alert = 0;
+    public int TempDoNotBuyIn; // temp alert time
+    public int SecondBuyIn; // 2* 3* ...
 
+    private int _buyCount;
+
+    public int BuyCount
+    {
+        get => _buyCount;
+        set
+        {
+            _buyCount = value;
+            SecondBuyIn += 45;
+        }
+    }
+
+    public int SellCount { get; set; }
+    public int SuccessCount { get; set; }
 
     public bool Step1 { get; set; }
     public bool Step2 { get; set; }
@@ -46,8 +64,10 @@ public class NLowRiskMonitor : RiskMonitorBase
     public string VolSpeedLowerMessage { get; set; }
 
     public int StartCount;
-    public MinuteData StartData { get; set; } = new();
-    public MinuteData BuyData { get; set; } = new();
+    private MinuteData StartData { get; set; } = new();
+    private MinuteData BuyData { get; set; } = new();
+    private int _buySinceMinute;
+    private string _sellReason = string.Empty;
 
     public VolumeLevel CalcVolumeLevel(int currentVolume)
     {
@@ -93,7 +113,7 @@ public class NLowRiskMonitor : RiskMonitorBase
 
     private bool CheckStep1(List<MinuteData> passDatas, MinuteData thisMinuteData)
     {
-        var lastVolumeLevel = CalcVolumeLevel(RecentlyVolume10.Min());
+        var lastVolumeLevel = CalcVolumeLevel(RecentlyVolume15.Min());
         var currentVolumeLevel = CalcVolumeLevel(thisMinuteData.Volume);
 
         if (lastVolumeLevel is VolumeLevel.Low or VolumeLevel.ExtremelyLow or VolumeLevel.Normal
@@ -105,22 +125,30 @@ public class NLowRiskMonitor : RiskMonitorBase
                 return false;
             }
 
-            if (CalculationService.CalcTtm(StartData.Opening, thisMinuteData.Ending) >= 1.1)
+            if (RecentlyVolume.Max() < 3000)
             {
-                return true;
+                return false;
             }
 
-            var tdc = passDatas.Count - StartCount;
-
-            if (tdc > 2)
+            if (CalculationService.CalcTtm(StartData.Opening, thisMinuteData.Ending) < 2)
             {
-                var minData = passDatas.TakeLast(tdc).Min(m => m.Ending);
-
-                if (CalculationService.CalcTtm(minData, thisMinuteData.Ending) >= 1.8)
-                {
-                    return true;
-                }
+                return false;
             }
+
+            _step1Index = _index;
+            return true;
+
+            // var tdc = passDatas.Count - StartCount;
+            //
+            // if (tdc > 2)
+            // {
+            //     var minData = passDatas.TakeLast(tdc).Min(m => m.Ending);
+            //
+            //     if (CalculationService.CalcTtm(minData, thisMinuteData.Ending) >= 1.8)
+            //     {
+            //         return true;
+            //     }
+            // }
         }
         return false;
     }
@@ -131,13 +159,41 @@ public class NLowRiskMonitor : RiskMonitorBase
 
         if (pc >= .5)
         {
-            var mr = RecentlyEnding10.Max();
+            // var mr = RecentlyEnding10.Max();
+            var mrh = RecentlyEnding60.Max();
             var ne = thisMinuteData.Ending;
+
+            if (CalculationService.CalcTtm(StartData.Ending, mrh) > 6)
+            {
+                return false;
+            }
+
+            var zdfh = 100 * (mrh - ne) / mrh;
+
+            if (ne >= mrh)
+            {
+                return true;
+            }
+
+            // if (RecentlyVolume.Max() > 4000 && pc >= 0.9)
+            // {
+            //     return true;
+            // }
+
+            if (ne < StartData.Opening)
+            {
+                return false;
+            }
 
             if (RecentlyVolume.Max() < 5000)
             {
                 return false;
             }
+
+            // if (TodayMoney.Max() < 10000000)
+            // {
+            //     return false;
+            // }
 
             if (thisMinuteData.Volume > 5000 && pc < 0.7)
             {
@@ -154,51 +210,65 @@ public class NLowRiskMonitor : RiskMonitorBase
                 return false;
             }
 
+            if (zdfh < 1)
+            {
+                return true;
+            }
+
+            if (zdfh > 3)
+            {
+                return false;
+            }
+
             Percent = pc;
 
-            if (pc >= 0.9)
-            {
-                return true;
-            }
+            #region IGNORED
 
-            if (thisMinuteData.Zd() < 0.5 && thisMinuteData.Zd() > -0.5 && ExtraInfo.BbiList.Count > 0 && Math.Abs(thisMinuteData.Ending - ExtraInfo.BbiList[^1]) < 0.15)
-            {
-                return true;
-            }
-
-            if (pc >= .8 && ExtraInfo.BbiList.Count > 0 && thisMinuteData.Opening < ExtraInfo.BbiList[^1])
-            {
-                return true;
-            }
-
-            if (pc >= .8 && CalculationService.CalcTtm(mr, ne) < -2)
-            {
-                return true;
-            }
-
-            if (pc >= .7 && CalculationService.CalcTtm(mr, ne) > -2)
-            // && ExtraInfo.BbiList.Count > 0
-            // && thisMinuteData.Ending > ExtraInfo.BbiList[^1])
-            {
-                return true;
-            }
-
-            if (pc >= .6 && CalculationService.CalcTtm(mr, ne) > -2
-                         && ExtraInfo.BbiList.Count > 0
-                         && Math.Abs(thisMinuteData.Ending - ExtraInfo.BbiList[^1]) < 1
-                         && ((thisMinuteData.Opening > ExtraInfo.BbiList[^1] && thisMinuteData.Ending > ExtraInfo.BbiList[^1])
-                             || (thisMinuteData.Opening < ExtraInfo.BbiList[^1] && thisMinuteData.Ending < ExtraInfo.BbiList[^1])))
-            {
-                return true;
-            }
-
-
-            if (pc >= .5 && CalculationService.CalcTtm(mr, ne) < -2
-                         && ExtraInfo.BbiList.Count > 0
-                         && Math.Abs(thisMinuteData.Ending - ExtraInfo.BbiList[^1]) < 1)
-            {
-                return true;
-            }
+            //
+            // if (pc >= 0.9)
+            // {
+            //     return true;
+            // }
+            //
+            // if (thisMinuteData.Zd() < 0.5 && thisMinuteData.Zd() > -0.5 && ExtraInfo.BbiList.Count > 0 && Math.Abs(thisMinuteData.Ending - ExtraInfo.BbiList[^1]) < 0.15)
+            // {
+            //     return true;
+            // }
+            //
+            // if (pc >= .8 && ExtraInfo.BbiList.Count > 0 && thisMinuteData.Opening < ExtraInfo.BbiList[^1])
+            // {
+            //     return true;
+            // }
+            //
+            // if (pc >= .8 && CalculationService.CalcTtm(mr, ne) < -2)
+            // {
+            //     return true;
+            // }
+            //
+            // if (pc >= .7 && CalculationService.CalcTtm(mr, ne) > -2)
+            // // && ExtraInfo.BbiList.Count > 0
+            // // && thisMinuteData.Ending > ExtraInfo.BbiList[^1])
+            // {
+            //     return true;
+            // }
+            //
+            // if (pc >= .6 && CalculationService.CalcTtm(mr, ne) > -2
+            //              && ExtraInfo.BbiList.Count > 0
+            //              && Math.Abs(thisMinuteData.Ending - ExtraInfo.BbiList[^1]) < 1
+            //              && ((thisMinuteData.Opening > ExtraInfo.BbiList[^1] && thisMinuteData.Ending > ExtraInfo.BbiList[^1])
+            //                  || (thisMinuteData.Opening < ExtraInfo.BbiList[^1] && thisMinuteData.Ending < ExtraInfo.BbiList[^1])))
+            // {
+            //     return true;
+            // }
+            //
+            //
+            // if (pc >= .5 && CalculationService.CalcTtm(mr, ne) < -2
+            //              && ExtraInfo.BbiList.Count > 0
+            //              && Math.Abs(thisMinuteData.Ending - ExtraInfo.BbiList[^1]) < 1)
+            // {
+            //     return true;
+            // }
+            #endregion
         }
 
         return false;
@@ -206,23 +276,57 @@ public class NLowRiskMonitor : RiskMonitorBase
 
     private bool CheckStep3(List<MinuteData> passDatas, MinuteData thisMinuteData)
     {
+        if (_buySinceMinute >= 60)
+        {
+            _sellReason = "经过了60分钟未出现卖点；";
+            return true;
+        }
+        //
+        // if (VolSpeedHigherInMinutes(thisMinuteData) > 50 && thisMinuteData.Zd() < 2)
+        // {
+        //     _sellReason = "成交量放大50倍，但涨跌<2%";
+        //     return true;
+        // }
+        //
+        // if (VolSpeedHigherInMinutes(thisMinuteData) > 40 && thisMinuteData.Zd() < 1.5)
+        // {
+        //     _sellReason = "成交量放大40倍，但涨跌<2%";
+        //     return true;
+        // }
+        //
+        // if (VolSpeedHigherInMinutes(thisMinuteData) > 15 && thisMinuteData.Zd() < 0.8)
+        // {
+        //     _sellReason = "成交量放大15倍，但涨跌<0.8%";
+        //     return true;
+        // }
+        //
+        // if (VolSpeedHigherInMinutes(thisMinuteData) > 10 && thisMinuteData.Zd() < 0.5)
+        // {
+        //     _sellReason = "成交量放大10倍，但涨跌<0.5%";
+        //     return true;
+        // }
+
         if (thisMinuteData.Zd() > 1.5)
         {
+            _sellReason = "此分钟涨幅过高（>1.5）";
             return true;
         }
 
         if (ExtraInfo.BbiList.Count > 0 && thisMinuteData.Ending > ExtraInfo.BbiList[^1] + 2.8)
         {
+            _sellReason = "此分钟涨幅过高（>BBI+2.8）";
             return true;
         }
 
         if (BuyData.Ending > 0 && CalculationService.CalcTtm(BuyData.Ending, thisMinuteData.Ending) > 2)
         {
+            _sellReason = "无条件止盈 +2%";
             return true;
         }
 
-        if (BuyData.Ending > 0 && CalculationService.CalcTtm(BuyData.Ending, thisMinuteData.Ending) < -1)
+        if (BuyData.Ending > 0 && CalculationService.CalcTtm(BuyData.Ending, thisMinuteData.Ending) < -1.5)
         {
+            _sellReason = "无条件止损 -1.5%";
             return true;
         }
 
@@ -232,9 +336,14 @@ public class NLowRiskMonitor : RiskMonitorBase
     public override MonitorNotification AnalyzeCurrentMinuteData(List<MinuteData> passDatas, MinuteData thisMinuteData, ExtraInfoOfPassData extraInfo)
     {
         RecentlyVolume = passDatas.TakeLast(60).Select(i => i.Volume).ToList();
-        RecentlyVolume10 = passDatas.TakeLast(10).Select(i => i.Volume).ToList();
+        // higher the  rec
+        RecentlyVolume15 = passDatas.TakeLast(15).Select(i => i.Volume).ToList();
         RecentlyEnding60 = passDatas.TakeLast(60).Select(i => i.Ending).ToList();
         RecentlyEnding10 = passDatas.TakeLast(10).Select(i => i.Ending).ToList();
+
+        TodayVolume.Add(thisMinuteData.Volume);
+        TodayEnding.Add(thisMinuteData.Ending);
+        TodayMoney.Add(thisMinuteData.Ending * thisMinuteData.Volume * 10);
 
         CalcBbi(passDatas, thisMinuteData);
 
@@ -242,6 +351,7 @@ public class NLowRiskMonitor : RiskMonitorBase
         {
             PrepareForWork(passDatas, extraInfo);
         }
+
         if (_index >= TradingMinutesInDay)
         {
             _index = 0;
@@ -257,9 +367,16 @@ public class NLowRiskMonitor : RiskMonitorBase
             Step1 = CheckStep1(passDatas, thisMinuteData);
         }
 
-        if (Alert > 0)
+        _index++;
+
+        if (TempDoNotBuyIn > 0)
         {
-            Alert--;
+            TempDoNotBuyIn--;
+            return null;
+        }
+
+        if (SuccessCount > 0)
+        {
             return null;
         }
 
@@ -270,8 +387,10 @@ public class NLowRiskMonitor : RiskMonitorBase
             Step2 = CheckStep2(passDatas, thisMinuteData);
             if (Step2)
             {
-                Alert = 4;
+                // TempDoNotBuyIn = 2;
+                // _buySinceMinute = 2;
                 BuyData = thisMinuteData;
+                BuyCount++;
 
                 var notification = new MonitorNotification
                 {
@@ -293,6 +412,8 @@ public class NLowRiskMonitor : RiskMonitorBase
 
         if (!Step2) return null;
 
+        _buySinceMinute++;
+
         if (!Step3)
         {
             Step3 = CheckStep3(passDatas, thisMinuteData);
@@ -300,10 +421,13 @@ public class NLowRiskMonitor : RiskMonitorBase
             if (Step3)
             {
                 // 不启用step4
-                Alert = 15;
+                TempDoNotBuyIn = SecondBuyIn;
                 Step1 = false;
                 Step2 = false;
                 Step3 = false;
+
+                SellCount++;
+
                 var notification = new MonitorNotification
                 {
                     CodeName = passDatas.First().CodeName,
@@ -314,16 +438,24 @@ public class NLowRiskMonitor : RiskMonitorBase
                     // SuccessPercent = pc,
                     // Positions = pc,
                     ExpectedProfit = 0,
-                    Message = CalculationService.Round2(CalculationService.CalcTtm(BuyData.Ending, thisMinuteData.Ending)).ToString(CultureInfo.InvariantCulture) + "%",
+                    HoldTime = _buySinceMinute,
+                    Profit = CalculationService.Round2(CalculationService.CalcTtm(BuyData.Ending, thisMinuteData.Ending)),
                     SubmittedByMode = BuyMode.NLowRisk
                 };
 
+                notification.Message = notification.Profit.ToString(CultureInfo.InvariantCulture) + "% " + _sellReason;
+
+                if (notification.Profit > 0)
+                {
+                    SuccessCount++;
+                }
+
                 BuyData = new MinuteData();
+                _buySinceMinute = 0;
 
                 return notification;
             }
         }
-        _index++;
 
         return null;
     }
@@ -380,7 +512,7 @@ public class NLowRiskMonitor : RiskMonitorBase
         MidVolumeADay = volumes[volumes.Count / 2];
 
         var i = 0;
-        while (volumes[i] < 10) i++;
+        while (i < volumes.Count - 1 && volumes[i] < 10) i++;
 
         MinVolumeADay = volumes[i];
         MaxVolumeADay = volumes[^1];
@@ -400,42 +532,94 @@ public class NLowRiskMonitor : RiskMonitorBase
         }
     }
 
-    private bool VolumeLowerInMinutes(int x)
+    public double VolSpeedHigherInMinutes(MinuteData thisMinuteData)
     {
-        return RecentlyVolume10.Any(vol => vol > x);
+        // ReSharper disable once PossibleLossOfFraction
+        return CalculationService.Round2(thisMinuteData.Volume / RecentlyVolume15.Where(v => v > 10).Min());
     }
 
     public double VolSpeedLowerInMinutes(MinuteData thisMinuteData)
     {
-        if (VolumeLowerInMinutes(thisMinuteData.Volume * 20))
+        var ml60 = RecentlyVolume.Max();
+        var ml15 = RecentlyVolume15.Max();
+
+        if (ml60 > thisMinuteData.Volume * 50)
         {
-            VolSpeedLowerMessage = "10min内交易量↓20倍";
+            VolSpeedLowerMessage = "60min内交易量↓30倍";
+            return .95;
+        }
+
+        if (ml60 > thisMinuteData.Volume * 30)
+        {
+            VolSpeedLowerMessage = "60min内交易量↓30倍";
             return .9;
         }
 
-        if (VolumeLowerInMinutes(thisMinuteData.Volume * 10))
+        if (ml60 > thisMinuteData.Volume * 20)
         {
-            VolSpeedLowerMessage = "10min内交易量↓10倍";
+            VolSpeedLowerMessage = "60min内交易量↓20倍";
             return .8;
         }
+        //
+        // if (ml60 > thisMinuteData.Volume * 10)
+        // {
+        //     VolSpeedLowerMessage = "60min内交易量↓10倍";
+        //     return .7;
+        // }
 
-        if (VolumeLowerInMinutes(thisMinuteData.Volume * 5))
+        if (ml60 > 9850)
         {
-            VolSpeedLowerMessage = "10min内交易量↓5倍";
-            return .7;
+            if (thisMinuteData.Volume < 400)
+            {
+                VolSpeedLowerMessage = "60min内极致缩量";
+                return .6;
+            }
         }
 
-        if (VolumeLowerInMinutes(thisMinuteData.Volume * 4))
+        // if (ml60 > thisMinuteData.Volume * 9)
+        // {
+        //     VolSpeedLowerMessage = "60min内交易量↓9倍";
+        //     return .6;
+        // }
+
+        // if (TodayMoney.Max() > 10000000)
+        // {
+        //    
+        //
+        //
+        //     // if (RecentlyVolume.Count(d => d < 500) >= 5)
+        //     // {
+        //     //     VolSpeedLowerMessage = "60min内5次<500vol";
+        //     //     return .6;
+        //     // }
+        // }
+
+        if (ml15 > 30000 && ml15 > thisMinuteData.Volume * 4)
         {
-            VolSpeedLowerMessage = "10min内交易量↓4倍";
-            return .6;
+            if (thisMinuteData.FullTime.Hour < 10)
+            {
+                VolSpeedLowerMessage = "巨量且15min内交易量↓4倍";
+                return .5;
+            }
         }
 
-        if (VolumeLowerInMinutes((int)(thisMinuteData.Volume * 3.5)))
-        {
-            VolSpeedLowerMessage = "10min内交易量↓3.5倍";
-            return .5;
-        }
+        // if (VolumeLowerInMinutes(thisMinuteData.Volume * 5))
+        // {
+        //     VolSpeedLowerMessage = "10min内交易量↓5倍";
+        //     return .7;
+        // }
+        //
+        // if (VolumeLowerInMinutes(thisMinuteData.Volume * 4))
+        // {
+        //     VolSpeedLowerMessage = "10min内交易量↓4倍";
+        //     return .6;
+        // }
+        //
+        // if (VolumeLowerInMinutes((int)(thisMinuteData.Volume * 3.5)))
+        // {
+        //     VolSpeedLowerMessage = "10min内交易量↓3.5倍";
+        //     return .5;
+        // }
 
         return .1;
     }

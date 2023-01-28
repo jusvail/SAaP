@@ -16,7 +16,9 @@ public class MonitorService : IMonitorService
 {
     public static readonly string Stx = "min.csv";
 
-    const string TxRtDataPattern = "\\d+\\.\\d+";
+    // const string TxRtDataPattern = "\\d+\\.\\d+";
+
+    private static bool _noonStaff;
 
     public async Task RealTimeTrack(Stock stock, MonitorCondition monitorCondition, List<MinuteData> historyMinuteDatas, Action<MonitorNotification> callBack)
     {
@@ -26,8 +28,6 @@ public class MonitorService : IMonitorService
         manager.Condition = monitorCondition.Adapt<MonitorCondition>();
 
         manager.MinuteDatas = historyMinuteDatas;
-
-        var noonStaff = false;
 
         var todayMinuteData = new List<MinuteData>();
 
@@ -41,11 +41,10 @@ public class MonitorService : IMonitorService
             while (Time.GetTimeRightNow() > Time.Mealtimes[1] && Time.GetTimeRightNow() < Time.Mealtimes[2])
             {
                 // 午休
-                if (!noonStaff)
+                if (!_noonStaff)
                 {
-                    // TODO sth
-                    callBack(MonitorNotification.SystemNotification("午休"));
-                    noonStaff = true;
+                    callBack(MonitorNotification.SystemNotification("午休！！不要关掉窗口！"));
+                    _noonStaff = true;
                 }
                 await Task.Delay(1000);
             }
@@ -53,7 +52,9 @@ public class MonitorService : IMonitorService
             // http receive and calculate real time data
             var sec = Time.GetTimeRightNow().Second;
 
-            todayMinuteData.Add(new MinuteData());
+            todayMinuteData.Add(new MinuteData { FullTime = Time.GetTimeOffsetRightNow() });
+
+            var volumeThisMinute = 0;
 
             while (sec < 60)
             {
@@ -67,6 +68,7 @@ public class MonitorService : IMonitorService
 
                     if (executed.Length < 6) continue;
 
+                    // note: today's opening is [5] static
                     var now = Convert.ToDouble(executed[3]);
                     var vol = Convert.ToInt32(executed[6]);
 
@@ -80,26 +82,27 @@ public class MonitorService : IMonitorService
                         curData.Ending = now;
                     }
 
-                    if (now >= curData.Opening && now > curData.High)
+                    if (now > curData.High)
                     {
                         curData.High = now;
                     }
 
-                    if (now <= curData.Opening && now < curData.Low)
+                    if (now < curData.Low)
                     {
                         curData.Low = now;
                     }
 
                     curData.Ending = now;
-                    curData.Volume = vol - todayMinuteData.Sum(d => d.Volume);
+                    volumeThisMinute = vol;
 
 #if DEBUG
                     curData.Volume = DateTime.Now.Second * 100;
 #endif
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
                     // ignore and continue 
+                    await App.Logger.Log("出错了！错误信息： " + e.Message + " | " + e.StackTrace);
                 }
 
                 // 3s query once
@@ -107,19 +110,25 @@ public class MonitorService : IMonitorService
                 sec += 3;
             }
 
+            todayMinuteData[^1].Volume = volumeThisMinute - todayMinuteData.Sum(d => d.Volume);
+
             if (todayMinuteData[^1].Volume == 0) continue;
 
 #if DEBUG
 
-            callBack(new MonitorNotification()
+            var bt = new MonitorNotification
             {
                 CodeName = "adsf",
                 CompanyName = "daf",
                 Price = 222.2,
+                FullTime = DateTimeOffset.Now,
                 Direction = DealDirection.Buy,
                 SubmittedByMode = 1,
                 Message = "dfaa",
-            });
+            };
+
+            callBack(bt);
+            await App.Logger.Log(bt.ToString());
 
             callBack(MonitorNotification.SystemNotification("现在在这！！！" + stock.CompanyName));
 
@@ -133,6 +142,7 @@ public class MonitorService : IMonitorService
             foreach (var notification in notifications)
             {
                 callBack(notification);
+                //await App.Logger.Log(notification.ToString());
             }
         }
     }
@@ -188,6 +198,13 @@ public class MonitorService : IMonitorService
         do
         {
             manager.MinuteDatas.Add(minuteDatas[index++]);
+
+#if DEBUG
+            if (index == 960)
+            {
+                Console.Write("");
+            }
+#endif
         } while (manager.MinuteDatas[^1].FullTime < historyDeduceData.PerLoadDateEnd && index < minuteDatas.Count);
 
         // pre work
@@ -206,16 +223,6 @@ public class MonitorService : IMonitorService
             }
 
             index++;
-        }
-
-        if (!report.Notifications.Any())
-        {
-            report.Notifications.Add(new MonitorNotification
-            {
-                CodeName = stock.CodeName,
-                CompanyName = stock.CompanyName,
-                Message = "无结果"
-            });
         }
 
         return report;

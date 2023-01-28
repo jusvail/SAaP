@@ -9,9 +9,20 @@ public static class Time
     public static DateTime GetTimeRightNow()
     {
 #if DEBUG
-        return DateTime.Parse("2023/01/15 09:55:56");
+        return DateTime.Now;
+        //return DateTime.Parse("2023/01/15 09:55:56");
 #else
         return DateTime.Now;
+#endif
+    }
+
+    public static DateTimeOffset GetTimeOffsetRightNow()
+    {
+#if DEBUG
+        return DateTime.Now;
+        //return DateTimeOffset.Parse("2023/01/15 09:55:56");
+#else
+        return DateTimeOffset.Now;
 #endif
     }
 
