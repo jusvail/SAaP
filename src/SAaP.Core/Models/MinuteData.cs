@@ -27,4 +27,9 @@ public class MinuteData
         return 100 * (Ending - Opening) / Opening;
     }
 
+    public double Money()
+    {
+        return 10 * Volume * Ending;
+    }
+
 }

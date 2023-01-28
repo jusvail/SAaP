@@ -24,6 +24,10 @@ public class NLowRiskMonitor : RiskMonitorBase
 
     public int ReadyToBuyIn { get; set; } = 4;
 
+    private int _step1Index;
+    public List<double> TodayMoney { get; set; } = new();
+    public List<double> TodayEnding { get; set; } = new();
+    public List<int> TodayVolume { get; set; } = new();
     public List<int> RecentlyVolume { get; set; } = new();
     public List<int> RecentlyVolume15 { get; set; } = new();
     public List<double> RecentlyEnding60 { get; set; } = new();
@@ -131,7 +135,7 @@ public class NLowRiskMonitor : RiskMonitorBase
                 return false;
             }
 
-
+            _step1Index = _index;
             return true;
 
             // var tdc = passDatas.Count - StartCount;
@@ -159,6 +163,11 @@ public class NLowRiskMonitor : RiskMonitorBase
             var mrh = RecentlyEnding60.Max();
             var ne = thisMinuteData.Ending;
 
+            if (CalculationService.CalcTtm(StartData.Ending, mrh) > 6)
+            {
+                return false;
+            }
+
             var zdfh = 100 * (mrh - ne) / mrh;
 
             if (ne >= mrh)
@@ -180,6 +189,11 @@ public class NLowRiskMonitor : RiskMonitorBase
             {
                 return false;
             }
+
+            // if (TodayMoney.Max() < 10000000)
+            // {
+            //     return false;
+            // }
 
             if (thisMinuteData.Volume > 5000 && pc < 0.7)
             {
@@ -203,10 +217,12 @@ public class NLowRiskMonitor : RiskMonitorBase
 
             if (zdfh > 3)
             {
-                return true;
+                return false;
             }
 
             Percent = pc;
+
+            #region IGNORED
 
             //
             // if (pc >= 0.9)
@@ -252,6 +268,7 @@ public class NLowRiskMonitor : RiskMonitorBase
             // {
             //     return true;
             // }
+            #endregion
         }
 
         return false;
@@ -324,6 +341,10 @@ public class NLowRiskMonitor : RiskMonitorBase
         RecentlyEnding60 = passDatas.TakeLast(60).Select(i => i.Ending).ToList();
         RecentlyEnding10 = passDatas.TakeLast(10).Select(i => i.Ending).ToList();
 
+        TodayVolume.Add(thisMinuteData.Volume);
+        TodayEnding.Add(thisMinuteData.Ending);
+        TodayMoney.Add(thisMinuteData.Ending * thisMinuteData.Volume * 10);
+
         CalcBbi(passDatas, thisMinuteData);
 
         if (_index == 0)
@@ -345,6 +366,8 @@ public class NLowRiskMonitor : RiskMonitorBase
         {
             Step1 = CheckStep1(passDatas, thisMinuteData);
         }
+
+        _index++;
 
         if (TempDoNotBuyIn > 0)
         {
@@ -433,7 +456,6 @@ public class NLowRiskMonitor : RiskMonitorBase
                 return notification;
             }
         }
-        _index++;
 
         return null;
     }
@@ -552,13 +574,25 @@ public class NLowRiskMonitor : RiskMonitorBase
                 VolSpeedLowerMessage = "60min内极致缩量";
                 return .6;
             }
-
-            // if (RecentlyVolume.Count(d => d < 500) >= 5)
-            // {
-            //     VolSpeedLowerMessage = "60min内5次<500vol";
-            //     return .6;
-            // }
         }
+
+        // if (ml60 > thisMinuteData.Volume * 9)
+        // {
+        //     VolSpeedLowerMessage = "60min内交易量↓9倍";
+        //     return .6;
+        // }
+
+        // if (TodayMoney.Max() > 10000000)
+        // {
+        //    
+        //
+        //
+        //     // if (RecentlyVolume.Count(d => d < 500) >= 5)
+        //     // {
+        //     //     VolSpeedLowerMessage = "60min内5次<500vol";
+        //     //     return .6;
+        //     // }
+        // }
 
         if (ml15 > 30000 && ml15 > thisMinuteData.Volume * 4)
         {

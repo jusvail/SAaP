@@ -66,6 +66,10 @@ public class StockAnalyzeService : IStockAnalyzeService
                 NoActionProfit = bot.CalcNoActionProfit(),
                 BestStopProfit = best[0],
                 BestEarnings = best[1],
+                AverageAmplitude = bot.CalcAverageAmplitude(),
+                MedianAmplitude = bot.CalcMedianAmplitude(),
+                MinimalAmplitude = bot.CalcMinimalAmplitude(),
+                MaxAmplitude = bot.CalcMaxAmplitude(),
                 FirstTradingDay = originalData[^2].Day,
                 LastTradingDay = originalData[0].Day,
                 Evaluate = bot.CalcEvaluate()
