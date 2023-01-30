@@ -6,7 +6,7 @@
 
 需要Win10/Win11版本10.0.17763.0以上
 
-[从Windows Store安装](https://www.microsoft.com/store/apps/9P9PVZS13C97)
+[![从Windows Store安装](/Assets/msstore.svg)](https://www.microsoft.com/store/apps/9P9PVZS13C97)
 
 ## 依赖项
 
