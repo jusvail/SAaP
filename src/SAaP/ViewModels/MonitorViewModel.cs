@@ -36,6 +36,7 @@ public class MonitorViewModel : ObservableRecipient
     private string _importStockText;
     private DateTime _currentDateTime;
     private bool _simulateAllMonitorCode;
+    private bool _filterZzOnlyMode;
 
     public ObservableCollection<Stock> AllSuggestStocks { get; } = new();
 
@@ -104,6 +105,12 @@ public class MonitorViewModel : ObservableRecipient
     {
         get => _simulateAllMonitorCode;
         set => SetProperty(ref _simulateAllMonitorCode, value);
+    }
+
+    public bool FilterZzOnlyMode
+    {
+        get => _filterZzOnlyMode;
+        set => SetProperty(ref _filterZzOnlyMode, value);
     }
 
 
@@ -452,7 +459,11 @@ public class MonitorViewModel : ObservableRecipient
     {
         if (sender is not ObservableTaskDetail targetTaskObject) return;
 
-        var allCount = AllSuggestStocks.Count;
+        var filterFromStocks = FilterZzOnlyMode
+            ? AllSuggestStocks.Where(s => StockService.IsZz(s.CodeName)).ToList()
+            : AllSuggestStocks.ToList();
+
+        var allCount = filterFromStocks.Count;
         var curIndex = 1;
         var selected = 0;
 
@@ -467,7 +478,7 @@ public class MonitorViewModel : ObservableRecipient
              {
                  var filtered =
                      _stockAnalyzeService.Filter(
-                         AllSuggestStocks
+                         filterFromStocks
                          , targetTaskObject.TrackConditions
                          , e.CancellationToken);
 
