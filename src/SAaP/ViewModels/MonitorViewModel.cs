@@ -572,6 +572,12 @@ public class MonitorViewModel : ObservableRecipient
 
     public async Task ReinsertToDb(string type, ObservableCollection<Stock> stocks)
     {
+        if (!stocks.Any())
+        {
+            await _dbTransferService.DeleteActivityByAnalyzeData(type);
+            return;
+        }
+
         var sb = new StringBuilder();
 
         foreach (var code in stocks.Select(a => a.CodeNameFull))

@@ -130,7 +130,7 @@ public class NLowRiskMonitor : RiskMonitorBase
                 return false;
             }
 
-            if (CalculationService.CalcTtm(StartData.Opening, thisMinuteData.Ending) < 2)
+            if (CalculationService.CalcTtm(StartData.Opening, thisMinuteData.High) < 1.5)
             {
                 return false;
             }
@@ -155,6 +155,11 @@ public class NLowRiskMonitor : RiskMonitorBase
 
     private bool CheckStep2(List<MinuteData> passDatas, MinuteData thisMinuteData)
     {
+        if (thisMinuteData.FullTime.Hour == 14 && thisMinuteData.FullTime.Minute >= 30)
+        {
+            return false;
+        }
+
         var pc = VolSpeedLowerInMinutes(thisMinuteData);
 
         if (pc >= .5)
@@ -167,8 +172,6 @@ public class NLowRiskMonitor : RiskMonitorBase
             {
                 return false;
             }
-
-            var zdfh = 100 * (mrh - ne) / mrh;
 
             if (ne >= mrh)
             {
@@ -190,10 +193,10 @@ public class NLowRiskMonitor : RiskMonitorBase
                 return false;
             }
 
-            // if (TodayMoney.Max() < 10000000)
-            // {
-            //     return false;
-            // }
+            if (TodayMoney.Max() < 18000000)
+            {
+                return false;
+            }
 
             if (thisMinuteData.Volume > 5000 && pc < 0.7)
             {
@@ -210,14 +213,25 @@ public class NLowRiskMonitor : RiskMonitorBase
                 return false;
             }
 
+            var zdfh = 100 * (mrh - ne) / mrh;
+
             if (zdfh < 1)
             {
                 return true;
             }
 
-            if (zdfh > 3)
+            var tdh = TodayEnding.Max();
+            var hzd = CalculationService.CalcTtm(StartData.Opening, tdh);
+            var tzd = CalculationService.CalcTtm(StartData.Opening, ne);
+
+            if (hzd < 3 && tzd > 0.5)
             {
-                return false;
+                return true;
+            }
+
+            if ((hzd - tzd) / hzd > 0.5)
+            {
+                return true;
             }
 
             Percent = pc;
@@ -281,6 +295,13 @@ public class NLowRiskMonitor : RiskMonitorBase
             _sellReason = "经过了60分钟未出现卖点；";
             return true;
         }
+
+        if (thisMinuteData.Ending < StartData.Opening)
+        {
+            _sellReason = "涨跌<0";
+            return true;
+        }
+
         //
         // if (VolSpeedHigherInMinutes(thisMinuteData) > 50 && thisMinuteData.Zd() < 2)
         // {
@@ -560,6 +581,38 @@ public class NLowRiskMonitor : RiskMonitorBase
             VolSpeedLowerMessage = "60min内交易量↓20倍";
             return .8;
         }
+
+
+        if (ml60 > thisMinuteData.Volume * 15)
+        {
+            if (thisMinuteData.Volume * thisMinuteData.Ending * 10 < 1800000)
+            {
+                VolSpeedLowerMessage = "60min内交易量↓15倍";
+                return .7;
+            }
+
+            if (thisMinuteData.Volume < 1000)
+            {
+                VolSpeedLowerMessage = "60min内交易量↓15倍";
+                return .7;
+            }
+        }
+
+        if (TodayMoney.Max() > 20000000)
+        {
+            if (thisMinuteData.Volume * thisMinuteData.Ending * 10 < 1800000)
+            {
+                VolSpeedLowerMessage = "2kw&&现额<180w";
+                return .7;
+            }
+
+            // if (RecentlyVolume.Count(d => d < 500) >= 5)
+            // {
+            //     VolSpeedLowerMessage = "60min内5次<500vol";
+            //     return .6;
+            // }
+        }
+
         //
         // if (ml60 > thisMinuteData.Volume * 10)
         // {
@@ -567,33 +620,20 @@ public class NLowRiskMonitor : RiskMonitorBase
         //     return .7;
         // }
 
-        if (ml60 > 9850)
-        {
-            if (thisMinuteData.Volume < 400)
-            {
-                VolSpeedLowerMessage = "60min内极致缩量";
-                return .6;
-            }
-        }
+        // if (ml60 > 9850)
+        // {
+        //     if (thisMinuteData.Volume < 400)
+        //     {
+        //         VolSpeedLowerMessage = "60min内极致缩量";
+        //         return .6;
+        //     }
+        // }
 
         // if (ml60 > thisMinuteData.Volume * 9)
         // {
         //     VolSpeedLowerMessage = "60min内交易量↓9倍";
         //     return .6;
         // }
-
-        // if (TodayMoney.Max() > 10000000)
-        // {
-        //    
-        //
-        //
-        //     // if (RecentlyVolume.Count(d => d < 500) >= 5)
-        //     // {
-        //     //     VolSpeedLowerMessage = "60min内5次<500vol";
-        //     //     return .6;
-        //     // }
-        // }
-
         if (ml15 > 30000 && ml15 > thisMinuteData.Volume * 4)
         {
             if (thisMinuteData.FullTime.Hour < 10)
