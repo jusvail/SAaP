@@ -798,6 +798,9 @@
                                                         Command="{x:Bind ViewModel.SaveFilterTaskCommand}"
                                                         Margin="8,8,0,5"
                                                         Style="{StaticResource AccentButtonStyle}"/>
+                                                <CheckBox Content="只筛选转债"
+                                                                Margin="{StaticResource XSmallLeftMargin}"
+                                                                IsChecked="{x:Bind ViewModel.FilterZzOnlyMode,Mode=TwoWay}"></CheckBox>
                                             </StackPanel>
                                         </Grid>
                                     </Grid>
