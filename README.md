@@ -20,4 +20,6 @@
 
 ![详细](/Assets/detail.png)
 
-![详细](/Assets/log.png)
+![监控](/Assets/monitor.png)
+
+![筛选](/Assets/filter.png)
