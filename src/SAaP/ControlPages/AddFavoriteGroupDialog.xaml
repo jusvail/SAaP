@@ -1,0 +1,26 @@
+﻿<Page
+    x:Class="SAaP.ControlPages.AddFavoriteGroupDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <Grid HorizontalAlignment="Left" Margin="5" Padding="5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <ComboBox x:Name="FavoriteListSelect"  TextSubmitted="FavoriteListSelect_OnTextSubmitted"
+                          ItemsSource="{x:Bind GroupNames}"  Margin="2"
+                          SelectedIndex="{x:Bind FavoriteListSelectSelectIndex,Mode=TwoWay}"/>
+            <CheckBox x:Name="CreateNew" Content="新建分组" Margin="5 2"
+                      IsChecked="{x:Bind CreateNewChecked,Mode=TwoWay}"
+                      Unchecked="CreateNew_OnUnchecked"
+                      Checked="CreateNew_OnChecked"/>
+        </StackPanel>
+        <Grid Grid.Row="1" Margin="2" HorizontalAlignment="Left" MinHeight="30">
+            <TextBox x:Name="NewGroupName" MinWidth="250" Visibility="Collapsed" Text="{x:Bind GroupName,Mode=TwoWay}"/>
+        </Grid>
+    </Grid>
+</Page>

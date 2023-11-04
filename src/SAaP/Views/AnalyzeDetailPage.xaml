@@ -1,0 +1,524 @@
+﻿<Page
+	x:Class="SAaP.Views.AnalyzeDetailPage"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:controlPages="using:SAaP.ControlPages"
+	xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:helper="using:SAaP.Helper"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:models="using:SAaP.Models"
+	mc:Ignorable="d">
+
+	<Page.Resources>
+		<helper:ReverseBooleanConverter x:Key="ReverseBooleanConverter" />
+		<helper:CheckedToEnabledConverter x:Key="CheckedToEnabledConverter" />
+		<helper:ComparerCheckConverter x:Key="ComparerCheckConverter" />
+		<helper:ProfitColorConverter x:Key="ProfitColorConverter" />
+		<helper:ProfitPercentColorConverter x:Key="ProfitPercentColorConverter" />
+		<helper:OverpriceColorConverter x:Key="OverpriceColorConverter" />
+		<helper:ProfitWeightConverter x:Key="ProfitWeightConverter" />
+		<helper:ProfitPercentWeightConverter x:Key="ProfitPercentWeightConverter" />
+		<helper:AddPercentConverter x:Key="AddPercentConverter" />
+		<helper:DefaultProfitColorConverter x:Key="DefaultProfitColorConverter" />
+		<helper:MoneyFormatConverter x:Key="MoneyFormatConverter" />
+
+		<DataTemplate x:Key="HistoryDetailDataTemplate" x:DataType="models:InDayDetail">
+			<Grid>
+				<Grid
+					MinWidth="130"
+					MinHeight="130"
+					Margin="2">
+					<Grid.Resources>
+						<Style TargetType="TextBlock">
+							<Setter Property="Margin" Value="1.5,0,0,0" />
+							<Setter Property="HorizontalAlignment" Value="Left" />
+							<Setter Property="VerticalAlignment" Value="Center" />
+							<Setter Property="FontSize" Value="12" />
+						</Style>
+					</Grid.Resources>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="*" />
+						<RowDefinition Height="*" />
+						<RowDefinition Height="*" />
+					</Grid.RowDefinitions>
+					<Grid Grid.Row="0">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
+						<Grid Grid.Column="0">
+							<TextBlock Text="{x:Bind Day, Mode=OneWay}" />
+						</Grid>
+						<Grid
+							Grid.Column="1"
+							Margin="{StaticResource XXSmallLeftMargin}"
+							HorizontalAlignment="Left">
+							<TextBlock
+								FontSize="12"
+								FontStyle="Italic"
+								Text="{x:Bind DayOfWeek, Mode=OneWay}" />
+						</Grid>
+					</Grid>
+					<Grid Grid.Row="1">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
+						<Grid Grid.Column="0">
+							<StackPanel>
+								<TextBlock Text="开盘:" />
+								<TextBlock Text="{x:Bind Opening, Mode=OneWay}" />
+							</StackPanel>
+						</Grid>
+
+						<Grid Grid.Column="1">
+							<StackPanel>
+								<TextBlock Text="收盘:" />
+								<TextBlock Text="{x:Bind Ending, Mode=OneWay}" />
+							</StackPanel>
+						</Grid>
+
+						<Grid Grid.Column="2">
+							<StackPanel>
+								<TextBlock Text="最高:" />
+								<TextBlock Text="{x:Bind High, Mode=OneWay}" />
+							</StackPanel>
+						</Grid>
+					</Grid>
+					<Grid Grid.Row="2">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
+						<Grid Grid.Column="0">
+							<StackPanel>
+								<TextBlock Text="涨幅:" />
+								<TextBlock Foreground="{x:Bind Zd, Mode=OneWay, Converter={StaticResource DefaultProfitColorConverter}}" Text="{x:Bind Zd, Mode=OneWay, Converter={StaticResource AddPercentConverter}}" />
+							</StackPanel>
+						</Grid>
+
+						<Grid Grid.Column="1">
+							<StackPanel>
+								<TextBlock Text="振幅:" />
+								<TextBlock Text="{x:Bind Zf, Mode=OneWay, Converter={StaticResource AddPercentConverter}}" />
+							</StackPanel>
+						</Grid>
+
+						<Grid Grid.Column="2">
+							<StackPanel>
+								<TextBlock Text="最低:" />
+								<TextBlock Text="{x:Bind Low, Mode=OneWay}" />
+							</StackPanel>
+						</Grid>
+					</Grid>
+					<Grid Grid.Row="3">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="2*" />
+						</Grid.ColumnDefinitions>
+						<Grid Grid.Column="0">
+							<StackPanel>
+								<TextBlock Text="溢价:" />
+								<TextBlock Foreground="{x:Bind Op, Mode=OneWay, Converter={StaticResource DefaultProfitColorConverter}}" Text="{x:Bind Op, Mode=OneWay, Converter={StaticResource AddPercentConverter}}" />
+							</StackPanel>
+						</Grid>
+
+						<Grid Grid.Column="1">
+							<StackPanel>
+								<TextBlock Text="成交量:" />
+								<TextBlock Text="{x:Bind Volume, Mode=OneWay, Converter={StaticResource MoneyFormatConverter}}" />
+							</StackPanel>
+						</Grid>
+					</Grid>
+				</Grid>
+				<Rectangle
+					HorizontalAlignment="Stretch"
+					VerticalAlignment="Stretch"
+					Fill="{x:Bind Zd, Mode=OneWay, Converter={StaticResource DefaultProfitColorConverter}}"
+					Opacity="0.1"
+					RadiusX="5"
+					RadiusY="5"
+					Stretch="Fill" />
+			</Grid>
+		</DataTemplate>
+
+	</Page.Resources>
+
+	<Grid
+		Margin="5,0,5,0"
+		BorderBrush="{StaticResource DefaultBorderBrush}"
+		BorderThickness="1"
+		CornerRadius="5">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="auto" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+		<Grid Margin="2">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" MinWidth="200" />
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
+			<StackPanel
+				Grid.Column="0"
+				Margin="10"
+				Padding="10"
+				HorizontalAlignment="Center"
+				VerticalAlignment="Center"
+				BorderBrush="{StaticResource DefaultBorderBrush}"
+				BorderThickness="1"
+				CornerRadius="5">
+				<StackPanel.Resources>
+					<Style TargetType="RadioButton">
+						<Setter Property="Margin" Value="15,0,-20,0" />
+					</Style>
+				</StackPanel.Resources>
+				<StackPanel Margin="10">
+					<StackPanel>
+						<ToggleSwitch
+							x:Name="CustomRange"
+							Header="自定义时间段："
+							IsOn="{x:Bind ViewModel.IsCustomRangeOn, Mode=TwoWay}"
+							OffContent="否"
+							OnContent="是"
+							Toggled="CustomRange_OnToggled" />
+					</StackPanel>
+					<StackPanel Orientation="Horizontal">
+						<CalendarDatePicker
+							x:Name="PickerStart"
+							Date="{x:Bind ViewModel.CustomDateStart, Mode=TwoWay}"
+							IsEnabled="False" />
+						<TextBlock
+							Margin="5,0"
+							VerticalAlignment="Center"
+							Text="~" />
+						<CalendarDatePicker
+							x:Name="PickerEnd"
+							Date="{x:Bind ViewModel.CustomDateEnd, Mode=TwoWay}"
+							IsEnabled="False" />
+					</StackPanel>
+					<TextBlock Margin="5" Text="比较对象：" />
+					<StackPanel Orientation="Horizontal">
+						<RadioButton
+							x:Name="ShComparer"
+							Content="上证指数"
+							IsChecked="{x:Bind ViewModel.ComparerCheck, Converter={StaticResource ComparerCheckConverter}, ConverterParameter=1, Mode=TwoWay}"
+							Tag="1" />
+						<RadioButton
+							x:Name="SzComparer"
+							Content="深圳指数"
+							IsChecked="{x:Bind ViewModel.ComparerCheck, Converter={StaticResource ComparerCheckConverter}, ConverterParameter=0, Mode=TwoWay}"
+							Tag="0" />
+					</StackPanel>
+					<StackPanel Orientation="Horizontal">
+						<RadioButton
+							x:Name="OtherCk"
+							Content="其他"
+							IsChecked="{x:Bind ViewModel.ComparerCheck, Converter={StaticResource ComparerCheckConverter}, ConverterParameter=2, Mode=TwoWay}"
+							Tag="2" />
+						<TextBox
+							x:Name="OtherComparer"
+							MinWidth="110"
+							Margin="-10,0,0,0"
+							IsEnabled="{x:Bind OtherCk.IsChecked, Converter={StaticResource CheckedToEnabledConverter}, Mode=OneWay}"
+							Text="{x:Bind ViewModel.OtherComparer, Mode=TwoWay}" />
+					</StackPanel>
+					<TextBlock Margin="5" Text="比较项目：" />
+					<StackPanel Orientation="Horizontal">
+						<RadioButton Content="涨跌" IsChecked="{x:Bind ViewModel.ComparerModeCheck, Converter={StaticResource ComparerCheckConverter}, ConverterParameter=0, Mode=TwoWay}" />
+						<RadioButton Content="溢价" IsChecked="{x:Bind ViewModel.ComparerModeCheck, Converter={StaticResource ComparerCheckConverter}, ConverterParameter=1, Mode=TwoWay}" />
+					</StackPanel>
+				</StackPanel>
+			</StackPanel>
+			<Grid
+				Grid.Column="1"
+				Margin="0,5,5,5"
+				Padding="10"
+				BorderBrush="{StaticResource DefaultBorderBrush}"
+				BorderThickness="1"
+				CornerRadius="5">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="*" />
+				</Grid.ColumnDefinitions>
+				<Grid Grid.Column="0">
+					<Grid.RowDefinitions>
+						<RowDefinition Height="auto" />
+						<RowDefinition Height="*" />
+					</Grid.RowDefinitions>
+					<Grid Grid.Row="0" Margin="0,5,0,10">
+						<StackPanel Orientation="Horizontal">
+							<TextBlock VerticalAlignment="Center" Text="近" />
+							<ComboBox
+								x:Name="CompareRelation"
+								Margin="2"
+								IsEditable="True"
+								ItemsSource="{x:Bind ViewModel.DefaultDuration}"
+								SelectedIndex="{x:Bind ViewModel.SelectedCompareRelationIndex, Mode=TwoWay}"
+								SelectionChanged="CompareRelation_OnSelectionChanged"
+								Text="{x:Bind ViewModel.SelectedCompareRelationValue, Mode=TwoWay}" />
+							<TextBlock VerticalAlignment="Center" Text="交易日同期正关联度:" />
+							<HyperlinkButton
+								Command="{x:Bind ViewModel.AnalyzeStartCommand}"
+								CommandParameter="{x:Bind MainCan}"
+								Content="查询"
+								IsEnabled="{x:Bind ViewModel.AnalyzeStartCommand.IsRunning, Converter={StaticResource ReverseBooleanConverter}, Mode=OneWay}" />
+							<TextBlock VerticalAlignment="Center" Text="{x:Bind ViewModel.RelationPercent, Mode=OneWay}" />
+						</StackPanel>
+					</Grid>
+					<Grid Grid.Row="1" HorizontalAlignment="Left">
+						<Canvas
+							x:Name="MainCan"
+							Width="640"
+							Height="280"
+							Background="{ThemeResource LayerFillColorDefaultBrush}" />
+					</Grid>
+				</Grid>
+
+				<Grid Grid.Column="1" Margin="5">
+					<Grid.Resources>
+						<Style TargetType="StackPanel">
+							<Setter Property="HorizontalAlignment" Value="Center" />
+							<Setter Property="VerticalAlignment" Value="Center" />
+						</Style>
+					</Grid.Resources>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="*" />
+					</Grid.ColumnDefinitions>
+
+					<controlPages:WeeklyReportRow
+						x:Name="AnalyzeReport"
+						Grid.Column="0"
+						ReportSummary="{x:Bind ViewModel.AnalyzeWeeklySummary, Mode=OneWay}" />
+					<controlPages:BackgroundTransparentColoredRectangle Grid.Column="0" />
+					<controlPages:WeeklyReportRow
+						x:Name="CompareReport"
+						Grid.Column="1"
+						ReportSummary="{x:Bind ViewModel.CompareWeeklySummary, Mode=OneWay}" />
+					<controlPages:BackgroundTransparentColoredRectangle Grid.Column="1" Margin="{StaticResource XXSmallLeftMargin}" />
+				</Grid>
+			</Grid>
+		</Grid>
+
+		<Grid Grid.Row="1" HorizontalAlignment="Center">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
+			<Grid Grid.Column="0" Margin="{StaticResource DefaultGridBorderPadding}">
+				<GridView
+					ItemTemplate="{StaticResource HistoryDetailDataTemplate}"
+					ItemsSource="{x:Bind ViewModel.AnalyzeDayDetails}"
+					SelectionMode="Extended">
+					<GridView.ItemsPanel>
+						<ItemsPanelTemplate>
+							<ItemsWrapGrid MaximumRowsOrColumns="5" Orientation="Horizontal" />
+						</ItemsPanelTemplate>
+					</GridView.ItemsPanel>
+
+				</GridView>
+			</Grid>
+			<Grid Grid.Column="1" Margin="{StaticResource DefaultGridBorderPadding}">
+				<GridView
+					ItemTemplate="{StaticResource HistoryDetailDataTemplate}"
+					ItemsSource="{x:Bind ViewModel.CompareDayDetails}"
+					SelectionMode="Extended">
+					<GridView.ItemsPanel>
+						<ItemsPanelTemplate>
+							<ItemsWrapGrid MaximumRowsOrColumns="5" Orientation="Horizontal" />
+						</ItemsPanelTemplate>
+					</GridView.ItemsPanel>
+				</GridView>
+			</Grid>
+		</Grid>
+
+		<Grid Grid.Row="2">
+			<controls:DataGrid
+				x:Name="AnalyzeResultGrid"
+				Margin="0,5"
+				HorizontalAlignment="Stretch"
+				VerticalAlignment="Stretch"
+				AutoGenerateColumns="False"
+				CanUserReorderColumns="True"
+				CanUserResizeColumns="True"
+				CanUserSortColumns="True"
+				ColumnHeaderHeight="32"
+				FrozenColumnCount="0"
+				GridLinesVisibility="Horizontal"
+				HeadersVisibility="Column"
+				HorizontalScrollBarVisibility="Visible"
+				IsReadOnly="True"
+				ItemsSource="{x:Bind ViewModel.AnalyzedResults, Mode=OneWay}"
+				MaxColumnWidth="400"
+				RowGroupHeaderPropertyNameAlternative="Range"
+				SelectionMode="Extended"
+				Sorting="DataGrid_OnSorting"
+				VerticalScrollBarVisibility="Visible">
+				<controls:DataGrid.Resources>
+					<SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor" Color="Transparent" />
+				</controls:DataGrid.Resources>
+				<controls:DataGrid.Columns>
+					<controls:DataGridTextColumn
+						Binding="{Binding Duration}"
+						Header="LND"
+						Tag="Duration" />
+					<controls:DataGridTemplateColumn Header="op%" Tag="OverPricedPercent">
+						<controls:DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<TextBlock
+									FontWeight="{Binding OverPricedPercent, Converter={StaticResource OverpriceColorConverter}, Mode=OneWay}"
+									Foreground="{Binding OverPricedPercent, Converter={StaticResource OverpriceColorConverter}, Mode=OneWay}"
+									Style="{StaticResource DataGridCellStyle}"
+									Text="{Binding OverPricedPercent}" />
+							</DataTemplate>
+						</controls:DataGridTemplateColumn.CellTemplate>
+					</controls:DataGridTemplateColumn>
+					<controls:DataGridTextColumn
+						Binding="{Binding OverPricedDays}"
+						Header="opD"
+						Tag="OverPricedDays" />
+					<controls:DataGridTemplateColumn Header="1%+op%" Tag="OverPricedPercentHigherThan1P">
+						<controls:DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<TextBlock
+									FontWeight="{Binding OverPricedPercentHigherThan1P, Converter={StaticResource OverpriceColorConverter}, Mode=OneWay}"
+									Foreground="{Binding OverPricedPercentHigherThan1P, Converter={StaticResource OverpriceColorConverter}, Mode=OneWay}"
+									Style="{StaticResource DataGridCellStyle}"
+									Text="{Binding OverPricedPercentHigherThan1P}" />
+							</DataTemplate>
+						</controls:DataGridTemplateColumn.CellTemplate>
+					</controls:DataGridTemplateColumn>
+					<controls:DataGridTextColumn
+						Binding="{Binding OverPricedDaysHigherThan1P}"
+						Header="1%+opD"
+						Tag="OverPricedDaysHigherThan1P" />
+					<controls:DataGridTemplateColumn Header="+avop%" Tag="AverageOverPricedPercent">
+						<controls:DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<TextBlock
+									FontWeight="{Binding AverageOverPricedPercent, Converter={StaticResource ProfitPercentWeightConverter}, Mode=OneWay}"
+									Foreground="{Binding AverageOverPricedPercent, Converter={StaticResource ProfitPercentColorConverter}, Mode=OneWay}"
+									Style="{StaticResource DataGridCellStyle}"
+									Text="{Binding AverageOverPricedPercent}" />
+							</DataTemplate>
+						</controls:DataGridTemplateColumn.CellTemplate>
+					</controls:DataGridTemplateColumn>
+					<controls:DataGridTemplateColumn Header="1%+avop%" Tag="AverageOverPricedPercentHigherThan1P">
+						<controls:DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<TextBlock
+									FontWeight="{Binding AverageOverPricedPercentHigherThan1P, Converter={StaticResource ProfitPercentWeightConverter}, Mode=OneWay}"
+									Foreground="{Binding AverageOverPricedPercentHigherThan1P, Converter={StaticResource ProfitPercentColorConverter}, Mode=OneWay}"
+									Style="{StaticResource DataGridCellStyle}"
+									Text="{Binding AverageOverPricedPercentHigherThan1P}" />
+							</DataTemplate>
+						</controls:DataGridTemplateColumn.CellTemplate>
+					</controls:DataGridTemplateColumn>
+					<controls:DataGridTemplateColumn Header="1%+sp获利" Tag="StopProfitWith1P">
+						<controls:DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<TextBlock
+									FontWeight="{Binding StopProfitWith1P, Converter={StaticResource ProfitWeightConverter}, Mode=OneWay}"
+									Foreground="{Binding StopProfitWith1P, Converter={StaticResource ProfitColorConverter}, Mode=OneWay}"
+									Style="{StaticResource DataGridCellStyle}"
+									Text="{Binding StopProfitWith1P}" />
+							</DataTemplate>
+						</controls:DataGridTemplateColumn.CellTemplate>
+					</controls:DataGridTemplateColumn>
+					<controls:DataGridTemplateColumn Header="2%+sp获利" Tag="StopProfitWith2P">
+						<controls:DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<TextBlock
+									FontWeight="{Binding StopProfitWith2P, Converter={StaticResource ProfitWeightConverter}, Mode=OneWay}"
+									Foreground="{Binding StopProfitWith2P, Converter={StaticResource ProfitColorConverter}, Mode=OneWay}"
+									Style="{StaticResource DataGridCellStyle}"
+									Text="{Binding StopProfitWith2P}" />
+							</DataTemplate>
+						</controls:DataGridTemplateColumn.CellTemplate>
+					</controls:DataGridTemplateColumn>
+					<controls:DataGridTemplateColumn Header="3%+sp获利" Tag="StopProfitWith3P">
+						<controls:DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<TextBlock
+									FontWeight="{Binding StopProfitWith3P, Converter={StaticResource ProfitWeightConverter}, Mode=OneWay}"
+									Foreground="{Binding StopProfitWith3P, Converter={StaticResource ProfitColorConverter}, Mode=OneWay}"
+									Style="{StaticResource DataGridCellStyle}"
+									Text="{Binding StopProfitWith3P}" />
+							</DataTemplate>
+						</controls:DataGridTemplateColumn.CellTemplate>
+					</controls:DataGridTemplateColumn>
+					<controls:DataGridTemplateColumn Header="躺平获利" Tag="NoActionProfit">
+						<controls:DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<TextBlock
+									FontWeight="{Binding NoActionProfit, Converter={StaticResource ProfitWeightConverter}, Mode=OneWay}"
+									Foreground="{Binding NoActionProfit, Converter={StaticResource ProfitColorConverter}, Mode=OneWay}"
+									Style="{StaticResource DataGridCellStyle}"
+									Text="{Binding NoActionProfit}" />
+							</DataTemplate>
+						</controls:DataGridTemplateColumn.CellTemplate>
+					</controls:DataGridTemplateColumn>
+					<controls:DataGridTextColumn
+						Binding="{Binding BestStopProfit}"
+						Header="Bsp"
+						Tag="BestStopProfit" />
+					<controls:DataGridTemplateColumn Header="Bsp获利" Tag="BestEarnings">
+						<controls:DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<TextBlock
+									FontWeight="{Binding BestEarnings, Converter={StaticResource ProfitWeightConverter}, Mode=OneWay}"
+									Foreground="{Binding BestEarnings, Converter={StaticResource ProfitColorConverter}, Mode=OneWay}"
+									Style="{StaticResource DataGridCellStyle}"
+									Text="{Binding BestEarnings}" />
+							</DataTemplate>
+						</controls:DataGridTemplateColumn.CellTemplate>
+					</controls:DataGridTemplateColumn>
+					<controls:DataGridTextColumn
+						Binding="{Binding FirstTradingDay}"
+						Header="std"
+						Tag="FirstTradingDay" />
+					<controls:DataGridTextColumn
+						Binding="{Binding LastTradingDay}"
+						Header="ltd"
+						Tag="LastTradingDay" />
+					<controls:DataGridTextColumn
+						Binding="{Binding MaxContinueOverPricedDay}"
+						Header="mc+opD"
+						Tag="MaxContinueOverPricedDay" />
+					<controls:DataGridTextColumn
+						Binding="{Binding MaxContinueMinusOverPricedDay}"
+						Header="mc-opD"
+						Tag="MaxContinueMinusOverPricedDay" />
+					<controls:DataGridTextColumn
+						Binding="{Binding AverageAmplitude}"
+						Header="平均振幅"
+						Tag="AverageAmplitude" />
+					<controls:DataGridTextColumn
+						Binding="{Binding MedianAmplitude}"
+						Header="中位振幅"
+						Tag="MedianAmplitude" />
+					<controls:DataGridTextColumn
+						Binding="{Binding MinimalAmplitude}"
+						Header="最小振幅"
+						Tag="MinimalAmplitude" />
+					<controls:DataGridTextColumn
+						Binding="{Binding MaxAmplitude}"
+						Header="最大振幅"
+						Tag="MaxAmplitude" />
+					<!-- <controls:DataGridTemplateColumn Header="评价"> -->
+					<!--     <controls:DataGridTemplateColumn.CellTemplate> -->
+					<!--         <DataTemplate> -->
+					<!--             <HyperlinkButton Content="{Binding Evaluate}" /> -->
+					<!--         </DataTemplate> -->
+					<!--     </controls:DataGridTemplateColumn.CellTemplate> -->
+					<!-- </controls:DataGridTemplateColumn> -->
+				</controls:DataGrid.Columns>
+			</controls:DataGrid>
+		</Grid>
+	</Grid>
+</Page>

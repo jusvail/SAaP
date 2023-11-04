@@ -1,0 +1,217 @@
+<Page
+	x:Class="SAaP.Views.StatisticsPage"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:helper="using:SAaP.Helper"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d">
+
+	<Page.Resources>
+
+		<helper:DateSliderConverter x:Key="DateSliderConverter" />
+		<helper:DoubleToStringConverter x:Key="DoubleToStringConverter" />
+	</Page.Resources>
+
+	<Grid>
+		<Grid.Resources>
+			<Style TargetType="TextBlock">
+				<Setter Property="VerticalAlignment" Value="Center" />
+				<Setter Property="HorizontalAlignment" Value="Center" />
+				<Setter Property="Margin" Value="5" />
+			</Style>
+			<Style TargetType="Slider">
+				<Setter Property="HorizontalAlignment" Value="Center" />
+				<Setter Property="VerticalAlignment" Value="Center" />
+			</Style>
+		</Grid.Resources>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+		<Grid
+			Grid.Row="0"
+			Margin="{StaticResource MainGridThickness}"
+			Padding="{StaticResource DefaultGridBorderPadding}">
+			<Grid Padding="{StaticResource DefaultGridBorderPadding}">
+				<Grid.Resources>
+					<Style TargetType="Slider">
+						<Setter Property="Margin" Value="15,0" />
+						<Setter Property="Maximum" Value="300" />
+						<Setter Property="Minimum" Value="0" />
+						<Setter Property="SnapsTo" Value="StepValues" />
+						<Setter Property="TickFrequency" Value="15" />
+						<Setter Property="TickPlacement" Value="Outside" />
+					</Style>
+				</Grid.Resources>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="3*" />
+					<ColumnDefinition Width="7*" />
+				</Grid.ColumnDefinitions>
+				<StackPanel
+					VerticalAlignment="Center"
+					BorderBrush="{StaticResource DefaultBorderBrush}"
+					BorderThickness="1"
+					CornerRadius="5">
+					<StackPanel Orientation="Horizontal">
+						<TextBlock Text="任务    名: " />
+						<TextBlock Text="{x:Bind ViewModel.TaskDetail.TaskName}" />
+					</StackPanel>
+					<StackPanel Orientation="Horizontal">
+						<TextBlock Text="任务详细: " />
+						<TextBlock
+							MaxWidth="250"
+							Text="{x:Bind ViewModel.TaskDetail.TaskDetail}"
+							TextWrapping="Wrap" />
+					</StackPanel>
+					<!-- <StackPanel Orientation="Horizontal"> -->
+					<!-- 	<TextBlock Text="任务内容: " /> -->
+					<!-- 	<TextBlock Text="{x:Bind ViewModel.TaskDetail.ConditionDetail}" /> -->
+					<!-- </StackPanel> -->
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
+						<TextBlock Text="开始日期: " />
+						<CalendarDatePicker
+							Grid.Column="1"
+							Width="120"
+							Date="{x:Bind ViewModel.TaskDetail.StartDate, Mode=TwoWay}" />
+						<Slider Grid.Column="2" Value="{x:Bind ViewModel.TaskDetail.StartDate, Mode=TwoWay, Converter={StaticResource DateSliderConverter}, ConverterParameter=1}" />
+					</Grid>
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
+						<TextBlock Text="截至日期: " />
+						<CalendarDatePicker
+							Grid.Column="1"
+							Width="120"
+							Date="{x:Bind ViewModel.TaskDetail.EndDate, Mode=TwoWay}" />
+						<Slider Grid.Column="2" Value="{x:Bind ViewModel.TaskDetail.EndDate, Mode=TwoWay, Converter={StaticResource DateSliderConverter}, ConverterParameter=1}" />
+					</Grid>
+					<StackPanel Orientation="Horizontal">
+						<Button
+							Margin="{StaticResource DefaultFirstButtonMargin}"
+							Command="{x:Bind ViewModel.AnalysisPressedCommand}"
+							CommandParameter="{x:Bind MainCan}"
+							Content="{x:Bind ViewModel.AnalysisBtnStatus, Mode=OneWay}"
+							Style="{StaticResource AccentButtonStyle}" />
+						<ProgressRing
+							Margin="2"
+							HorizontalAlignment="Left"
+							IsActive="{x:Bind ViewModel.AnalysisStarted, Mode=OneWay}" />
+						<TextBlock
+							HorizontalAlignment="Left"
+							VerticalAlignment="Center"
+							Text="{x:Bind ViewModel.CurrentStatus, Mode=OneWay}" />
+					</StackPanel>
+				</StackPanel>
+				<Grid Grid.Column="1">
+					<TextBox
+						x:Name="CodeInput"
+						MaxHeight="210"
+						Margin="10,0,0,0"
+						AcceptsReturn="True"
+						AllowFocusOnInteraction="True"
+						AutomationProperties.Name="multi-line TextBox"
+						Language="zh-CN"
+						LostFocus="OnCodeInputLostFocusEventHandler"
+						PlaceholderText="多个代码请用空格或逗号分隔"
+						SelectionHighlightColor="Green"
+						Text="{x:Bind ViewModel.CodeInput, Mode=TwoWay}"
+						TextWrapping="Wrap" />
+				</Grid>
+			</Grid>
+		</Grid>
+		<Grid
+			Grid.Row="1"
+			Margin="5,-5,5,5"
+			Padding="10">
+			<Grid
+				BorderBrush="{StaticResource DefaultBorderBrush}"
+				BorderThickness="1"
+				CornerRadius="5">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*" />
+					<ColumnDefinition Width="*" />
+					<ColumnDefinition Width="*" />
+				</Grid.ColumnDefinitions>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="*" />
+					<RowDefinition Height="*" />
+					<RowDefinition Height="*" />
+				</Grid.RowDefinitions>
+				<StackPanel Grid.ColumnSpan="3" Orientation="Horizontal">
+					<TextBlock Text="期望涨幅(%)： " />
+					<Grid Margin="5">
+						<TextBox Text="{x:Bind ViewModel.TaskDetail.ExpectedProfit, Mode=TwoWay, Converter={StaticResource DoubleToStringConverter}}" />
+					</Grid>
+					<Slider
+						MinWidth="100"
+						Maximum="100"
+						Minimum="10"
+						SnapsTo="StepValues"
+						StepFrequency="5"
+						TickFrequency="5"
+						TickPlacement="BottomRight"
+						Value="{x:Bind ViewModel.TaskDetail.ExpectedProfit, Mode=TwoWay}" />
+					<StackPanel Orientation="Horizontal">
+						<StackPanel.Resources>
+							<Style TargetType="Slider">
+								<Setter Property="Maximum" Value="300" />
+								<Setter Property="Minimum" Value="50" />
+								<Setter Property="MinWidth" Value="100" />
+								<Setter Property="SnapsTo" Value="StepValues" />
+								<Setter Property="TickFrequency" Value="10" />
+								<Setter Property="StepFrequency" Value="10" />
+								<Setter Property="TickPlacement" Value="Outside" />
+								<Setter Property="HorizontalAlignment" Value="Center" />
+								<Setter Property="VerticalAlignment" Value="Center" />
+							</Style>
+						</StackPanel.Resources>
+						<TextBlock Margin="5,0,0,0" Text="前期涨幅(%)： " />
+						<Grid Margin="5">
+							<TextBox Text="{x:Bind ViewModel.TaskDetail.PullUpBeforeStart, Mode=TwoWay, Converter={StaticResource DoubleToStringConverter}}" />
+						</Grid>
+						<TextBlock Text="~" />
+						<Grid Margin="5">
+							<TextBox Text="{x:Bind ViewModel.TaskDetail.PullUpBeforeEnd, Mode=TwoWay, Converter={StaticResource DoubleToStringConverter}}" />
+						</Grid>
+						<Slider Margin="5,0" Value="{x:Bind ViewModel.TaskDetail.PullUpBeforeStart, Mode=TwoWay}" />
+						<TextBlock Text="~" />
+						<Slider Value="{x:Bind ViewModel.TaskDetail.PullUpBeforeEnd, Mode=TwoWay}" />
+					</StackPanel>
+				</StackPanel>
+				<StackPanel
+					Grid.Row="1"
+					Grid.Column="0"
+					Orientation="Horizontal">
+					<TextBlock Margin="5,0,35,0" Text="纵坐标：" />
+					<ComboBox
+						Width="200"
+						Margin="10,0,0,5"
+						ItemsSource="{x:Bind ViewModel.TaskDetail.YAxis}"
+						SelectedIndex="{x:Bind ViewModel.TaskDetail.SelectedYAxis, Mode=TwoWay}" />
+				</StackPanel>
+			</Grid>
+		</Grid>
+		<Grid Grid.Row="2">
+			<Grid
+				BorderBrush="{StaticResource DefaultBorderBrush}"
+				BorderThickness="1"
+				CornerRadius="5">
+				<Canvas
+					x:Name="MainCan"
+					Width="800"
+					Height="320"
+					Background="{ThemeResource LayerFillColorDefaultBrush}" />
+			</Grid>
+		</Grid>
+	</Grid>
+</Page>

@@ -1,0 +1,61 @@
+﻿<UserControl
+    x:Class="SAaP.ControlPages.TradeListRow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controlPages="using:SAaP.ControlPages"
+    xmlns:helper="using:SAaP.Helper"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <helper:DateTimeToYearMonthDayFormatConverter x:Key="DateTimeToYearMonthDayFormatConverter" />
+    </UserControl.Resources>
+
+    <Grid DoubleTapped="TradeListRow_OnDoubleTapped">
+        <Grid.Resources>
+            <Style TargetType="TextBlock">
+                <Setter Property="FontSize" Value="{ThemeResource DefaultHeaderFontSize}"></Setter>
+            </Style>
+        </Grid.Resources>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="4*"/>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="4*"/>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0" Style="{StaticResource GdStyle}">
+            <TextBlock Text="{x:Bind InvestDetail.TradeDate,
+                        Mode=OneWay,
+                        Converter={StaticResource DateTimeToYearMonthDayFormatConverter}}" />
+        </Grid>
+        <Grid Grid.Column="1" Style="{StaticResource GdStyle}">
+            <TextBlock Text="{x:Bind InvestDetail.TradeTime, Mode=OneWay}" />
+        </Grid>
+        <Grid Grid.Column="2" Style="{StaticResource GdStyle}">
+            <TextBlock Text="{x:Bind InvestDetail.TradeType, Mode=OneWay}" />
+        </Grid>
+        <Grid Grid.Column="3" Style="{StaticResource GdStyle}">
+            <TextBlock Text="{x:Bind InvestDetail.Price, Mode=OneWay}" />
+        </Grid>
+        <Button Grid.Column="3" Height="0" Width="0"
+                x:Name="HdFlyOutButton">
+            <Button.Flyout>
+                <Flyout>
+                    <controlPages:AddToTradeListDialog x:Name="AddToTradeListDialog"
+                                                       Sender="{x:Bind HdFlyOutButton}"
+                                                       InvestDetail="{x:Bind InvestDetail}"/>
+                </Flyout>
+            </Button.Flyout>
+        </Button>
+        <Grid Grid.Column="4" Style="{StaticResource GdStyle}">
+            <TextBlock Text="{x:Bind InvestDetail.Volume, Mode=OneWay}" />
+        </Grid>
+        <Grid Grid.Column="5" Style="{StaticResource GdStyle}">
+            <TextBlock Text="{x:Bind InvestDetail.Amount, Mode=OneWay}" />
+        </Grid>
+    </Grid>
+</UserControl>

@@ -1,0 +1,859 @@
+﻿<Page
+	x:Class="SAaP.Views.MainPage"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:analyst="using:SAaP.Core.Models.Analyst"
+	xmlns:animatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+	xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:db="using:SAaP.Core.Models.DB"
+	xmlns:helpers="using:SAaP.Helper"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:models="using:SAaP.Core.Models"
+	mc:Ignorable="d">
+
+	<Page.Resources>
+		<helpers:DateTimeToRegularFormatConverter x:Key="SimplifyDateTimeConverter" />
+		<helpers:CodeNameFormatConverter x:Key="CodeNameFormatConverter" />
+		<helpers:ReverseBooleanConverter x:Key="ReverseBooleanConverter" />
+		<helpers:ReverseVisibilityConverter x:Key="ReverseVisibilityConverter" />
+		<helpers:ProfitColorConverter x:Key="ProfitColorConverter" />
+		<helpers:ProfitPercentColorConverter x:Key="ProfitPercentColorConverter" />
+		<helpers:OverpriceColorConverter x:Key="OverpriceColorConverter" />
+		<helpers:ProfitWeightConverter x:Key="ProfitWeightConverter" />
+		<helpers:ProfitPercentWeightConverter x:Key="ProfitPercentWeightConverter" />
+		<helpers:SimplifySearchStringConverter x:Key="SimplifySearchStringConverter" />
+		<DataTemplate x:Key="FavoriteListViewTemplate" x:DataType="models:FavoriteDetail">
+			<Grid DoubleTapped="FavoriteListItem_OnDoubleTapped" IsDoubleTapEnabled="True">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="*" />
+					<RowDefinition Height="*" />
+				</Grid.RowDefinitions>
+				<TextBlock
+					Grid.Row="0"
+					Margin="5,2,0,0"
+					x:Phase="1"
+					FontWeight="Bold"
+					Text="{x:Bind CompanyName}" />
+				<HyperlinkButton
+					Grid.Row="1"
+					Margin="-7,0,0,2"
+					x:Phase="2"
+					Click="CodeNameCell_OnClick"
+					Content="{x:Bind CodeName, Converter={StaticResource CodeNameFormatConverter}}" />
+			</Grid>
+		</DataTemplate>
+		<DataTemplate x:Key="ActivityTemplate" x:DataType="db:ActivityData">
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="*" />
+					<RowDefinition Height="*" />
+				</Grid.RowDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*" />
+				</Grid.ColumnDefinitions>
+				<TextBlock
+					Grid.Row="0"
+					Margin="5,6,0,0"
+					x:Phase="1"
+					FontWeight="Bold"
+					Text="{x:Bind Date, Converter={StaticResource SimplifyDateTimeConverter}}" />
+				<TextBlock
+					Grid.Row="1"
+					Margin="5,0,0,6"
+					x:Phase="2"
+					Text="{x:Bind QueryString, Converter={StaticResource SimplifySearchStringConverter}}" />
+			</Grid>
+		</DataTemplate>
+		<!-- <x:String x:Key="SortIconAscending">&#xE74A;</x:String> -->
+		<!-- <x:String x:Key="SortIconDescending">&#xE74B;</x:String> -->
+		<!-- <Style TargetType="primitives:DataGridColumnHeader"> -->
+		<!--     <Setter Property="HorizontalContentAlignment" Value="Stretch"/> -->
+		<!--     <Setter Property="VerticalContentAlignment" Value="Center"/> -->
+		<!--     <Setter Property="Padding" Value="6,0,0,0"/> -->
+		<!--     <Setter Property="FontSize" Value="12"/> -->
+		<!--     <Setter Property="MinHeight" Value="32"/> -->
+		<!--     <Setter Property="Template"> -->
+		<!--         <Setter.Value> -->
+		<!--             <ControlTemplate TargetType="primitives:DataGridColumnHeader"> -->
+		<!--                 <Grid x:Name="ColumnHeaderRoot"> -->
+		<!--                     <VisualStateManager.VisualStateGroups> -->
+		<!--                         <VisualStateGroup x:Name="CommonStates"> -->
+		<!--                             <VisualState x:Name="Normal"> -->
+		<!--                                 <Storyboard> -->
+		<!--  <ColorAnimation Storyboard.TargetName="BackgroundRectangle" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)" Duration="0"  -->
+		<!--  To="#FFFFFF"/>  -->
+		<!--                                 </Storyboard> -->
+		<!--                             </VisualState> -->
+		<!--                             <VisualState x:Name="PointerOver"> -->
+		<!--                                 <Storyboard> -->
+		<!--  <ColorAnimation Storyboard.TargetName="BackgroundRectangle" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)" Duration="0"  -->
+		<!--  To="#000000"/>  -->
+		<!--                                 </Storyboard> -->
+		<!--                             </VisualState> -->
+		<!--                             <VisualState x:Name="Pressed"> -->
+		<!--                                 <Storyboard> -->
+		<!--  <ColorAnimation Storyboard.TargetName="BackgroundRectangle" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)" Duration="0"  -->
+		<!--  To="#FF00FF"/>  -->
+		<!--                                 </Storyboard> -->
+		<!--                             </VisualState> -->
+		<!--                         </VisualStateGroup> -->
+		<!--                         <VisualStateGroup x:Name="FocusStates"> -->
+		<!--                             <VisualState x:Name="Unfocused"/> -->
+		<!--                             <VisualState x:Name="Focused"> -->
+		<!--                                 <Storyboard> -->
+		<!--                                     <DoubleAnimation Storyboard.TargetName="FocusVisual" Storyboard.TargetProperty="Opacity" To="1" Duration="0"/> -->
+		<!--                                 </Storyboard> -->
+		<!--                             </VisualState> -->
+		<!--                         </VisualStateGroup> -->
+		<!--                         <VisualStateGroup x:Name="SortStates"> -->
+		<!--                             <VisualState x:Name="Unsorted"/> -->
+		<!--                             <VisualState x:Name="SortAscending"> -->
+		<!--                                 <Storyboard> -->
+		<!--                                     <DoubleAnimation Storyboard.TargetName="SortIcon" Storyboard.TargetProperty="Opacity" Duration="0" To="1"/> -->
+		<!--                                 </Storyboard> -->
+		<!--                             </VisualState> -->
+		<!--                             <VisualState x:Name="SortDescending"> -->
+		<!--                                 <Storyboard> -->
+		<!--                                     <DoubleAnimation Storyboard.TargetName="SortIcon" Storyboard.TargetProperty="Opacity" Duration="0" To="1"/> -->
+		<!--                                 </Storyboard> -->
+		<!--                                 <VisualState.Setters> -->
+		<!--                                     <Setter Target="SortIcon.Glyph" Value="{ThemeResource SortIconDescending}"/> -->
+		<!--                                 </VisualState.Setters> -->
+		<!--                             </VisualState> -->
+		<!--                         </VisualStateGroup> -->
+		<!--                     </VisualStateManager.VisualStateGroups> -->
+		<!--                     <Rectangle x:Name="BackgroundRectangle" Stretch="Fill" Fill="Gray" Grid.ColumnSpan="2"/> -->
+		<!--                     <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1"> -->
+		<!--                         <Grid.ColumnDefinitions> -->
+		<!--                             <ColumnDefinition Width="*"/> -->
+		<!--                             <ColumnDefinition MinWidth="24" Width="Auto"/> -->
+		<!--                         </Grid.ColumnDefinitions> -->
+		<!--    -->
+		<!--                         <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Left" VerticalAlignment="Center"/> -->
+		<!--    -->
+		<!--  <FontIcon Grid.Column="1" x:Name="SortIcon"  -->
+		<!--  Margin="0"  -->
+		<!--  Glyph="{ThemeResource SortIconAscending}" FontSize="9"  -->
+		<!--  Foreground="Red" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0"/>  -->
+		<!--                     </Grid> -->
+		<!--  <Rectangle x:Name="VerticalSeparator" Width="1" VerticalAlignment="Stretch" HorizontalAlignment="Right"  -->
+		<!--  Fill="DarkBlue"/>  -->
+		<!--                 </Grid> -->
+		<!--             </ControlTemplate> -->
+		<!--         </Setter.Value> -->
+		<!--     </Setter> -->
+		<!-- </Style> -->
+	</Page.Resources>
+
+	<Grid Padding="5">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition MaxWidth="160" />
+			<ColumnDefinition Width="*" />
+		</Grid.ColumnDefinitions>
+		<Grid
+			Grid.Column="0"
+			Background="{ThemeResource LayerFillColorDefaultBrush}"
+			Style="{StaticResource DefaultGridWithBorderStyle}">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="*" />
+				<RowDefinition Height="Auto" />
+			</Grid.RowDefinitions>
+			<StackPanel>
+				<Grid>
+					<ComboBox
+						Margin="5"
+						IsEditable="False"
+						ItemsSource="{x:Bind ViewModel.FavoriteGroups}"
+						SelectedIndex="{x:Bind ViewModel.SelectedFavGroupIndex, Mode=TwoWay}"
+						SelectionChanged="FavoriteGroups_OnSelectionChanged" />
+				</Grid>
+			</StackPanel>
+			<Grid Grid.Row="1">
+				<ListView
+					x:Name="FavoriteCodes"
+					MinWidth="150"
+					Margin="2"
+					HorizontalAlignment="Left"
+					BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
+					ItemTemplate="{StaticResource FavoriteListViewTemplate}"
+					ItemsSource="{x:Bind ViewModel.GroupList}" />
+			</Grid>
+			<Grid Grid.Row="2">
+				<StackPanel>
+					<Grid x:Name="FavoriteCodeManagePanel" Visibility="Collapsed">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="*" />
+						</Grid.RowDefinitions>
+						<StackPanel
+							Margin="4,2"
+							HorizontalAlignment="Right"
+							Orientation="Horizontal">
+							<Button
+								x:Name="DeleteFavoriteCodesButton"
+								Margin="0,0,5,0"
+								Content="管理">
+								<Button.Flyout>
+									<Flyout>
+										<StackPanel>
+											<TextBlock Margin="0,0,0,12" Text="将选中的股票从自选股中删除？" />
+											<Button
+												Click="DeleteFavoriteCodesButton_OnClick"
+												Command="{x:Bind ViewModel.DeleteSelectedFavoriteCodesCommand}"
+												CommandParameter="{x:Bind FavoriteCodes}"
+												Content="确定"
+												Style="{StaticResource AccentButtonStyle}" />
+										</StackPanel>
+									</Flyout>
+								</Button.Flyout>
+							</Button>
+							<Button
+								Command="{x:Bind ViewModel.AddToQueryingCommand}"
+								CommandParameter="{x:Bind FavoriteCodes}"
+								Content="加入查询" />
+						</StackPanel>
+						<StackPanel Grid.Row="1" Orientation="Horizontal">
+							<Grid Margin="14,2,0,-3">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="89" />
+									<ColumnDefinition Width="Auto" />
+								</Grid.ColumnDefinitions>
+								<Grid>
+									<CheckBox
+										x:Name="FavoriteCodeManageSelectAll"
+										Checked="FavoriteCodeManageSelectAll_OnChecked"
+										Content="全选"
+										Unchecked="FavoriteCodeManageSelectAll_OnUnchecked" />
+								</Grid>
+								<Grid Grid.Column="1">
+									<Button
+										x:Name="FavoriteCodeManageCancel"
+										HorizontalAlignment="Right"
+										Click="FavoriteCodeManageCancel_OnClick"
+										Content="取消" />
+								</Grid>
+							</Grid>
+						</StackPanel>
+					</Grid>
+					<StackPanel
+						Margin="4"
+						HorizontalAlignment="Right"
+						Orientation="Horizontal">
+						<HyperlinkButton
+							x:Name="EditFavoriteGroup"
+							Click="EditFavoriteGroup_OnClick"
+							Content="编辑" />
+						<Button x:Name="ManageFavoriteGroup" Content="管理自选组">
+							<Button.Flyout>
+								<Flyout>
+									<StackPanel>
+										<ListView
+											x:Name="ManageGroupListView"
+											HorizontalAlignment="Left"
+											ItemsSource="{x:Bind ViewModel.FavoriteGroups}"
+											SelectionMode="Multiple" />
+										<Grid Margin="14,2">
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="100" />
+												<ColumnDefinition Width="Auto" />
+											</Grid.ColumnDefinitions>
+											<Grid>
+												<CheckBox
+													Checked="ManageGroupSelectAll_OnChecked"
+													Content="全选"
+													Unchecked="ManageGroupSelectAll_OnUnchecked" />
+											</Grid>
+											<Grid Grid.Column="1">
+												<Button
+													Command="{x:Bind ViewModel.DeleteSelectedFavoriteGroupsCommand}"
+													CommandParameter="{x:Bind ManageGroupListView.SelectedItems}"
+													Content="删除" />
+											</Grid>
+										</Grid>
+									</StackPanel>
+								</Flyout>
+							</Button.Flyout>
+						</Button>
+					</StackPanel>
+				</StackPanel>
+			</Grid>
+		</Grid>
+		<Grid Grid.Column="1">
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="auto" />
+					<RowDefinition Height="*" />
+				</Grid.RowDefinitions>
+				<Grid Grid.Row="0">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="180" />
+					</Grid.ColumnDefinitions>
+					<StackPanel
+						x:Name="SfPanel"
+						Grid.Column="0"
+						SizeChanged="SfPanel_OnSizeChanged">
+						<StackPanel Padding="5,0,5,0">
+							<InfoBar
+								x:Name="InfoBarA"
+								Title="免责声明"
+								FontSize="10"
+								IsClosable="False"
+								IsOpen="True"
+								Message="本程序仅限学习交流使用。本程序仅进行数据分析，不构成任何买卖建议。擅自根据本程序进行交易所造成的后果自负。"
+								Severity="Warning" />
+							<InfoBar
+								IsClosable="True"
+								IsEnabled="False"
+								IsOpen="False"
+								Severity="Informational" />
+						</StackPanel>
+						<Grid Padding="5">
+							<Grid>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="auto" />
+									<ColumnDefinition Width="*" />
+								</Grid.ColumnDefinitions>
+								<Grid Grid.Column="0">
+									<Grid.RowDefinitions>
+										<RowDefinition Height="auto" />
+										<RowDefinition Height="*" />
+										<RowDefinition Height="42" />
+									</Grid.RowDefinitions>
+									<StackPanel>
+										<TextBlock Text="输入股票代码：" />
+										<CheckBox
+											Checked="QueryAll_OnChecked"
+											Content="查询所有"
+											IsChecked="{x:Bind ViewModel.IsQueryAllChecked, Mode=TwoWay}"
+											Unchecked="QueryAll_OnUnchecked" />
+										<HyperlinkButton
+											Margin="-10,-5,0,0"
+											Command="{x:Bind ViewModel.QueryHot100CodesCommand}"
+											Content="查询人气T100" />
+									</StackPanel>
+									<!--  <StackPanel  -->
+									<!--  Grid.Row="2"  -->
+									<!--  HorizontalAlignment="Right"  -->
+									<!--  Orientation="Horizontal">  -->
+									<!--  <AppBarButton  -->
+									<!--  Width="42"  -->
+									<!--  HorizontalAlignment="Center"  -->
+									<!--  VerticalAlignment="Center"  -->
+									<!--  Command="{x:Bind ViewModel.NavigateToMonitorCommand}">  -->
+									<!-- 		<AppBarButton.Icon> -->
+									<!--  <FontIcon  -->
+									<!--  Margin="0,-3,0,0"  -->
+									<!--  FontFamily="{StaticResource SymbolThemeFontFamily}"  -->
+									<!--  Glyph="&#xE71C;" />  -->
+									<!-- 		</AppBarButton.Icon> -->
+									<!-- 	</AppBarButton> -->
+									<!--  <AppBarButton  -->
+									<!--  Width="42"  -->
+									<!--  HorizontalAlignment="Center"  -->
+									<!--  VerticalAlignment="Center"  -->
+									<!--  Command="{x:Bind ViewModel.NavigateToInvestLogCommand}">  -->
+									<!-- 		<AppBarButton.Icon> -->
+									<!--  <FontIcon  -->
+									<!--  Margin="0,-3,0,0"  -->
+									<!--  FontFamily="{StaticResource SymbolThemeFontFamily}"  -->
+									<!--  Glyph="&#xF0E3;" />  -->
+									<!-- 		</AppBarButton.Icon> -->
+									<!-- 	</AppBarButton> -->
+									<!--  <AppBarButton  -->
+									<!--  x:Name="SettingsAppBarButton"  -->
+									<!--  Width="42"  -->
+									<!--  HorizontalAlignment="Right"  -->
+									<!--  Command="{x:Bind ViewModel.MenuSettingsCommand}"  -->
+									<!--  PointerEntered="ShellMenuBarSettingsButton_PointerEntered"  -->
+									<!--  PointerExited="ShellMenuBarSettingsButton_PointerExited">  -->
+									<!-- 		<AnimatedIcon Margin="0,-10,0,0"> -->
+									<!-- 			<AnimatedIcon.Source> -->
+									<!-- 				<animatedVisuals:AnimatedSettingsVisualSource /> -->
+									<!-- 			</AnimatedIcon.Source> -->
+									<!-- 			<AnimatedIcon.FallbackIconSource> -->
+									<!-- 				<FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE713;" /> -->
+									<!-- 			</AnimatedIcon.FallbackIconSource> -->
+									<!-- 		</AnimatedIcon> -->
+									<!-- 	</AppBarButton> -->
+									<!-- </StackPanel> -->
+								</Grid>
+								<StackPanel Grid.Column="1">
+									<TextBox
+										x:Name="CodeInput"
+										MinHeight="150"
+										MaxHeight="150"
+										AcceptsReturn="True"
+										AllowFocusOnInteraction="True"
+										AutomationProperties.Name="multi-line TextBox"
+										Language="zh-CN"
+										LostFocus="OnCodeInputLostFocusEventHandler"
+										PlaceholderText="多个代码请用空格或逗号分隔"
+										SelectionHighlightColor="Green"
+										Text="{x:Bind ViewModel.CodeInput, Mode=TwoWay}"
+										TextWrapping="Wrap" />
+									<Grid Margin="0,2,0,0">
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="Auto" />
+											<ColumnDefinition Width="*" />
+										</Grid.ColumnDefinitions>
+										<StackPanel Grid.Column="0" Orientation="Horizontal">
+											<Button Click="AddToFavoriteGroup_OnClick" Content="加入自选" />
+											<Button
+												Margin="4,0"
+												Content="执行分析"
+												IsEnabled="{x:Bind ViewModel.AnalysisStarted, Converter={StaticResource ReverseBooleanConverter}, Mode=OneWay}"
+												Style="{StaticResource AccentButtonStyle}">
+												<Button.Flyout>
+													<Flyout>
+														<StackPanel>
+															<HyperlinkButton
+																Click="ExecBtn_OnClick"
+																Command="{x:Bind ViewModel.AnalysisPressedCommand}"
+																Content="溢价分析"
+																IsEnabled="{x:Bind ViewModel.AnalysisStarted, Converter={StaticResource ReverseBooleanConverter}, Mode=OneWay}" />
+															<HyperlinkButton
+																Click="SpecBtn_OnClick"
+																Command="{x:Bind ViewModel.Analysis2PressedCommand}"
+																Content="特别分析"
+																IsEnabled="{x:Bind ViewModel.AnalysisStarted, Converter={StaticResource ReverseBooleanConverter}, Mode=OneWay}" />
+														</StackPanel>
+													</Flyout>
+												</Button.Flyout>
+											</Button>
+											<Grid Margin="2">
+												<ProgressRing
+													Margin="2"
+													HorizontalAlignment="Left"
+													IsActive="{x:Bind ViewModel.AnalysisStarted, Mode=OneWay}" />
+											</Grid>
+											<Grid>
+												<TextBlock
+													HorizontalAlignment="Left"
+													VerticalAlignment="Center"
+													Text="{x:Bind ViewModel.CurrentStatus, Mode=OneWay}" />
+											</Grid>
+										</StackPanel>
+										<StackPanel
+											Grid.Column="1"
+											HorizontalAlignment="Right"
+											Orientation="Horizontal">
+											<HyperlinkButton Click="ClearInput_OnClick" Content="清空" />
+											<Button x:Name="ManageQueryHistory" Content="管理查询记录">
+												<Button.Flyout>
+													<Flyout>
+														<StackPanel>
+															<ListView
+																x:Name="ManageActivityListView"
+																HorizontalAlignment="Left"
+																ItemsSource="{x:Bind ViewModel.ActivityDateList}"
+																SelectionMode="Multiple" />
+															<Grid Margin="14,2">
+																<Grid.ColumnDefinitions>
+																	<ColumnDefinition Width="100" />
+																	<ColumnDefinition Width="Auto" />
+																</Grid.ColumnDefinitions>
+																<Grid>
+																	<CheckBox
+																		Checked="ManageActivitySelectAll_OnChecked"
+																		Content="全选"
+																		Unchecked="ManageActivitySelectAll_OnUnchecked" />
+																</Grid>
+																<Grid Grid.Column="1">
+																	<Button
+																		Command="{x:Bind ViewModel.DeleteSelectedActivityCommand}"
+																		CommandParameter="{x:Bind ManageActivityListView.SelectedItems}"
+																		Content="删除" />
+																</Grid>
+															</Grid>
+														</StackPanel>
+													</Flyout>
+												</Button.Flyout>
+											</Button>
+										</StackPanel>
+									</Grid>
+								</StackPanel>
+							</Grid>
+						</Grid>
+					</StackPanel>
+					<Grid
+						Grid.Column="1"
+						Padding="0,0,0,5"
+						VerticalAlignment="Top"
+						Background="{ThemeResource LayerFillColorDefaultBrush}"
+						Style="{StaticResource DefaultGridWithBorderStyle}">
+						<Grid>
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="*" />
+							</Grid.RowDefinitions>
+							<StackPanel>
+								<Grid>
+									<ComboBox
+										Margin="5"
+										IsEditable="False"
+										ItemsSource="{x:Bind ViewModel.ActivityDateList}"
+										SelectedIndex="{x:Bind ViewModel.SelectedActivityDate, Mode=TwoWay}"
+										SelectionChanged="{x:Bind ViewModel.QueryHistorySelectionChanged}" />
+								</Grid>
+							</StackPanel>
+							<StackPanel Grid.Row="1">
+								<ListView
+									x:Name="ActivityListView"
+									Height="245"
+									MinWidth="170"
+									Margin="-10,0,0,0"
+									HorizontalAlignment="Left"
+									BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
+									IsItemClickEnabled="True"
+									ItemClick="{x:Bind ViewModel.ActivityDateClicked}"
+									ItemTemplate="{StaticResource ActivityTemplate}"
+									ItemsSource="{x:Bind ViewModel.ActivityDates}" />
+							</StackPanel>
+						</Grid>
+					</Grid>
+				</Grid>
+				<Grid
+					Grid.Row="1"
+					Margin="5,-3,0,0"
+					Background="{ThemeResource LayerFillColorDefaultBrush}"
+					Style="{StaticResource DefaultGridWithBorderStyle}">
+					<Grid Padding="5">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="*" />
+						</Grid.RowDefinitions>
+						<StackPanel
+							Grid.Row="0"
+							Margin="1"
+							Padding="5,0"
+							Orientation="Horizontal">
+							<TextBlock
+								Margin="3,0"
+								VerticalAlignment="Center"
+								Text="近" />
+							<ComboBox
+								IsEditable="True"
+								ItemsSource="{x:Bind LastingDaysTemplate}"
+								SelectedIndex="0"
+								Text="{x:Bind ViewModel.LastingDays, Mode=TwoWay}"
+								TextSubmitted="LastingDays_OnTextSubmitted" />
+							<TextBlock
+								Margin="3,0"
+								VerticalAlignment="Center"
+								Text="交易日分析结果" />
+							<HyperlinkButton
+								Click="ClearGrid_OnClick"
+								Command="{x:Bind ViewModel.ClearDataGridCommand}"
+								Content="清空列表" />
+						</StackPanel>
+						<StackPanel Grid.Row="1">
+							<controls:DataGrid
+								x:Name="AnalyzeResultGrid"
+								MinHeight="400"
+								MaxHeight="600"
+								Margin="0,5"
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Stretch"
+								AutoGenerateColumns="False"
+								CanUserReorderColumns="True"
+								CanUserResizeColumns="True"
+								CanUserSortColumns="True"
+								ColumnHeaderHeight="32"
+								DoubleTapped="AddToFavoriteGroup_OnClick"
+								FontSize="11"
+								FrozenColumnCount="2"
+								GridLinesVisibility="All"
+								HeadersVisibility="Column"
+								HorizontalScrollBarVisibility="Visible"
+								IsDoubleTapEnabled="True"
+								IsReadOnly="True"
+								ItemsSource="{x:Bind ViewModel.AnalyzedResults}"
+								MaxColumnWidth="400"
+								RowGroupHeaderPropertyNameAlternative="Range"
+								SelectionMode="Extended"
+								Sorting="DataGrid_OnSorting"
+								VerticalScrollBarVisibility="Visible"
+								Visibility="Visible">
+								<controls:DataGrid.Resources />
+								<controls:DataGrid.Columns>
+									<controls:DataGridTemplateColumn Header="代码" Tag="CodeName">
+										<controls:DataGridTemplateColumn.CellTemplate>
+											<DataTemplate x:DataType="models:AnalysisResult">
+												<Grid>
+													<HyperlinkButton
+														x:Name="CodeNameCell"
+														Click="CodeNameCell_OnClick"
+														Content="{x:Bind CodeName, Converter={StaticResource CodeNameFormatConverter}}" />
+												</Grid>
+											</DataTemplate>
+										</controls:DataGridTemplateColumn.CellTemplate>
+									</controls:DataGridTemplateColumn>
+									<controls:DataGridTextColumn
+										Binding="{Binding CompanyName}"
+										Header="名称"
+										Tag="CompanyName" />
+									<controls:DataGridTemplateColumn Header="op%" Tag="OverPricedPercent">
+										<controls:DataGridTemplateColumn.CellTemplate>
+											<DataTemplate>
+												<TextBlock
+													FontWeight="{Binding OverPricedPercent, Converter={StaticResource OverpriceColorConverter}, Mode=OneWay}"
+													Foreground="{Binding OverPricedPercent, Converter={StaticResource OverpriceColorConverter}, Mode=OneWay}"
+													Style="{StaticResource DataGridCellStyle}"
+													Text="{Binding OverPricedPercent}" />
+											</DataTemplate>
+										</controls:DataGridTemplateColumn.CellTemplate>
+									</controls:DataGridTemplateColumn>
+									<controls:DataGridTextColumn
+										Binding="{Binding OverPricedDays}"
+										Header="opD"
+										Tag="OverPricedDays" />
+									<controls:DataGridTemplateColumn Header="1%+op%" Tag="OverPricedPercentHigherThan1P">
+										<controls:DataGridTemplateColumn.CellTemplate>
+											<DataTemplate>
+												<TextBlock
+													FontWeight="{Binding OverPricedPercentHigherThan1P, Converter={StaticResource OverpriceColorConverter}, Mode=OneWay}"
+													Foreground="{Binding OverPricedPercentHigherThan1P, Converter={StaticResource OverpriceColorConverter}, Mode=OneWay}"
+													Style="{StaticResource DataGridCellStyle}"
+													Text="{Binding OverPricedPercentHigherThan1P}" />
+											</DataTemplate>
+										</controls:DataGridTemplateColumn.CellTemplate>
+									</controls:DataGridTemplateColumn>
+									<controls:DataGridTextColumn
+										Binding="{Binding OverPricedDaysHigherThan1P}"
+										Header="1%+opD"
+										Tag="OverPricedDaysHigherThan1P" />
+									<controls:DataGridTemplateColumn Header="+avop%" Tag="AverageOverPricedPercent">
+										<controls:DataGridTemplateColumn.CellTemplate>
+											<DataTemplate>
+												<TextBlock
+													FontWeight="{Binding AverageOverPricedPercent, Converter={StaticResource ProfitPercentWeightConverter}, Mode=OneWay}"
+													Foreground="{Binding AverageOverPricedPercent, Converter={StaticResource ProfitPercentColorConverter}, Mode=OneWay}"
+													Style="{StaticResource DataGridCellStyle}"
+													Text="{Binding AverageOverPricedPercent}" />
+											</DataTemplate>
+										</controls:DataGridTemplateColumn.CellTemplate>
+									</controls:DataGridTemplateColumn>
+									<controls:DataGridTemplateColumn Header="1%+avop%" Tag="AverageOverPricedPercentHigherThan1P">
+										<controls:DataGridTemplateColumn.CellTemplate>
+											<DataTemplate>
+												<TextBlock
+													FontWeight="{Binding AverageOverPricedPercentHigherThan1P, Converter={StaticResource ProfitPercentWeightConverter}, Mode=OneWay}"
+													Foreground="{Binding AverageOverPricedPercentHigherThan1P, Converter={StaticResource ProfitPercentColorConverter}, Mode=OneWay}"
+													Style="{StaticResource DataGridCellStyle}"
+													Text="{Binding AverageOverPricedPercentHigherThan1P}" />
+											</DataTemplate>
+										</controls:DataGridTemplateColumn.CellTemplate>
+									</controls:DataGridTemplateColumn>
+									<controls:DataGridTemplateColumn Header="1%+sp获利" Tag="StopProfitWith1P">
+										<controls:DataGridTemplateColumn.CellTemplate>
+											<DataTemplate>
+												<TextBlock
+													FontWeight="{Binding StopProfitWith1P, Converter={StaticResource ProfitWeightConverter}, Mode=OneWay}"
+													Foreground="{Binding StopProfitWith1P, Converter={StaticResource ProfitColorConverter}, Mode=OneWay}"
+													Style="{StaticResource DataGridCellStyle}"
+													Text="{Binding StopProfitWith1P}" />
+											</DataTemplate>
+										</controls:DataGridTemplateColumn.CellTemplate>
+									</controls:DataGridTemplateColumn>
+									<controls:DataGridTemplateColumn Header="2%+sp获利" Tag="StopProfitWith2P">
+										<controls:DataGridTemplateColumn.CellTemplate>
+											<DataTemplate>
+												<TextBlock
+													FontWeight="{Binding StopProfitWith2P, Converter={StaticResource ProfitWeightConverter}, Mode=OneWay}"
+													Foreground="{Binding StopProfitWith2P, Converter={StaticResource ProfitColorConverter}, Mode=OneWay}"
+													Style="{StaticResource DataGridCellStyle}"
+													Text="{Binding StopProfitWith2P}" />
+											</DataTemplate>
+										</controls:DataGridTemplateColumn.CellTemplate>
+									</controls:DataGridTemplateColumn>
+									<controls:DataGridTemplateColumn Header="3%+sp获利" Tag="StopProfitWith3P">
+										<controls:DataGridTemplateColumn.CellTemplate>
+											<DataTemplate>
+												<TextBlock
+													FontWeight="{Binding StopProfitWith3P, Converter={StaticResource ProfitWeightConverter}, Mode=OneWay}"
+													Foreground="{Binding StopProfitWith3P, Converter={StaticResource ProfitColorConverter}, Mode=OneWay}"
+													Style="{StaticResource DataGridCellStyle}"
+													Text="{Binding StopProfitWith3P}" />
+											</DataTemplate>
+										</controls:DataGridTemplateColumn.CellTemplate>
+									</controls:DataGridTemplateColumn>
+									<controls:DataGridTemplateColumn Header="躺平获利" Tag="NoActionProfit">
+										<controls:DataGridTemplateColumn.CellTemplate>
+											<DataTemplate>
+												<TextBlock
+													FontWeight="{Binding NoActionProfit, Converter={StaticResource ProfitWeightConverter}, Mode=OneWay}"
+													Foreground="{Binding NoActionProfit, Converter={StaticResource ProfitColorConverter}, Mode=OneWay}"
+													Style="{StaticResource DataGridCellStyle}"
+													Text="{Binding NoActionProfit}" />
+											</DataTemplate>
+										</controls:DataGridTemplateColumn.CellTemplate>
+									</controls:DataGridTemplateColumn>
+									<controls:DataGridTextColumn
+										Binding="{Binding BestStopProfit}"
+										Header="Bsp"
+										Tag="BestStopProfit" />
+									<controls:DataGridTemplateColumn Header="Bsp获利" Tag="BestEarnings">
+										<controls:DataGridTemplateColumn.CellTemplate>
+											<DataTemplate>
+												<TextBlock
+													FontWeight="{Binding BestEarnings, Converter={StaticResource ProfitWeightConverter}, Mode=OneWay}"
+													Foreground="{Binding BestEarnings, Converter={StaticResource ProfitColorConverter}, Mode=OneWay}"
+													Style="{StaticResource DataGridCellStyle}"
+													Text="{Binding BestEarnings}" />
+											</DataTemplate>
+										</controls:DataGridTemplateColumn.CellTemplate>
+									</controls:DataGridTemplateColumn>
+									<controls:DataGridTextColumn
+										Binding="{Binding MaxContinueOverPricedDay}"
+										Header="mc+opD"
+										Tag="MaxContinueOverPricedDay" />
+									<controls:DataGridTextColumn
+										Binding="{Binding MaxContinueMinusOverPricedDay}"
+										Header="mc-opD"
+										Tag="MaxContinueMinusOverPricedDay" />
+									<controls:DataGridTextColumn
+										Binding="{Binding FirstTradingDay}"
+										Header="std"
+										Tag="FirstTradingDay" />
+									<controls:DataGridTextColumn
+										Binding="{Binding LastTradingDay}"
+										Header="ltd"
+										Tag="LastTradingDay" />
+									<controls:DataGridTextColumn
+										Binding="{Binding AverageAmplitude}"
+										Header="平均振幅"
+										Tag="AverageAmplitude" />
+									<controls:DataGridTextColumn
+										Binding="{Binding MedianAmplitude}"
+										Header="中位振幅"
+										Tag="MedianAmplitude" />
+									<controls:DataGridTextColumn
+										Binding="{Binding MinimalAmplitude}"
+										Header="最小振幅"
+										Tag="MinimalAmplitude" />
+									<controls:DataGridTextColumn
+										Binding="{Binding MaxAmplitude}"
+										Header="最大振幅"
+										Tag="MaxAmplitude" />
+									<!--     <controls:DataGridTemplateColumn Header="评价"> -->
+									<!--         <controls:DataGridTemplateColumn.CellTemplate> -->
+									<!--             <DataTemplate> -->
+									<!--                 <HyperlinkButton Content="{Binding Evaluate}" /> -->
+									<!--             </DataTemplate> -->
+									<!--         </controls:DataGridTemplateColumn.CellTemplate> -->
+									<!--     </controls:DataGridTemplateColumn> -->
+								</controls:DataGrid.Columns>
+							</controls:DataGrid>
+							<!--  CellStyle="{StaticResource CustomCellStyle}"  -->
+							<controls:DataGrid
+								x:Name="AnalyzeResult2Grid"
+								MinHeight="400"
+								MaxHeight="600"
+								Margin="0,5"
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Stretch"
+								AutoGenerateColumns="False"
+								CanUserReorderColumns="True"
+								CanUserResizeColumns="True"
+								CanUserSortColumns="True"
+								ColumnHeaderHeight="32"
+								DoubleTapped="AddToFavoriteGroup_OnClick"
+								FontSize="11"
+								FrozenColumnCount="2"
+								GridLinesVisibility="All"
+								HeadersVisibility="Column"
+								HorizontalScrollBarVisibility="Visible"
+								IsDoubleTapEnabled="True"
+								IsReadOnly="True"
+								ItemsSource="{x:Bind ViewModel.AnalyzedResults2}"
+								MaxColumnWidth="400"
+								RowGroupHeaderPropertyNameAlternative="Range"
+								SelectionMode="Extended"
+								Sorting="DataGrid_OnSorting2"
+								VerticalScrollBarVisibility="Visible"
+								Visibility="Collapsed">
+								<controls:DataGrid.Resources/>
+								<controls:DataGrid.ContextFlyout>
+									<MenuFlyout>
+										<MenuFlyoutItem  Text="复制"
+														 Command="{x:Bind ViewModel.DataGridMenuFlyoutItemCopyCommand}"
+														 CommandParameter="{x:Bind AnalyzeResult2Grid}"/>
+									</MenuFlyout>
+								</controls:DataGrid.ContextFlyout>
+								<controls:DataGrid.Columns>
+									<controls:DataGridTemplateColumn Header="代码" Tag="CodeName">
+										<controls:DataGridTemplateColumn.CellTemplate>
+											<DataTemplate x:DataType="analyst:Report">
+												<Grid>
+													<HyperlinkButton
+														x:Name="CodeNameCell"
+														Click="CodeNameCell_OnClick"
+														Content="{x:Bind CodeName, Converter={StaticResource CodeNameFormatConverter}}" />
+												</Grid>
+											</DataTemplate>
+										</controls:DataGridTemplateColumn.CellTemplate>
+									</controls:DataGridTemplateColumn>
+									<controls:DataGridTextColumn
+										Binding="{Binding CompanyName}"
+										Header="名称"
+										Tag="CompanyName" />
+									<controls:DataGridTextColumn
+										Binding="{Binding CurrentStep}"
+										Header="当前Step"
+										Tag="CurrentStep" />
+									<controls:DataGridTextColumn
+										Binding="{Binding Step1}"
+										Header="Step1"
+										Tag="Step1" />
+									<controls:DataGridTextColumn
+										Binding="{Binding Step2}"
+										Header="Step2"
+										Tag="Step2" />
+									<controls:DataGridTextColumn
+										Binding="{Binding Step2Progress}"
+										Header="Step2Progress"
+										Tag="Step2Progress" />
+									<controls:DataGridTextColumn
+										Binding="{Binding BuyAt}"
+										Header="BuyAt"
+										Tag="BuyAt" />
+									<controls:DataGridTextColumn
+										Binding="{Binding BuyPrice}"
+										Header="BuyPrice"
+										Tag="BuyPrice" />
+									<controls:DataGridTextColumn
+										Binding="{Binding Step3}"
+										Header="Step3"
+										Tag="Step3" />
+									<controls:DataGridTextColumn
+										Binding="{Binding SellAt}"
+										Header="SellAt"
+										Tag="SellAt" />
+									<controls:DataGridTextColumn
+										Binding="{Binding SellPrice}"
+										Header="SellPrice"
+										Tag="SellPrice" />
+									<controls:DataGridTextColumn
+										Binding="{Binding HoldingDays}"
+										Header="Holding"
+										Tag="Holding" />
+									<controls:DataGridTextColumn
+										Binding="{Binding Profit}"
+										Header="D30Profit"
+										Tag="D30Profit" />
+									<controls:DataGridTextColumn
+										Binding="{Binding Step4}"
+										Header="Step4"
+										Tag="Step4" />
+								</controls:DataGrid.Columns>
+							</controls:DataGrid>
+						</StackPanel>
+					</Grid>
+				</Grid>
+			</Grid>
+		</Grid>
+	</Grid>
+</Page>

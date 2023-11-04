@@ -1,0 +1,313 @@
+﻿<UserControl
+	x:Class="SAaP.ControlPages.WeeklyReportRow"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d">
+
+	<Grid Margin="5">
+		<Grid.Resources>
+			<Style TargetType="TextBlock">
+				<Setter Property="HorizontalAlignment" Value="Center" />
+				<Setter Property="VerticalAlignment" Value="Center" />
+				<Setter Property="FontSize" Value="12" />
+			</Style>
+		</Grid.Resources>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="Auto" />
+			<ColumnDefinition Width="*" />
+			<ColumnDefinition Width="*" />
+			<ColumnDefinition Width="*" />
+			<ColumnDefinition Width="*" />
+			<ColumnDefinition Width="*" />
+		</Grid.ColumnDefinitions>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+
+		<TextBlock
+			Grid.Row="0"
+			Grid.Column="0"
+			Foreground="Red"
+			Text="{x:Bind ReportSummary.CompanyName, Mode=OneWay}" />
+
+		<TextBlock
+			Grid.Row="0"
+			Grid.Column="1"
+			Text="周一" />
+		<TextBlock
+			Grid.Row="0"
+			Grid.Column="2"
+			Text="周二" />
+		<TextBlock
+			Grid.Row="0"
+			Grid.Column="3"
+			Text="周三" />
+		<TextBlock
+			Grid.Row="0"
+			Grid.Column="4"
+			Text="周四" />
+		<TextBlock
+			Grid.Row="0"
+			Grid.Column="5"
+			Text="周五" />
+
+		<TextBlock
+			Grid.Row="1"
+			Grid.Column="0"
+			Text="涨/跌天数" />
+		<TextBlock
+			Grid.Row="2"
+			Grid.Column="0"
+			Text="上涨概率" />
+		<TextBlock
+			Grid.Row="3"
+			Grid.Column="0"
+			Text="平均涨幅" />
+		<TextBlock
+			Grid.Row="4"
+			Grid.Column="0"
+			Text="平均跌幅" />
+		<TextBlock
+			Grid.Row="5"
+			Grid.Column="0"
+			Text="涨停次数" />
+		<TextBlock
+			Grid.Row="6"
+			Grid.Column="0"
+			Text="跌停次数" />
+		<TextBlock
+			Grid.Row="7"
+			Grid.Column="0"
+			Text="溢价天数" />
+		<TextBlock
+			Grid.Row="8"
+			Grid.Column="0"
+			Text="溢价概率" />
+		<TextBlock
+			Grid.Row="9"
+			Grid.Column="0"
+			Text="平均溢价" />
+		<TextBlock
+			Grid.Row="10"
+			Grid.Column="0"
+			Text="1%溢价率" />
+
+		<TextBlock
+			Grid.Row="1"
+			Grid.Column="1"
+			Text="{x:Bind ReportSummary.Monday.ZdDistribute, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="2"
+			Grid.Column="1"
+			Text="{x:Bind ReportSummary.Monday.ZdPercent, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="3"
+			Grid.Column="1"
+			Text="{x:Bind ReportSummary.Monday.AverageZf, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="4"
+			Grid.Column="1"
+			Text="{x:Bind ReportSummary.Monday.AverageDf, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="5"
+			Grid.Column="1"
+			Text="{x:Bind ReportSummary.Monday.ZtCount, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="6"
+			Grid.Column="1"
+			Text="{x:Bind ReportSummary.Monday.DtCount, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="7"
+			Grid.Column="1"
+			Text="{x:Bind ReportSummary.Monday.OpDistribute, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="8"
+			Grid.Column="1"
+			Text="{x:Bind ReportSummary.Monday.OpPercent, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="9"
+			Grid.Column="1"
+			Text="{x:Bind ReportSummary.Monday.AverageOp, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="10"
+			Grid.Column="1"
+			Text="{x:Bind ReportSummary.Monday.Op1PPercent, Mode=OneWay}" />
+
+		<TextBlock
+			Grid.Row="1"
+			Grid.Column="2"
+			Text="{x:Bind ReportSummary.Tuesday.ZdDistribute, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="2"
+			Grid.Column="2"
+			Text="{x:Bind ReportSummary.Tuesday.ZdPercent, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="3"
+			Grid.Column="2"
+			Text="{x:Bind ReportSummary.Tuesday.AverageZf, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="4"
+			Grid.Column="2"
+			Text="{x:Bind ReportSummary.Tuesday.AverageDf, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="5"
+			Grid.Column="2"
+			Text="{x:Bind ReportSummary.Tuesday.ZtCount, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="6"
+			Grid.Column="2"
+			Text="{x:Bind ReportSummary.Tuesday.DtCount, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="7"
+			Grid.Column="2"
+			Text="{x:Bind ReportSummary.Tuesday.OpDistribute, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="8"
+			Grid.Column="2"
+			Text="{x:Bind ReportSummary.Tuesday.OpPercent, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="9"
+			Grid.Column="2"
+			Text="{x:Bind ReportSummary.Tuesday.AverageOp, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="10"
+			Grid.Column="2"
+			Text="{x:Bind ReportSummary.Tuesday.Op1PPercent, Mode=OneWay}" />
+
+		<TextBlock
+			Grid.Row="1"
+			Grid.Column="3"
+			Text="{x:Bind ReportSummary.Wednesday.ZdDistribute, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="2"
+			Grid.Column="3"
+			Text="{x:Bind ReportSummary.Wednesday.ZdPercent, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="3"
+			Grid.Column="3"
+			Text="{x:Bind ReportSummary.Wednesday.AverageZf, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="4"
+			Grid.Column="3"
+			Text="{x:Bind ReportSummary.Wednesday.AverageDf, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="5"
+			Grid.Column="3"
+			Text="{x:Bind ReportSummary.Wednesday.ZtCount, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="6"
+			Grid.Column="3"
+			Text="{x:Bind ReportSummary.Wednesday.DtCount, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="7"
+			Grid.Column="3"
+			Text="{x:Bind ReportSummary.Wednesday.OpDistribute, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="8"
+			Grid.Column="3"
+			Text="{x:Bind ReportSummary.Wednesday.OpPercent, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="9"
+			Grid.Column="3"
+			Text="{x:Bind ReportSummary.Wednesday.AverageOp, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="10"
+			Grid.Column="3"
+			Text="{x:Bind ReportSummary.Wednesday.Op1PPercent, Mode=OneWay}" />
+
+		<TextBlock
+			Grid.Row="1"
+			Grid.Column="4"
+			Text="{x:Bind ReportSummary.Thursday.ZdDistribute, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="2"
+			Grid.Column="4"
+			Text="{x:Bind ReportSummary.Thursday.ZdPercent, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="3"
+			Grid.Column="4"
+			Text="{x:Bind ReportSummary.Thursday.AverageZf, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="4"
+			Grid.Column="4"
+			Text="{x:Bind ReportSummary.Thursday.AverageDf, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="5"
+			Grid.Column="4"
+			Text="{x:Bind ReportSummary.Thursday.ZtCount, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="6"
+			Grid.Column="4"
+			Text="{x:Bind ReportSummary.Thursday.DtCount, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="7"
+			Grid.Column="4"
+			Text="{x:Bind ReportSummary.Thursday.OpDistribute, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="8"
+			Grid.Column="4"
+			Text="{x:Bind ReportSummary.Thursday.OpPercent, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="9"
+			Grid.Column="4"
+			Text="{x:Bind ReportSummary.Thursday.AverageOp, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="10"
+			Grid.Column="4"
+			Text="{x:Bind ReportSummary.Thursday.Op1PPercent, Mode=OneWay}" />
+
+		<TextBlock
+			Grid.Row="1"
+			Grid.Column="5"
+			Text="{x:Bind ReportSummary.Friday.ZdDistribute, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="2"
+			Grid.Column="5"
+			Text="{x:Bind ReportSummary.Friday.ZdPercent, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="3"
+			Grid.Column="5"
+			Text="{x:Bind ReportSummary.Friday.AverageZf, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="4"
+			Grid.Column="5"
+			Text="{x:Bind ReportSummary.Friday.AverageDf, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="5"
+			Grid.Column="5"
+			Text="{x:Bind ReportSummary.Friday.ZtCount, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="6"
+			Grid.Column="5"
+			Text="{x:Bind ReportSummary.Friday.DtCount, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="7"
+			Grid.Column="5"
+			Text="{x:Bind ReportSummary.Friday.OpDistribute, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="8"
+			Grid.Column="5"
+			Text="{x:Bind ReportSummary.Friday.OpPercent, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="9"
+			Grid.Column="5"
+			Text="{x:Bind ReportSummary.Friday.AverageOp, Mode=OneWay}" />
+		<TextBlock
+			Grid.Row="10"
+			Grid.Column="5"
+			Text="{x:Bind ReportSummary.Friday.Op1PPercent, Mode=OneWay}" />
+
+	</Grid>
+</UserControl>
