@@ -10,7 +10,7 @@ This is a WinUI3 Project related to stock data. Use it at your own discretion.
 - Install Visual Studio Community
 - Build
 - F5
-- (⊙o⊙)？
+- Deal with error
 
 ## references
 
