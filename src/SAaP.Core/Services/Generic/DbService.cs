@@ -351,6 +351,17 @@ public static class DbService
 		return selected.Where(selectData => DateTime.Compare(Convert.ToDateTime(selectData.Day), lastTradingDay) < 0)
 		               .Take(duration + 1).ToList();
 	}
+	
+	public static async Task<int> TakeOriginalDataCount(string codeName, int belong)
+	{
+		var ori = await TakeOriginalDataFromFile(codeName, belong);
+
+		// query original data recently [duration]
+		var selected = ori
+			.Count(o => o.CodeName == codeName && o.BelongTo == belong); // +1 cause ... u know y
+
+		return selected;
+	}
 
 	public static async Task<List<OriginalData>> TakeOriginalDataAscending(string codeName, int belong, int duration = 99999)
 	{

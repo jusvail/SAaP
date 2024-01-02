@@ -194,16 +194,16 @@
 							<Button
 								x:Name="DeleteFavoriteCodesButton"
 								Margin="0,0,5,0"
-								Content="管理">
+								Content="删除">
 								<Button.Flyout>
 									<Flyout>
 										<StackPanel>
-											<TextBlock Margin="0,0,0,12" Text="将选中的股票从自选股中删除？" />
+											<TextBlock Margin="0,0,0,12" Text="Are you sure 删除？" />
 											<Button
 												Click="DeleteFavoriteCodesButton_OnClick"
 												Command="{x:Bind ViewModel.DeleteSelectedFavoriteCodesCommand}"
 												CommandParameter="{x:Bind FavoriteCodes}"
-												Content="确定"
+												Content="OK"
 												Style="{StaticResource AccentButtonStyle}" />
 										</StackPanel>
 									</Flyout>
@@ -224,6 +224,7 @@
 									<CheckBox
 										x:Name="FavoriteCodeManageSelectAll"
 										Checked="FavoriteCodeManageSelectAll_OnChecked"
+										Margin="5 0 0 0"
 										Content="全选"
 										Unchecked="FavoriteCodeManageSelectAll_OnUnchecked" />
 								</Grid>
@@ -541,13 +542,18 @@
 								Text="{x:Bind ViewModel.LastingDays, Mode=TwoWay}"
 								TextSubmitted="LastingDays_OnTextSubmitted" />
 							<TextBlock
-								Margin="3,0"
+								Margin="3 0 0 0"
 								VerticalAlignment="Center"
 								Text="交易日分析结果" />
 							<HyperlinkButton
 								Click="ClearGrid_OnClick"
 								Command="{x:Bind ViewModel.ClearDataGridCommand}"
+								Visibility="{x:Bind AnalyzeResultGrid.Visibility,Mode=OneWay}"
 								Content="清空列表" />
+							<!-- <Button -->
+							<!-- 	Margin="{StaticResource DefaultButtonMargin}" -->
+							<!-- 	Click="DataGridMenuFlyOutItemCopy_Click" -->
+							<!-- 	Content="复制" /> -->
 						</StackPanel>
 						<StackPanel Grid.Row="1">
 							<controls:DataGrid
@@ -778,9 +784,8 @@
 								<controls:DataGrid.Resources/>
 								<controls:DataGrid.ContextFlyout>
 									<MenuFlyout>
-										<MenuFlyoutItem  Text="复制"
-														 Command="{x:Bind ViewModel.DataGridMenuFlyoutItemCopyCommand}"
-														 CommandParameter="{x:Bind AnalyzeResult2Grid}"/>
+										<MenuFlyoutItem  Text="间接复制"
+														 Click="DataGridMenuFlyOutItemCopy_Click"/>
 									</MenuFlyout>
 								</controls:DataGrid.ContextFlyout>
 								<controls:DataGrid.Columns>

@@ -171,6 +171,8 @@ public partial class Condition
 	public const string CROSS      = "CROSS";
 	public const string CAPI       = "CAPI";
 	public const string CAPIL      = "CAPIL";
+	public const string CXG        = "CXG";
+	public const string ZTS        = "ZTS";
 
 	public const string OpPercent = "OP%";
 

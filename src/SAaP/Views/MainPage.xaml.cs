@@ -1,6 +1,8 @@
 ﻿using System.Linq.Dynamic.Core;
 using System.Text;
+using Windows.ApplicationModel.DataTransfer;
 using CommunityToolkit.WinUI.UI.Controls;
+using Mapster;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -8,9 +10,7 @@ using Microsoft.UI.Xaml.Navigation;
 using SAaP.ControlPages;
 using SAaP.Core.Models;
 using SAaP.Core.Models.Analyst;
-using SAaP.Core.Models.DB;
 using SAaP.ViewModels;
-using Windows.ApplicationModel.DataTransfer;
 
 namespace SAaP.Views;
 
@@ -33,11 +33,11 @@ public sealed partial class MainPage
 	public List<double> LastingDaysTemplate { get; } = new()
 	{
 #if DEBUG
-        10, 15, 20, 30, 40, -12
+		10, 15, 20, 30, 40, -12
 #else
         5, 10, 15, 20, 30, 40, 50, 100, 120, 150, 200
 #endif
-    };
+	};
 
 	protected override async void OnNavigatedTo(NavigationEventArgs e)
 	{
@@ -45,7 +45,6 @@ public sealed partial class MainPage
 
 		try
 		{
-
 			// restore query history from db
 			await ViewModel.RestoreActivityAsync();
 			// restore query history from db
@@ -165,8 +164,7 @@ public sealed partial class MainPage
 	private async void AddToFavoriteGroup_OnClick(object sender, RoutedEventArgs e)
 	{
 		var dia = new AddFavoriteGroupDialog(ViewModel.FavoriteGroups.ToList());
-		// 把逻辑写在这里真的很丑陋<_<
-		// 有没有更好的办法？
+
 		var dialog = new ContentDialog
 		{
 			// XamlRoot must be set in the case of a ContentDialog running in a Desktop app
@@ -368,7 +366,34 @@ public sealed partial class MainPage
 			ActivityListView.Height = SfPanel.DesiredSize.Height * .8 + Offset;
 	}
 
-	private void DataGridMenuFlyoutItemCopy_Click(object sender, RoutedEventArgs e)
+	private void DataGridMenuFlyOutItemCopy_Click(object sender, RoutedEventArgs e)
 	{
+		try
+		{
+			var sb = new StringBuilder();
+
+			var selectedItems = AnalyzeResult2Grid.SelectedItems.Adapt<IList<object>>();
+
+			for (var index = 0; index < selectedItems.Count; index++)
+			{
+				var t = (Report)selectedItems[index];
+				if (t != null)
+					sb.Append(t.CodeName[1..]).Append(' ');
+			}
+
+			ViewModel.CodeInput = sb.ToString();
+
+			// var dataPackage = new DataPackage
+			// {
+			// 	RequestedOperation = DataPackageOperation.Copy
+			// };
+			//
+			// dataPackage.SetText(ViewModel.CodeInput);
+			// Clipboard.SetContent(dataPackage);
+		}
+		catch (Exception)
+		{
+			Console.WriteLine();
+		}
 	}
 }

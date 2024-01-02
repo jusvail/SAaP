@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapster;
 using Microsoft.UI.Xaml.Controls;
-using SAaP.Chart.Contracts.Services;
 using SAaP.Contracts.Services;
 using SAaP.Core.Models;
 using SAaP.Core.Models.DB;

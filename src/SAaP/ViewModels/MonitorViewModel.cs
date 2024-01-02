@@ -39,7 +39,7 @@ public class MonitorViewModel : ObservableRecipient
 		}
 		catch (Exception e)
 		{
-			Console.WriteLine(e);Console.WriteLine(GetType());
+			Console.WriteLine(e); Console.WriteLine(GetType());
 		}
 	}
 
@@ -60,7 +60,7 @@ public class MonitorViewModel : ObservableRecipient
 		}
 		catch (Exception e)
 		{
-			Console.WriteLine(e);Console.WriteLine(GetType());
+			Console.WriteLine(e); Console.WriteLine(GetType());
 			SaveFilterTaskContent = "出错了!";
 		}
 
@@ -97,7 +97,7 @@ public class MonitorViewModel : ObservableRecipient
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e);Console.WriteLine(GetType());
+				Console.WriteLine(e); Console.WriteLine(GetType());
 			}
 
 			await Task.Delay(1000);
@@ -435,9 +435,11 @@ public class MonitorViewModel : ObservableRecipient
 			return;
 		}
 
+		var nw = "DONE@" + DateTime.Now.ToString("yy/MM/dd");
+
 		SetValueCrossThread(() =>
 		{
-			targetTaskObject!.ExecStatus = "完成！";
+			targetTaskObject!.ExecStatus = nw;
 
 			targetTaskObject.OnTaskComplete();
 		});

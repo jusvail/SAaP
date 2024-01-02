@@ -586,37 +586,37 @@ public partial class MainViewModel : ObservableRecipient
 		CodeInput = await StockService.FormatPyArgumentAsync(list);
 	}
 
-	[RelayCommand]
-	public void DataGridMenuFlyoutItemCopy(object gridView)
-	{
-		var gridview = gridView as GridView;
+	//[RelayCommand]
+	//public void DataGridMenuFlyoutItemCopy(object gridView)
+	//{
+	//	var gridview = gridView as GridView;
 
 
-		var dataPackage = new DataPackage
-		{
-			RequestedOperation = DataPackageOperation.Copy
-		};
+	//	var dataPackage = new DataPackage
+	//	{
+	//		RequestedOperation = DataPackageOperation.Copy
+	//	};
 
-		var sb = new StringBuilder();
+	//	var sb = new StringBuilder();
 
-		try
-		{
-			var button = (DataGrid)gridView;
+	//	try
+	//	{
+	//		var button = (DataGrid)gridView;
 
-			for (var index = 0; index < button.SelectedItems.Count; index++)
-			{
-				var stock = (Report)button.SelectedItems[index];
-				sb.Append(stock.CodeName[1..]).Append(" ");
-			}
+	//		for (var index = 0; index < button.SelectedItems.Count; index++)
+	//		{
+	//			var stock = (Report)button.SelectedItems[index];
+	//			sb.Append(stock.CodeName[1..]).Append(" ");
+	//		}
 
-			dataPackage.SetText(sb.ToString());
-			Clipboard.SetContent(dataPackage);
-		}
-		catch (Exception)
-		{
-			Console.WriteLine();
-		}
+	//		dataPackage.SetText(sb.ToString());
+	//		Clipboard.SetContent(dataPackage);
+	//	}
+	//	catch (Exception)
+	//	{
+	//		Console.WriteLine();
+	//	}
 
-	}
+	//}
 
 }
