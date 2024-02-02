@@ -6,12 +6,13 @@
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
-  IgnorableNamespaces="uap rescap com desktop">
+  xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
+  IgnorableNamespaces="uap rescap com desktop mp">
 
   <Identity
     Name="64853FutureLabs.223396D9A159E"
     Publisher="CN=719F3C23-0383-4AD8-96B2-6754FF308155"
-    Version="0.2.5.0" />
+    Version="0.2.11.0" />
 
   <Properties>
     <DisplayName>SAaP - 股票溢价分析</DisplayName>
