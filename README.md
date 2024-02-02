@@ -1,7 +1,5 @@
 # SAaP
 
-## Introduction
-
 This is a WinUI3 Project related to simple analysis of Chinese A stock market. Use it at your own discretion.
 
 - 🚨 Ensure you have Win10/Win11 10.0.17763.0 or a compatible version before proceeding.
