@@ -14,7 +14,7 @@ In the face of fundamentals and major trends, technical indicators are utterly f
 
 Install from the Microsoft Store:
 
-[![Microsoft Store](Assets/msstore.svg)](https://partner.microsoft.com/en-us/dashboard/products/9P9PVZS13C97/submissions/1152921505697338018/CertificationStatus)
+[![Microsoft Store](Assets/msstore.svg)](https://www.microsoft.com/store/apps/9P9PVZS13C97)
 
 Or build from the source code:
 
