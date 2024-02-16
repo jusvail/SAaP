@@ -128,6 +128,11 @@ public class AnalyzeDetailViewModel : ObservableRecipient
 	public IAsyncRelayCommand<object> AnalyzeStartCommand { get; }
 
 	public event EventHandler OnQueryFinishEvent;
+	
+	// 上证指数
+	private const string ShZs = "1000001";
+	// 深证指数
+	private const string SzCz = "0399001";
 
 	public async Task StartAnalyze(object canvas)
 	{
@@ -135,8 +140,8 @@ public class AnalyzeDetailViewModel : ObservableRecipient
 
 		var compareCode = ComparerCheck switch
 		{
-			"1" => StockService.ShZs,
-			"0" => StockService.SzCz,
+			"1" => ShZs,
+			"0" => SzCz,
 			"2" => OtherComparer,
 			_   => throw new ArgumentOutOfRangeException(nameof(ComparerCheck))
 		};
@@ -173,7 +178,7 @@ public class AnalyzeDetailViewModel : ObservableRecipient
 			if (IsCustomRangeOn)
 			{
 				// query original data range
-				originalData = await DbService.TakeOriginalData(StockService.CutStockCodeToSix(codeName), belong, CustomDateStart.LocalDateTime,
+				originalData = await DbService.TakeOriginalData(StockService.CutStockCodeLen7ToLen6(codeName), belong, CustomDateStart.LocalDateTime,
 				                                                CustomDateEnd.LocalDateTime);
 
 				if (originalData.Any()) SelectedCompareRelationValue = originalData.Count.ToString();
@@ -181,7 +186,7 @@ public class AnalyzeDetailViewModel : ObservableRecipient
 			else
 			{
 				// query original data recently
-				originalData = await DbService.TakeOriginalDataFromFile(StockService.CutStockCodeToSix(codeName), belong, duration);
+				originalData = await DbService.TakeOriginalDataFromFile(StockService.CutStockCodeLen7ToLen6(codeName), belong, duration);
 			}
 
 			if (!originalData.Any()) return;

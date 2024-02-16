@@ -148,17 +148,15 @@ public sealed partial class MainPage
 	private void QueryAll_OnChecked(object sender, RoutedEventArgs e)
 	{
 		CodeInput.IsEnabled = false;
-		// NotifyUser.IsEnabled = true;
-		// NotifyUser.IsOpen = true;
-		// NotifyUser.Title = "警告";
-		// NotifyUser.Message = "查询所有股票可能会花费大量时间。(几小时😎, 甚至几天)";
+	}
+
+	private void QueryUs_OnChecked(object sender, RoutedEventArgs e)
+	{
 	}
 
 	private void QueryAll_OnUnchecked(object sender, RoutedEventArgs e)
 	{
 		CodeInput.IsEnabled = true;
-		// NotifyUser.IsOpen = false;
-		// NotifyUser.IsEnabled = false;
 	}
 
 	private async void AddToFavoriteGroup_OnClick(object sender, RoutedEventArgs e)

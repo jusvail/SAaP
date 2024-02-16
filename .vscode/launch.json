@@ -8,7 +8,7 @@
       "program": "${file}",
       "console": "integratedTerminal",
       "justMyCode": true,
-      "args": ["C:/Stock/TDX", "C:/Workspace/WK/outData", "110052"]
+      "args": ["C:/devEnv/Tools/TDX", "C:/Workspace/WK/outData", "TSLA"]
     },
     {
       "name": "Python: min line run",

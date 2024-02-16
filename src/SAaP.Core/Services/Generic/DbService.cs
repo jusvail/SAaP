@@ -276,6 +276,7 @@ public static class DbService
 		{
 			StockService.ShFlag => StockService.Sh + codeName + ".csv",
 			StockService.SzFlag => StockService.Sz + codeName + ".csv",
+			StockService.UsFlag => StockService.Us + codeName + ".csv",
 			_                   => string.Empty
 		};
 

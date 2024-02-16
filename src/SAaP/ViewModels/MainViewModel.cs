@@ -2,7 +2,6 @@
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.WinUI.UI.Controls;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using SAaP.Constant;
@@ -12,16 +11,16 @@ using SAaP.Core.Models;
 using SAaP.Core.Models.Analyst;
 using SAaP.Core.Models.DB;
 using SAaP.Core.Services.Analyst;
+using SAaP.Core.Services.Api;
 using SAaP.Core.Services.Generic;
 using SAaP.Extensions;
 using SAaP.Views;
-using Windows.ApplicationModel.DataTransfer;
 
 // using Microsoft.UI.Dispatching;
 
 namespace SAaP.ViewModels;
 
-public partial class MainViewModel : ObservableRecipient
+public class MainViewModel : ObservableRecipient
 {
 	// store csv output by py script to sqlite database
 	private readonly IDbTransferService _dbTransferService;
@@ -40,13 +39,14 @@ public partial class MainViewModel : ObservableRecipient
 	// window Manager
 	private readonly IWindowManageService _windowManageService;
 
-	private bool   _analysisStarted;
+	private bool _analysisStarted;
 	private string _codeInput;
 	private string _currentStatus;
-	private bool   _isQueryAllChecked;
+	private bool _isQueryAllChecked;
+	private bool _isQueryUsChecked;
 	private string _lastingDays;
-	private int    _selectedActivityDate;
-	private int    _selectedFavGroupIndex;
+	private int _selectedActivityDate;
+	private int _selectedFavGroupIndex;
 
 
 	public MainViewModel(
@@ -56,24 +56,25 @@ public partial class MainViewModel : ObservableRecipient
 		, IWindowManageService windowManageService
 		, IFetchStockDataService fetchStockDataService)
 	{
-		_dbTransferService      = dbTransferService;
-		_stockAnalyzeService    = stockAnalyzeService;
+		_dbTransferService = dbTransferService;
+		_stockAnalyzeService = stockAnalyzeService;
 		_restoreSettingsService = restoreSettingsService;
-		_windowManageService    = windowManageService;
-		_fetchStockDataService  = fetchStockDataService;
+		_windowManageService = windowManageService;
+		_fetchStockDataService = fetchStockDataService;
 
-		AddToQueryingCommand                = new RelayCommand<object>(AddToQuerying);
-		ClearDataGridCommand                = new RelayCommand(OnClearDataGrid);
-		MenuSettingsCommand                 = new RelayCommand(OnMenuSettingsPressed);
-		NavigateToMonitorCommand            = new RelayCommand(NavigateToMonitorPage);
-		NavigateToInvestLogCommand          = new RelayCommand(NavigateToInvestLogPage);
-		AnalysisPressedCommand              = new AsyncRelayCommand(OnAnalysisPressedAsync);
-		Analysis2PressedCommand             = new AsyncRelayCommand(OnAnalysis2PressedAsync);
-		QueryHot100CodesCommand             = new AsyncRelayCommand(QueryHot100CodesAsync);
+		AddToQueryingCommand = new RelayCommand<object>(AddToQuerying);
+		ClearDataGridCommand = new RelayCommand(OnClearDataGrid);
+		MenuSettingsCommand = new RelayCommand(OnMenuSettingsPressed);
+		NavigateToMonitorCommand = new RelayCommand(NavigateToMonitorPage);
+		NavigateToInvestLogCommand = new RelayCommand(NavigateToInvestLogPage);
+		AnalysisPressedCommand = new AsyncRelayCommand(OnAnalysisPressedAsync);
+		Analysis2PressedCommand = new AsyncRelayCommand(OnAnalysis2PressedAsync);
+		QueryHot100CodesCommand = new AsyncRelayCommand(QueryHot100CodesAsync);
+		QueryHot100UsCodesCommand = new AsyncRelayCommand(QueryHot100UsCodesAsync);
 		DeleteSelectedFavoriteGroupsCommand = new AsyncRelayCommand<IList<object>>(DeleteSelectedFavoriteGroupsAsync);
-		DeleteSelectedActivityCommand       = new AsyncRelayCommand<IList<object>>(DeleteSelectedActivityAsync);
-		DeleteSelectedFavoriteCodesCommand  = new AsyncRelayCommand<object>(DeleteSelectedFavoriteCodesAsync);
-		RedirectToAnalyzeDetailCommand      = new AsyncRelayCommand<object>(RedirectToAnalyzeDetailAsync);
+		DeleteSelectedActivityCommand = new AsyncRelayCommand<IList<object>>(DeleteSelectedActivityAsync);
+		DeleteSelectedFavoriteCodesCommand = new AsyncRelayCommand<object>(DeleteSelectedFavoriteCodesAsync);
+		RedirectToAnalyzeDetailCommand = new AsyncRelayCommand<object>(RedirectToAnalyzeDetailAsync);
 	}
 
 	public ObservableCollection<AnalysisResult> AnalyzedResults { get; } = new();
@@ -105,6 +106,8 @@ public partial class MainViewModel : ObservableRecipient
 	public IAsyncRelayCommand Analysis2PressedCommand { get; }
 
 	public IAsyncRelayCommand QueryHot100CodesCommand { get; }
+
+	public IAsyncRelayCommand QueryHot100UsCodesCommand { get; }
 
 	public IAsyncRelayCommand<IList<object>> DeleteSelectedFavoriteGroupsCommand { get; }
 
@@ -156,6 +159,12 @@ public partial class MainViewModel : ObservableRecipient
 		set => SetProperty(ref _analysisStarted, value);
 	}
 
+	public bool IsQueryUsChecked
+	{
+		get => _isQueryUsChecked;
+		set => SetProperty(ref _isQueryUsChecked, value);
+	}
+
 	private void NavigateToMonitorPage()
 	{
 		_windowManageService.CreateOrBackToWindow<MonitorPage>(typeof(MonitorViewModel).FullName!);
@@ -168,13 +177,26 @@ public partial class MainViewModel : ObservableRecipient
 
 	private async Task QueryHot100CodesAsync()
 	{
-		var codes = StockService.PostHot100Codes();
+		var codes = StockService.PostHot100Codes(WebServiceApi.DfPopularPostArgs,WebServiceApi.DfPopularListStockApi);
 
 		var codeFormat = new StringBuilder();
 
 		await foreach (var code in codes)
 			if (!string.IsNullOrEmpty(code))
 				codeFormat.Append(StockService.ReplaceLocStringToFlag(code.ToLower())).Append(',');
+
+		CodeInput = codeFormat.ToString();
+	}
+
+	private async Task QueryHot100UsCodesAsync()
+	{
+		var codes = StockService.PostHot100Codes(WebServiceApi.DfPopularUsPostArgs,WebServiceApi.DfPopularListUsStockApi);
+
+		var codeFormat = new StringBuilder();
+
+		await foreach (var code in codes)
+			if (!string.IsNullOrEmpty(code))
+				codeFormat.Append(StockService.ReplaceLocStringToFlag(code.ToUpper().Split('|')[1])).Append(',');
 
 		CodeInput = codeFormat.ToString();
 	}
@@ -192,7 +214,7 @@ public partial class MainViewModel : ObservableRecipient
 		var title = "AnalyzeDetailPageTitle".GetLocalized() + $": [{codeName} {companyName}]";
 
 		_windowManageService.CreateOrBackToWindow<AnalyzeDetailPage>(typeof(AnalyzeDetailViewModel).FullName!, title,
-		                                                             codeName);
+																	 codeName);
 	}
 
 	private void OnMenuSettingsPressed()
@@ -230,10 +252,10 @@ public partial class MainViewModel : ObservableRecipient
 			var favorite = (FavoriteDetail)selectedList[i];
 			await _dbTransferService.DeleteFavoriteCodes(new FavoriteData
 			{
-				Id        = favorite.GroupId,
+				Id = favorite.GroupId,
 				GroupName = favorite.GroupName,
-				BelongTo  = Convert.ToInt32(favorite.CodeName[..1]),
-				Code      = favorite.CodeName[1..]
+				BelongTo = Convert.ToInt32(favorite.CodeName[..1]),
+				Code = favorite.CodeName[1..]
 			});
 		}
 
@@ -335,11 +357,11 @@ public partial class MainViewModel : ObservableRecipient
 		for (var i = 0; i < LastQueriedCodes.Count; i++)
 			try
 			{
-				var codeName              = LastQueriedCodes[i];
+				var codeName = LastQueriedCodes[i];
 				var fetchStockDataService = App.GetService<IFetchStockDataService>();
-				var belong                = await fetchStockDataService.TryGetBelongByCode(codeName);
+				var belong = await fetchStockDataService.TryGetBelongByCode(codeName);
 
-				var codeMain    = StockService.CutStockCodeToSix(codeName);
+				var codeMain = StockService.CutStockCodeLen7ToLen6(codeName);
 				var companyName = await StockService.FetchCompanyNameByCode(codeMain, belong);
 
 				SetCurrentStatus($"正在分析：{companyName} 进度：{i + 1}/{all}");
@@ -393,15 +415,12 @@ public partial class MainViewModel : ObservableRecipient
 		// formatted code resetting
 		CodeInput = pyArg;
 
-		if (IsQueryAllChecked)
-		{
-			SetCurrentStatus("开始执行py脚本。。。");
+		SetCurrentStatus("开始执行py脚本。。。");
 
-			// fetch stock data from tdx, then store to csv file
-			await _fetchStockDataService.FetchStockData(pyArg, IsQueryAllChecked);
+		// fetch stock data from tdx, then store to csv file
+		await _fetchStockDataService.FetchStockData(pyArg, IsQueryAllChecked);
 
-			SetCurrentStatus("py脚本执行完毕，开始将数据导入至本地数据库");
-		}
+		SetCurrentStatus("py脚本执行完毕，开始将数据导入至本地数据库");
 
 		try
 		{

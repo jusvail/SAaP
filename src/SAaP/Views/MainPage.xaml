@@ -330,10 +330,19 @@
 											Content="查询所有"
 											IsChecked="{x:Bind ViewModel.IsQueryAllChecked, Mode=TwoWay}"
 											Unchecked="QueryAll_OnUnchecked" />
+										<!-- <CheckBox -->
+										<!-- 	Checked="QueryUs_OnChecked" -->
+										<!-- 	Content="查询美股" -->
+										<!-- 	IsChecked="{x:Bind ViewModel.IsQueryUsChecked, Mode=TwoWay}" -->
+										<!-- 	Unchecked="QueryAll_OnUnchecked" /> -->
 										<HyperlinkButton
 											Margin="-10,-5,0,0"
 											Command="{x:Bind ViewModel.QueryHot100CodesCommand}"
-											Content="查询人气T100" />
+											Content="A股人气T100" />
+										<HyperlinkButton
+											Margin="-10,-5,0,0"
+											Command="{x:Bind ViewModel.QueryHot100UsCodesCommand}"
+											Content="US人气T100" />
 									</StackPanel>
 									<!--  <StackPanel  -->
 									<!--  Grid.Row="2"  -->

@@ -41,6 +41,8 @@ def zz_parse(zzc, original):
 	# print(zzc)
 	if zzc == '11' or zzc == '12':
 		return int(str(original)[0:6]) / 1000
+	elif zzc == 'us':
+		return str(original)[0:7]
 	else:
 		return original / 100
 
@@ -94,9 +96,48 @@ def store_stock_data_to_csv(filepath, name):
 			file_object.writelines(list)
 		file_object.close()
 
+def store_us_stock_data_to_csv(filepath, name):
+
+	logging.info(': exec store_us_stock_data_to_csv => ' + name)
+	logging.info(': exec path => ' + filepath)
+
+	with open(filepath, 'rb') as f:
+		file_object_path = out_path + '/' + name + '.csv'
+		file_object = open(file_object_path, 'w+')
+		while True:
+			stock_date = f.read(4)
+			stock_open = f.read(4)
+			stock_high = f.read(4)
+			stock_low = f.read(4)
+			stock_close = f.read(4)
+			stock_amount = f.read(4)
+			stock_vol = f.read(4)
+			stock_reserv = f.read(4)
+
+			# date,open,high,low,close,amount,vol,reservation
+
+			if not stock_date:
+				break
+			stock_date = struct.unpack('l', stock_date)	   # 4字节 如20091229
+			stock_open = struct.unpack('f', stock_open)	   # 开盘价*100
+			stock_high = struct.unpack('f', stock_high)	   # 最高价*100
+			stock_low = struct.unpack('f', stock_low)		 # 最低价*100
+			stock_close = struct.unpack('f', stock_close)	 # 收盘价*100
+			stock_amount = struct.unpack('f', stock_amount)   # 成交额
+			stock_vol = struct.unpack('l', stock_vol)		 # 成交量
+			stock_reserv = struct.unpack('l', stock_reserv)   # 保留值
+
+			date_format = datetime.datetime.strptime(
+				str(stock_date[0]), '%Y%M%d')  # 格式化日期
+
+			list = date_format.strftime('%Y/%M/%d') + ',' + str(zz_parse('us', stock_open[0])) + ',' + str(zz_parse('us', stock_high[0])) + ',' + str(zz_parse('us', stock_low[0])) + ',' + str(zz_parse('us', stock_close[0])) + ',' + str(stock_vol[0]) + ',' + str(stock_amount[0]) + '\n'
+
+			file_object.writelines(list)
+		file_object.close()
 
 data_sh = tdx_path + '/vipdoc/sh/lday/'
 data_sz = tdx_path + '/vipdoc/sz/lday/'
+data_us = tdx_path + '/vipdoc/ds/lday/'
 
 if 'quest_code' in globals():
 
@@ -132,9 +173,10 @@ if 'quest_code' in globals():
 				store_stock_data_to_csv(f_path, hd + code_name)
 				continue
 		else:
-			logging.info('neither shanghai or shenzhen =>' + i)
-			print('neither shanghai or shenzhen')
-			continue
+			code_name = '74#' + i + '.day'
+			if os.path.exists(data_us + code_name):
+				store_us_stock_data_to_csv(data_us + code_name, 'us' + i)
+				continue
 else:
 	logging.info('exec all codes')
 	# exec all code
@@ -145,6 +187,10 @@ else:
 	file_sz = os.listdir(data_sz)
 	for i in file_sz:
 		store_stock_data_to_csv(data_sz + i, i[:-4])
+		
+	file_us = os.listdir(data_us)
+	for i in file_sz:
+		store_us_stock_data_to_csv(data_us + i, i[:-4])
 
 logging.info('end .......')
 print('finished')

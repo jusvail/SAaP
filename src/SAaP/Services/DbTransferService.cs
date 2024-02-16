@@ -40,7 +40,10 @@ public class DbTransferService : IDbTransferService
 
 				if (tmpName.Length != 12) continue;
 
-				var codeName = tmpName.Substring(2, 6);
+				// input ------- usAPLE.CSV
+				// input ----- sh000001.CSV
+				// output ---- APLE ...
+				var codeName = tmpName[2..][4..];
 
 				// last query codes store into db
 				var stock = new Stock { CodeName = codeName, BelongTo = -1 };
@@ -90,78 +93,19 @@ public class DbTransferService : IDbTransferService
 				foreach (var codeName in codeNames)
 				{
 					var belong = await App.GetService<IFetchStockDataService>().TryGetBelongByCode(codeName);
-					string codeMain;
 
-					switch (codeName.Length)
+					var codeMain = codeName.Length switch
 					{
-						case StockService.StandardCodeLength:
-							codeMain = codeName;
-							break;
-						case StockService.TdxCodeLength:
-							codeMain = codeName.Substring(1, 6);
-							break;
-						default:
-							continue;
-					}
-
-					#region USELESS
-
-					// // specific location sh / sz
-					// if (belong >= 0)
-					// {
-					// 	var fileName = belong switch
-					// 	{
-					// 		StockService.ShFlag => StockService.GetOutputNameSh(codeMain),
-					// 		StockService.SzFlag => StockService.GetOutputNameSz(codeMain),
-					// 		_ => string.Empty
-					// 	};
-					//
-					// 	if (!string.IsNullOrEmpty(fileName))
-					// 	{
-					// 		var file = await pyDataFolder.TryGetItemAsync(fileName) as StorageFile;
-					//
-					// 		if (file != null) insertionList = GetInsertionListWhichNotExistInDb(file, stock);
-					// 	}
-					// }
-					// else
-					// {
-					// 	// sh stock data
-					// 	var issh =
-					// 		await pyDataFolder.TryGetItemAsync(StockService.GetOutputNameSh(codeMain)) as StorageFile;
-					//
-					// 	if (issh != null)
-					// 	{
-					// 		stock.BelongTo = StockService.ShFlag; // sh flag
-					// 		insertionList = GetInsertionListWhichNotExistInDb(issh, stock);
-					// 	}
-					//
-					// 	// sz stock data
-					// 	var issz =
-					// 		await pyDataFolder.TryGetItemAsync(StockService.GetOutputNameSz(codeMain)) as StorageFile;
-					//
-					// 	if (issz != null)
-					// 	{
-					// 		stock.BelongTo = StockService.SzFlag; //sz flag
-					// 		insertionList = GetInsertionListWhichNotExistInDb(issz, stock);
-					// 	}
-					// }
-					//
-					// // transaction
-					// await db.BeginTransactionAsync();
-					//
-					// // insert into db
-					// if (insertionList != null)
-					// 	// insert into db
-					// 	await foreach (var original in insertionList)
-					//                     await db.InsertOrReplaceAsync(original);
-
-					#endregion
+						StockService.StandardCodeLength => codeName,
+						StockService.TdxCodeLength => codeName.Substring(1, 6),
+						_ => codeName
+					};
 
 					// last query codes store into db
 					var stock = new Stock { CodeName = codeMain, BelongTo = belong };
 
 					// get company name
-					var companyName = await StockService.FetchCompanyNameByCode(codeMain, stock.BelongTo);
+					var companyName = belong == StockService.UsFlag ? codeMain : await StockService.FetchCompanyNameByCode(codeMain, stock.BelongTo);
 					stock.CompanyName = companyName;
 					stock.BelongTo = belong;
 
@@ -172,7 +116,7 @@ public class DbTransferService : IDbTransferService
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e);Console.WriteLine(GetType());
+				Console.WriteLine(e); Console.WriteLine(GetType());
 			}
 		}
 	}
@@ -259,7 +203,7 @@ public class DbTransferService : IDbTransferService
 
 		var fetchStockDataService = App.GetService<IFetchStockDataService>();
 		var belong = await fetchStockDataService.TryGetBelongByCode(codeName);
-		var codeMain = StockService.CutStockCodeToSix(codeName);
+		var codeMain = StockService.CutStockCodeLen7ToLen6(codeName);
 
 		var belong1 = belong;
 		var existInStock = db.Stock.Where(s => s.CodeName == codeMain && s.BelongTo == belong1);
@@ -302,7 +246,7 @@ public class DbTransferService : IDbTransferService
 		}
 		catch (Exception e)
 		{
-			Console.WriteLine(e);Console.WriteLine(GetType());
+			Console.WriteLine(e); Console.WriteLine(GetType());
 			throw;
 		}
 	}
@@ -327,7 +271,7 @@ public class DbTransferService : IDbTransferService
 		}
 		catch (Exception e)
 		{
-			Console.WriteLine(e);Console.WriteLine(GetType());
+			Console.WriteLine(e); Console.WriteLine(GetType());
 			throw;
 		}
 	}
@@ -479,7 +423,7 @@ public class DbTransferService : IDbTransferService
 		}
 		catch (Exception e)
 		{
-			Console.WriteLine(e);Console.WriteLine(GetType());
+			Console.WriteLine(e); Console.WriteLine(GetType());
 		}
 	}
 
@@ -494,7 +438,7 @@ public class DbTransferService : IDbTransferService
 		}
 		catch (Exception e)
 		{
-			Console.WriteLine(e);Console.WriteLine(GetType());
+			Console.WriteLine(e); Console.WriteLine(GetType());
 			throw;
 		}
 	}

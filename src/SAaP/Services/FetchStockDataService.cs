@@ -26,29 +26,21 @@ public class FetchStockDataService : IFetchStockDataService
 
 	public async Task FetchStockData(string pyArg, bool isCheckAll = false)
 	{
-		//var pyPath = await _localSettingsService.ReadSettingAsync<string>(PjConstant.PythonInstallationPath);
-
-		if (string.IsNullOrEmpty(_pyPath)) return;
-
-		//var tdxPath = await _localSettingsService.ReadSettingAsync<string>(PjConstant.TdxInstallationPath);
-
-		if (string.IsNullOrEmpty(_tdxPath)) return;
+		if (string.IsNullOrEmpty(_pyPath) || string.IsNullOrEmpty(_tdxPath)) return;
 
 		var pyExecPath = Path.Combine(_pyPath, PythonService.PyName);
 
 		//const string pyScriptPath = "C:\\Workspace\\WK\\blk test\\tdx_reader.py";
 		var pyScriptPath = Path.Combine(AppDomain.CurrentDomain.SetupInformation.ApplicationBase!, PythonService.PyFolder, PythonService.TdxReader);
 
-		var f = await StorageFile.GetFileFromPathAsync(pyScriptPath);
-
-		if (f == null) return;
+		if (await StorageFile.GetFileFromPathAsync(pyScriptPath) == null) return;
 
 		// python script execution
 		await PythonService.RunPythonScript(pyExecPath
-		                                    , pyScriptPath
-		                                    , _tdxPath
-		                                    , StartupService.PyDataPath
-		                                    , isCheckAll ? string.Empty : pyArg);
+											, pyScriptPath
+											, _tdxPath
+											, StartupService.PyDataPath
+											, isCheckAll ? string.Empty : pyArg);
 	}
 
 	public async Task FetchStockMinuteData(string pyArg, int minType)
@@ -64,7 +56,7 @@ public class FetchStockDataService : IFetchStockDataService
 		var pyExecPath = Path.Combine(_pyPath, PythonService.PyName);
 
 		var pyScriptPath = Path.Combine(AppDomain.CurrentDomain.SetupInformation.ApplicationBase!, PythonService.PyFolder,
-		                                PythonService.TdxMinuteReader);
+										PythonService.TdxMinuteReader);
 
 		var f = await StorageFile.GetFileFromPathAsync(pyScriptPath);
 
@@ -72,11 +64,11 @@ public class FetchStockDataService : IFetchStockDataService
 
 		// python script execution
 		await PythonService.RunPythonScript(pyExecPath
-		                                    , pyScriptPath
-		                                    , _tdxPath
-		                                    , StartupService.MinDataPath
-		                                    , minType.ToString()
-		                                    , pyArg);
+											, pyScriptPath
+											, _tdxPath
+											, StartupService.MinDataPath
+											, minType.ToString()
+											, pyArg);
 	}
 
 	public async Task<int> TryGetBelongByCode(string code)
@@ -88,39 +80,42 @@ public class FetchStockDataService : IFetchStockDataService
 		switch (code.Length)
 		{
 			case StockService.StandardCodeLength:
-			{
-				//var tdxPath = await _localSettingsService.ReadSettingAsync<string>(PjConstant.TdxInstallationPath);
-
-				var fileSh = StockService.GetInputNameSh(code);
-
-				if (_tdxPath != null)
 				{
-					var folderSh = await StorageFolder.GetFolderFromPathAsync(_tdxPath + StockService.ShPath);
-					var shExist  = false;
-					var szExist  = false;
+					//var tdxPath = await _localSettingsService.ReadSettingAsync<string>(PjConstant.TdxInstallationPath);
 
-					if (await folderSh.FileExistsAsync(fileSh)) shExist = true;
+					var fileSh = StockService.GetInputNameSh(code);
 
-					var folderSz = await StorageFolder.GetFolderFromPathAsync(_tdxPath + StockService.SzPath);
-
-					var fileSz = StockService.GetInputNameSz(code);
-
-					if (await folderSz.FileExistsAsync(fileSz)) szExist = true;
-
-					return shExist switch
+					if (_tdxPath != null)
 					{
-						true when szExist   => StockService.MultiFlg,
-						false when !szExist => StockService.NotExistFlg,
-						true                => StockService.ShFlag,
-						false               => StockService.SzFlag
-					};
-				}
+						var folderSh = await StorageFolder.GetFolderFromPathAsync(_tdxPath + StockService.ShPath);
+						var shExist = false;
+						var szExist = false;
 
-				break;
-			}
+						if (await folderSh.FileExistsAsync(fileSh)) shExist = true;
+
+						var folderSz = await StorageFolder.GetFolderFromPathAsync(_tdxPath + StockService.SzPath);
+
+						var fileSz = StockService.GetInputNameSz(code);
+
+						if (await folderSz.FileExistsAsync(fileSz)) szExist = true;
+
+						return shExist switch
+						{
+							true when szExist => StockService.MultiFlg,
+							false when !szExist => StockService.NotExistFlg,
+							true => StockService.ShFlag,
+							false => StockService.SzFlag
+						};
+					}
+
+					break;
+				}
 			case StockService.TdxCodeLength:
 				var flg = code[..1];
 				_ = int.TryParse(flg, out belongTo);
+				break;
+			default:
+				belongTo = StockService.UsFlag;
 				break;
 		}
 
@@ -144,7 +139,6 @@ public class FetchStockDataService : IFetchStockDataService
 		return allCodes;
 	}
 
-
 	public async IAsyncEnumerable<string> FormatInputCodeAsync(string input)
 	{
 		// check code accuracy
@@ -155,30 +149,40 @@ public class FetchStockDataService : IFetchStockDataService
 		foreach (var accuracyCode in accuracyCodes)
 		{
 			if (accuracyCode.Length == StockService.TdxCodeLength) yield return accuracyCode;
-			if (accuracyCode.Length != StockService.StandardCodeLength) continue;
-
-			var belong = await TryGetBelongByCode(accuracyCode);
-
-			switch (belong)
+			if (accuracyCode.Length == StockService.StandardCodeLength)
 			{
-				case StockService.MultiFlg:
-					yield return StockService.ShFlag + accuracyCode;
-					yield return StockService.SzFlag + accuracyCode;
-					break;
-				case StockService.ShFlag:
-				case StockService.SzFlag:
-					yield return belong + accuracyCode;
-					break;
-				case StockService.NotExistFlg:
-					break;
+				var belong = await TryGetBelongByCode(accuracyCode);
+				switch (belong)
+				{
+					case StockService.MultiFlg:
+						yield return StockService.ShFlag + accuracyCode;
+						yield return StockService.SzFlag + accuracyCode;
+						break;
+					case StockService.ShFlag:
+					case StockService.SzFlag:
+						yield return belong + accuracyCode;
+						break;
+					case StockService.NotExistFlg:
+						break;
+				}
+			}
+			else
+			{
+				if (int.TryParse(accuracyCode, out _))
+				{
+					yield break;
+				}
+
+				// non CN stock
+				yield return accuracyCode;
 			}
 		}
 	}
 
 	public async Task<Stock> GenerateStock(string codeName)
 	{
-		var belong      = await TryGetBelongByCode(codeName);
-		var codeMain    = StockService.CutStockCodeToSix(codeName);
+		var belong = await TryGetBelongByCode(codeName);
+		var codeMain = StockService.CutStockCodeLen7ToLen6(codeName);
 		var companyName = await StockService.FetchCompanyNameByCode(codeMain, belong);
 
 		return new Stock { CodeName = codeMain, CompanyName = companyName, BelongTo = belong };
@@ -188,8 +192,8 @@ public class FetchStockDataService : IFetchStockDataService
 	{
 		foreach (var codeName in codeNames)
 		{
-			var belong      = await TryGetBelongByCode(codeName);
-			var codeMain    = StockService.CutStockCodeToSix(codeName);
+			var belong = await TryGetBelongByCode(codeName);
+			var codeMain = StockService.CutStockCodeLen7ToLen6(codeName);
 			var companyName = await StockService.FetchCompanyNameByCode(codeMain, belong);
 
 			yield return new Stock { CodeName = codeMain, CompanyName = companyName, BelongTo = belong };
@@ -198,7 +202,7 @@ public class FetchStockDataService : IFetchStockDataService
 
 	private async void Init()
 	{
-		_pyPath  = await _localSettingsService.ReadSettingAsync<string>(PjConstant.PythonInstallationPath);
+		_pyPath = await _localSettingsService.ReadSettingAsync<string>(PjConstant.PythonInstallationPath);
 		_tdxPath = await _localSettingsService.ReadSettingAsync<string>(PjConstant.TdxInstallationPath);
 	}
 }

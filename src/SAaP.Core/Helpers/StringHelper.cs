@@ -11,7 +11,7 @@ public static class StringHelper
     {
         if (string.IsNullOrEmpty(input)) return null;
 
-        var trimmed = Regex.Replace(input, "'|\"|\r|\r\n|\n|,|，|“|”|‘|’", " ");
+        var trimmed = Regex.Replace(input.ToUpper(), "'|\"|\r|\r\n|\n|,|，|“|”|‘|’", " ");
 
         return Regex.Split(trimmed.Trim(), @"\s+");
     }

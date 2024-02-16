@@ -23,9 +23,9 @@ public class StockAnalyzeService : IStockAnalyzeService
 	public async Task<AnalysisResultDetail> AnalyzeAsync(string codeName, int duration)
 	{
 		var fetchStockDataService = App.GetService<IFetchStockDataService>();
-		var belong                = await fetchStockDataService.TryGetBelongByCode(codeName);
+		var belong = await fetchStockDataService.TryGetBelongByCode(codeName);
 
-		var codeMain = StockService.CutStockCodeToSix(codeName);
+		var codeMain = belong == StockService.UsFlag ? codeName : StockService.CutStockCodeLen7ToLen6(codeName);
 
 		// query original data recently
 		var originalData = await DbService.TakeOriginalDataFromFile(codeMain, belong, duration);
@@ -40,7 +40,7 @@ public class StockAnalyzeService : IStockAnalyzeService
 		// best stop profit calculate
 		// up to 7%
 		const double upTo = 9.9;
-		var          best = bot.CalcBestStopProfitPoint(upTo);
+		var best = bot.CalcBestStopProfitPoint(upTo);
 
 		// select company Name
 		var companyName = await DbService.SelectCompanyNameByCode(codeMain, belong);
@@ -50,30 +50,30 @@ public class StockAnalyzeService : IStockAnalyzeService
 			// analyze result store into object
 			var analyzeResult = new AnalysisResultDetail
 			{
-				Duration                             = duration,
-				CodeName                             = codeName,
-				CompanyName                          = companyName,
-				OverPricedPercent                    = bot.CalcOverPricedPercent(),
-				OverPricedDays                       = bot.CalcOverPricedDays(),
-				OverPricedPercentHigherThan1P        = bot.CalcOverPricedPercentHigherThan1P(),
-				OverPricedDaysHigherThan1P           = bot.CalcOverPricedDaysHigherThan1P(),
-				MaxContinueOverPricedDay             = bot.CalcMaxContinueOverPricedDay(),
-				MaxContinueMinusOverPricedDay        = bot.CalcMaxContinueMinusOverPricedDay(),
-				AverageOverPricedPercent             = bot.CalcAverageOverPricedPercent(),
+				Duration = duration,
+				CodeName = codeName,
+				CompanyName = companyName,
+				OverPricedPercent = bot.CalcOverPricedPercent(),
+				OverPricedDays = bot.CalcOverPricedDays(),
+				OverPricedPercentHigherThan1P = bot.CalcOverPricedPercentHigherThan1P(),
+				OverPricedDaysHigherThan1P = bot.CalcOverPricedDaysHigherThan1P(),
+				MaxContinueOverPricedDay = bot.CalcMaxContinueOverPricedDay(),
+				MaxContinueMinusOverPricedDay = bot.CalcMaxContinueMinusOverPricedDay(),
+				AverageOverPricedPercent = bot.CalcAverageOverPricedPercent(),
 				AverageOverPricedPercentHigherThan1P = bot.CalcAverageOverPricedPercentHigherThan1P(),
-				StopProfitWith1P                     = bot.CalcStopProfitCompoundInterest(1),
-				StopProfitWith2P                     = bot.CalcStopProfitCompoundInterest(2),
-				StopProfitWith3P                     = bot.CalcStopProfitCompoundInterest(3),
-				NoActionProfit                       = bot.CalcNoActionProfit(),
-				BestStopProfit                       = best[0],
-				BestEarnings                         = best[1],
-				AverageAmplitude                     = bot.CalcAverageAmplitude(),
-				MedianAmplitude                      = bot.CalcMedianAmplitude(),
-				MinimalAmplitude                     = bot.CalcMinimalAmplitude(),
-				MaxAmplitude                         = bot.CalcMaxAmplitude(),
-				FirstTradingDay                      = originalData[^2].Day,
-				LastTradingDay                       = originalData[0].Day,
-				Evaluate                             = bot.CalcEvaluate()
+				StopProfitWith1P = bot.CalcStopProfitCompoundInterest(1),
+				StopProfitWith2P = bot.CalcStopProfitCompoundInterest(2),
+				StopProfitWith3P = bot.CalcStopProfitCompoundInterest(3),
+				NoActionProfit = bot.CalcNoActionProfit(),
+				BestStopProfit = best[0],
+				BestEarnings = best[1],
+				AverageAmplitude = bot.CalcAverageAmplitude(),
+				MedianAmplitude = bot.CalcMedianAmplitude(),
+				MinimalAmplitude = bot.CalcMinimalAmplitude(),
+				MaxAmplitude = bot.CalcMaxAmplitude(),
+				FirstTradingDay = originalData[^2].Day,
+				LastTradingDay = originalData[0].Day,
+				Evaluate = bot.CalcEvaluate()
 			};
 
 			// callback invocation
@@ -97,7 +97,7 @@ public class StockAnalyzeService : IStockAnalyzeService
 		if (l.Count != r.Count) return string.Empty;
 
 		double c = l.Count;
-		var    d = 0.0;
+		var d = 0.0;
 
 		for (var i = 0; i < l.Count; i++)
 			if (l[i] * r[i] > 0)
@@ -107,13 +107,13 @@ public class StockAnalyzeService : IStockAnalyzeService
 	}
 
 	public async IAsyncEnumerable<Stock> Filter(IEnumerable<Stock> stocks,
-	                                            List<ObservableTrackCondition> trackConditions, DateTimeOffset lastTradingDate,
-	                                            [EnumeratorCancellation] CancellationToken cancellationToken)
+												List<ObservableTrackCondition> trackConditions, DateTimeOffset lastTradingDate,
+												[EnumeratorCancellation] CancellationToken cancellationToken)
 	{
 		if (!trackConditions.Any()) yield break;
 
 		var conditions = trackConditions.SelectMany(trackCondition => Condition.Parse(trackCondition.TrackContent))
-		                                .ToList();
+										.ToList();
 
 		if (!conditions.Any()) yield break;
 
@@ -125,9 +125,9 @@ public class StockAnalyzeService : IStockAnalyzeService
 
 			var filter = new CodeFilter
 			{
-				CodeName       = stock.CodeName,
+				CodeName = stock.CodeName,
 				TrackCondition = conditions,
-				BelongTo       = stock.BelongTo,
+				BelongTo = stock.BelongTo,
 				LastTradingDay = lastTradingDate.DateTime
 			};
 
@@ -149,7 +149,7 @@ public class StockAnalyzeService : IStockAnalyzeService
 		try
 		{
 			var conditions = trackConditions.SelectMany(trackCondition => Condition.Parse(trackCondition.TrackContent))
-			                                .ToList();
+											.ToList();
 
 			var stocks = new List<Stock>();
 
@@ -201,7 +201,7 @@ public class StockAnalyzeService : IStockAnalyzeService
 					while (ids < 0 || ide < 0)
 					{
 						if (ids < 0 && DateTime.Parse(ori[cur].Day) < configuration.StartDate) ids = cur;
-						if (ide < 0 && DateTime.Parse(ori[cur].Day) < configuration.EndDate) ide   = cur;
+						if (ide < 0 && DateTime.Parse(ori[cur].Day) < configuration.EndDate) ide = cur;
 						cur--;
 						if (cur <= 0) break;
 					}
@@ -213,9 +213,9 @@ public class StockAnalyzeService : IStockAnalyzeService
 						var lastDay = DateTime.Parse(ori[i].Day);
 						var filter = new CodeFilter
 						{
-							CodeName       = stock.CodeName,
+							CodeName = stock.CodeName,
 							TrackCondition = conditions,
-							BelongTo       = stock.BelongTo,
+							BelongTo = stock.BelongTo,
 							LastTradingDay = lastDay
 						};
 
@@ -240,23 +240,23 @@ public class StockAnalyzeService : IStockAnalyzeService
 							D60Profit = CalculationService.Round2(CalculationService.CalcTtm(ori[i + 1].Opening, ori[min60].Ending))
 						};
 
-						var j        = i + 1;
-						var max      = ori[j].Ending;
+						var j = i + 1;
+						var max = ori[j].Ending;
 						var maxIndex = j;
 						for (; j <= min30; j++)
 						{
 							if (ori[j].Ending < max) continue;
 
 							maxIndex = j;
-							max      = ori[j].Ending;
+							max = ori[j].Ending;
 						}
 
 						result.D30PassingDay = maxIndex - i;
-						result.D30Profit     = CalculationService.Round2(CalculationService.CalcTtm(ori[i + 1].Opening, max));
-						result.D30Success    = result.D30Profit > 0d;
-						result.D30SellDate   = ori[maxIndex];
+						result.D30Profit = CalculationService.Round2(CalculationService.CalcTtm(ori[i + 1].Opening, max));
+						result.D30Success = result.D30Profit > 0d;
+						result.D30SellDate = ori[maxIndex];
 
-						var k   = i + 1;
+						var k = i + 1;
 						var low = ori[i].Ending;
 						// var lowIndex = k;
 						for (; k < min30; k++)
@@ -279,13 +279,13 @@ public class StockAnalyzeService : IStockAnalyzeService
 							if (ori[j].Ending < max) continue;
 
 							maxIndex = j;
-							max      = ori[j].Ending;
+							max = ori[j].Ending;
 						}
 
 						result.D60PassingDay = maxIndex - i;
-						result.D60Profit     = CalculationService.Round2(CalculationService.CalcTtm(ori[i + 1].Opening, max));
-						result.D60Success    = result.D30Profit > 0d;
-						result.D60SellDate   = ori[maxIndex];
+						result.D60Profit = CalculationService.Round2(CalculationService.CalcTtm(ori[i + 1].Opening, max));
+						result.D60Success = result.D30Profit > 0d;
+						result.D60SellDate = ori[maxIndex];
 
 						k = min30 + 1;
 						// var lowIndex = k;
@@ -300,7 +300,7 @@ public class StockAnalyzeService : IStockAnalyzeService
 						var pb60 = CalculationService.Round2(CalculationService.CalcTtm(ori[i + 1].Opening, low));
 						result.D60Pullback = pb60 < 0d ? pb60 : 0d;
 
-						result.CodeName    = stock.CodeNameFull;
+						result.CodeName = stock.CodeNameFull;
 						result.CompanyName = stock.CompanyName;
 
 						i = min60;
@@ -329,14 +329,14 @@ public class StockAnalyzeService : IStockAnalyzeService
 
 		var successCountD30 = report.SimulateResults.Count(r => r.D30Success);
 		var successCountD60 = report.SimulateResults.Count(r => r.D60Success);
-		var successCount    = report.SimulateResults.Count(r => r.D30Success || r.D60Success);
+		var successCount = report.SimulateResults.Count(r => r.D30Success || r.D60Success);
 
 		report.ReportSummary.OverallAccuracyRate = CalculationService.Round2(100 * successCount / resultCount).ToString();
-		report.ReportSummary.D30AccuracyRate     = CalculationService.Round2(100 * successCountD30 / resultCount).ToString();
-		report.ReportSummary.D30AccuracyProfit   = CalculationService.Round2(report.SimulateResults.Sum(r => r.D30Profit) / resultCount).ToString();
+		report.ReportSummary.D30AccuracyRate = CalculationService.Round2(100 * successCountD30 / resultCount).ToString();
+		report.ReportSummary.D30AccuracyProfit = CalculationService.Round2(report.SimulateResults.Sum(r => r.D30Profit) / resultCount).ToString();
 		report.ReportSummary.D30AccuracyPullback = CalculationService.Round2(report.SimulateResults.Sum(r => r.D30Pullback) / resultCount).ToString();
-		report.ReportSummary.D60AccuracyRate     = CalculationService.Round2(100 * successCountD60 / resultCount).ToString();
-		report.ReportSummary.D60AccuracyProfit   = CalculationService.Round2(report.SimulateResults.Sum(r => r.D60Profit) / resultCount).ToString();
+		report.ReportSummary.D60AccuracyRate = CalculationService.Round2(100 * successCountD60 / resultCount).ToString();
+		report.ReportSummary.D60AccuracyProfit = CalculationService.Round2(report.SimulateResults.Sum(r => r.D60Profit) / resultCount).ToString();
 		report.ReportSummary.D60AccuracyPullback = CalculationService.Round2(report.SimulateResults.Sum(r => r.D60Pullback) / resultCount).ToString();
 
 		return report;
@@ -345,7 +345,7 @@ public class StockAnalyzeService : IStockAnalyzeService
 	public async Task<StatisticsReport> Statistics(StatisticsConfiguration configuration, CancellationToken cancellationToken)
 	{
 		var report = new StatisticsReport();
-		var task   = configuration.TaskDetail;
+		var task = configuration.TaskDetail;
 		report.TaskDetail = task;
 
 		var arg = new NotifyUserEventArgs();
@@ -362,17 +362,17 @@ public class StockAnalyzeService : IStockAnalyzeService
 			try
 			{
 				var ori = await DbService.TakeOriginalDataAscending(stock.CodeName, stock.BelongTo,
-				                                                    task.StartDate.LocalDateTime,
-				                                                    task.EndDate.LocalDateTime);
+																	task.StartDate.LocalDateTime,
+																	task.EndDate.LocalDateTime);
 
 				configuration.OnOnAnalyzeCallback(arg);
 
 				if (ori == null || ori.Count < 200) continue;
 
-				var high      = ori.First().Ending;
+				var high = ori.First().Ending;
 				var highIndex = 0;
 
-				var low      = ori.First().Opening;
+				var low = ori.First().Opening;
 				var lowIndex = 0;
 
 				for (var j = 0; j < ori.Count; j++)
@@ -380,18 +380,18 @@ public class StockAnalyzeService : IStockAnalyzeService
 					var t = ori[j];
 					if (t.Ending > high)
 					{
-						high      = t.Ending;
+						high = t.Ending;
 						highIndex = j;
 					}
 
 					if (t.Opening < low)
 					{
-						low      = t.Opening;
+						low = t.Opening;
 						lowIndex = j;
 					}
 				}
 
-				var lowH      = ori[highIndex].Opening;
+				var lowH = ori[highIndex].Opening;
 				var lowHIndex = highIndex;
 
 				for (var j = highIndex; j >= 0; j--)
@@ -399,12 +399,12 @@ public class StockAnalyzeService : IStockAnalyzeService
 					var t = ori[j];
 					if (t.Opening < lowH)
 					{
-						lowH      = t.Opening;
+						lowH = t.Opening;
 						lowHIndex = j;
 					}
 				}
 
-				var highL      = ori[lowIndex].Ending;
+				var highL = ori[lowIndex].Ending;
 				var highLIndex = lowIndex;
 
 				for (var j = lowIndex; j <= highIndex; j++)
@@ -412,7 +412,7 @@ public class StockAnalyzeService : IStockAnalyzeService
 					var t = ori[j];
 					if (t.Ending > highL)
 					{
-						highL      = t.Ending;
+						highL = t.Ending;
 						highLIndex = j;
 					}
 				}
@@ -424,12 +424,12 @@ public class StockAnalyzeService : IStockAnalyzeService
 				{
 					if (zdFromH > zdFromL)
 					{
-						low      = lowH;
+						low = lowH;
 						lowIndex = lowHIndex;
 					}
 					else
 					{
-						high      = highL;
+						high = highL;
 						highIndex = highLIndex;
 					}
 				}
@@ -480,11 +480,11 @@ public class StockAnalyzeService : IStockAnalyzeService
 						// 总结
 						var statistics = new StatisticsResult
 						{
-							BuyDate      = ori[buyIndex],
-							SellDate     = ori[sellIndex],
-							Stock        = stock,
+							BuyDate = ori[buyIndex],
+							SellDate = ori[sellIndex],
+							Stock = stock,
 							PullUpBefore = pullUp,
-							Profit       = profit
+							Profit = profit
 						};
 
 						var pullBackPrice = buyPrice;
@@ -499,9 +499,9 @@ public class StockAnalyzeService : IStockAnalyzeService
 
 						statistics.IsSuccess = profit > task.ExpectedProfit;
 						// 预期达成总结
-						statistics.MaxPullBack            = CalculationService.CalcTtm(buyPrice, pullBackPrice);
-						statistics.MaxPullBackDate        = ori[pullBackIndex];
-						statistics.DaysOfBuyToSell        = sellIndex - buyIndex + 1;
+						statistics.MaxPullBack = CalculationService.CalcTtm(buyPrice, pullBackPrice);
+						statistics.MaxPullBackDate = ori[pullBackIndex];
+						statistics.DaysOfBuyToSell = sellIndex - buyIndex + 1;
 						statistics.DaysOfBuyToMaxPullBack = pullBackIndex - buyIndex + 1;
 
 						if (report.StatisticsResults.TryGetValue(pullUp, out var statisticsCollection))

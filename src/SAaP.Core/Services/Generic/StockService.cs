@@ -16,8 +16,8 @@ public static class StockService
 	public const int StandardCodeLength = 6;
 	public const int TdxCodeLength = 7;
 
-	private const string ShCsvName = @"sh{0}.csv";
-	private const string SzCsvName = @"sz{0}.csv";
+	// private const string ShCsvName = @"sh{0}.csv";
+	// private const string SzCsvName = @"sz{0}.csv";
 
 	private const string ShDayName = @"sh{0}.day";
 	private const string SzDayName = @"sz{0}.day";
@@ -27,12 +27,11 @@ public static class StockService
 
 	public const string Sh = "sh";
 	public const string Sz = "sz";
-
-	public const string ShZs = "1000001";
-	public const string SzCz = "0399001";
+	public const string Us = "us";
 
 	public const int ShFlag = 1;
 	public const int SzFlag = 0;
+	public const int UsFlag = 2;
 	public const int MultiFlg = 9;
 	public const int NotExistFlg = -1;
 
@@ -40,13 +39,11 @@ public static class StockService
 	{
 		ShFlag => Sh,
 		SzFlag => Sz,
+		UsFlag => Us,
 		_ => null
 	};
 	public static string GetInputNameSh(string codeName) => string.Format(ShDayName, codeName);
 	public static string GetInputNameSz(string codeName) => string.Format(SzDayName, codeName);
-
-	public static string GetOutputNameSh(string codeName) => string.Format(ShCsvName, codeName);
-	public static string GetOutputNameSz(string codeName) => string.Format(SzCsvName, codeName);
 
 	public static string ReplaceLocStringToFlag(string codeName)
 	{
@@ -65,22 +62,23 @@ public static class StockService
 		{
 			ShFlag => Sh + codeName,
 			SzFlag => Sz + codeName,
+			UsFlag => Us + codeName,
 			_ => throw new IndexOutOfRangeException()
 		};
 	}
 
-	public static IEnumerable<string> CutStockCodeToSix(IEnumerable<string> inputs)
+	public static IEnumerable<string> CutStockCodeLen7ToLen6(IEnumerable<string> inputs)
 	{
-		return inputs.Select(CutStockCodeToSix);
+		return inputs.Select(CutStockCodeLen7ToLen6);
 	}
 
-	public static string CutStockCodeToSix(string input)
+	public static string CutStockCodeLen7ToLen6(string input)
 	{
 		return input.Length switch
 		{
 			StandardCodeLength => input,
 			TdxCodeLength => input[1..], // example: [1000024] cut first '1'
-			_ => string.Empty
+			_ => input
 		};
 	}
 
@@ -193,13 +191,10 @@ public static class StockService
 			groups[1].Value;
 	}
 
-	public static async IAsyncEnumerable<string> PostHot100Codes()
+	public static async IAsyncEnumerable<string> PostHot100Codes(string postArgs, string url)
 	{
-		// {"appId":"appId01","globalId":"786e4c21-70dc-435a-93bb-38","marketType":"","pageNo":1,"pageSize":100}
-		const string postArgs = "{\"appId\":\"appId01\",\"globalId\":\"786e4c21-70dc-435a-93bb-38\",\"marketType\":\"\",\"pageNo\":1,\"pageSize\":100}";
-
 		// acquire hot 100 data using post
-		var result = await Http.PostStringAsync(WebServiceApi.DfPopularListStockApi, postArgs);
+		var result = await Http.PostStringAsync(url, postArgs);
 		// Deserialize Object
 		var response = await Json.ToObjectAsync<EmResponse<EmHotData>>(result);
 
@@ -214,36 +209,4 @@ public static class StockService
 		}
 	}
 
-	public static bool IsStock(string codeName)
-	{
-		if (string.IsNullOrEmpty(codeName)) return false;
-
-		string c;
-
-		switch (codeName.Length)
-		{
-			case TdxCodeLength: c = codeName[1..]; break;
-			case StandardCodeLength: c = codeName; break;
-			default: return false;
-		}
-
-		return c.StartsWith("00") || c.StartsWith("6") || c.StartsWith("30");
-	}
-
-
-	public static bool IsZz(string codeName)
-	{
-		if (string.IsNullOrEmpty(codeName)) return false;
-
-		string c;
-
-		switch (codeName.Length)
-		{
-			case TdxCodeLength: c = codeName[1..]; break;
-			case StandardCodeLength: c = codeName; break;
-			default: return false;
-		}
-
-		return c.StartsWith("11") || c.StartsWith("12");
-	}
 }

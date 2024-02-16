@@ -47,7 +47,11 @@ public static class WebServiceApi
     public const string TxStockRealtimeApi = "https://web.sqt.gtimg.cn/utf8/q=";
 
     public const string DfPopularListStockApi = "https://emappdata.eastmoney.com/stockrank/getAllCurrentList";
+    public const string DfPopularListUsStockApi = "https://emappdata.eastmoney.com/stockrank/getAllCurrHkUsList";
 
+    // {"appId":"appId01","globalId":"786e4c21-70dc-435a-93bb-38","marketType":"","pageNo":1,"pageSize":100}
+    public const string DfPopularPostArgs = "{\"appId\":\"appId01\",\"globalId\":\"786e4c21-70dc-435a-93bb-38\",\"marketType\":\"\",\"pageNo\":1,\"pageSize\":100}";
+    public const string DfPopularUsPostArgs = "{\"appId\":\"appId01\",\"globalId\":\"786e4c21-70dc-435a-93bb-38\",\"marketType\":\"000004\",\"pageNo\":1,\"pageSize\":100}";
 
     public static string GenerateTxQueryString(string codeNameFull)
     {
