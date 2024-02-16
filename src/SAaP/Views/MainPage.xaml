@@ -40,7 +40,7 @@
 					Margin="-7,0,0,2"
 					x:Phase="2"
 					Click="CodeNameCell_OnClick"
-					Content="{x:Bind CodeName, Converter={StaticResource CodeNameFormatConverter}}" />
+					Content="{x:Bind CodeName, Converter={StaticResource CodeNameFormatConverter},ConverterParameter=BelongTo}" />
 			</Grid>
 		</DataTemplate>
 		<DataTemplate x:Key="ActivityTemplate" x:DataType="db:ActivityData">

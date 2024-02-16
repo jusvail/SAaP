@@ -148,33 +148,41 @@ public class FetchStockDataService : IFetchStockDataService
 
 		foreach (var accuracyCode in accuracyCodes)
 		{
-			if (accuracyCode.Length == StockService.TdxCodeLength) yield return accuracyCode;
-			if (accuracyCode.Length == StockService.StandardCodeLength)
+			switch (accuracyCode.Length)
 			{
-				var belong = await TryGetBelongByCode(accuracyCode);
-				switch (belong)
+				case StockService.TdxCodeLength:
+					yield return accuracyCode;
+					break;
+				case StockService.StandardCodeLength:
 				{
-					case StockService.MultiFlg:
-						yield return StockService.ShFlag + accuracyCode;
-						yield return StockService.SzFlag + accuracyCode;
-						break;
-					case StockService.ShFlag:
-					case StockService.SzFlag:
-						yield return belong + accuracyCode;
-						break;
-					case StockService.NotExistFlg:
-						break;
-				}
-			}
-			else
-			{
-				if (int.TryParse(accuracyCode, out _))
-				{
-					yield break;
-				}
+					var belong = await TryGetBelongByCode(accuracyCode);
+					switch (belong)
+					{
+						case StockService.MultiFlg:
+							yield return StockService.ShFlag + accuracyCode;
+							yield return StockService.SzFlag + accuracyCode;
+							break;
+						case StockService.ShFlag:
+						case StockService.SzFlag:
+							yield return belong + accuracyCode;
+							break;
+						case StockService.NotExistFlg:
+							break;
+					}
 
-				// non CN stock
-				yield return accuracyCode;
+					break;
+				}
+				default:
+				{
+					if (int.TryParse(accuracyCode, out _))
+					{
+						yield break;
+					}
+
+					// non CN stock
+					yield return accuracyCode;
+					break;
+				}
 			}
 		}
 	}

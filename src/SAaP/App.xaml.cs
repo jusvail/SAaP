@@ -84,6 +84,8 @@ public partial class App
 
 	public static ILogger Logger { get; set; }
 
+	public static bool OnGoingTask { get; set; }
+
 	public static T GetService<T>()
 		where T : class
 	{

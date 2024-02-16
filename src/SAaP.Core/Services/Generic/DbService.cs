@@ -194,7 +194,8 @@ public static class DbService
 				belong     = Convert.ToInt32(codeName[..1]);
 				break;
 			default:
-				return null;
+				codeSelect = codeName;
+				break;
 		}
 
 		// db connection

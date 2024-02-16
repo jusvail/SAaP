@@ -32,8 +32,8 @@ public sealed partial class NavigationRootPage
 	{
 		var window = WindowManageService.GetWindowForElement(sender as UIElement, typeof(NavigationRootPage).FullName!);
 
-		AppTitle.Text    =  PjConstant.AppTitle.GetLocalized();
-		window.Title     =  PjConstant.AppTitle.GetLocalized();
+		AppTitle.Text = PjConstant.AppTitle.GetLocalized();
+		window.Title = PjConstant.AppTitle.GetLocalized();
 		window.Activated += Window_Activated;
 		window.SetTitleBar(AppTitleBar);
 	}
@@ -41,40 +41,68 @@ public sealed partial class NavigationRootPage
 	private void Window_Activated(object sender, WindowActivatedEventArgs args)
 	{
 		VisualStateManager.GoToState(this, args.WindowActivationState == WindowActivationState.Deactivated
-			                                   ? "Deactivated"
-			                                   : "Activated", true);
+											   ? "Deactivated"
+											   : "Activated", true);
 	}
 
-	private void OnNavigationViewSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+	private async void OnNavigationViewSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
 	{
+		var selectedItem = args.SelectedItemContainer;
+
+		if (args.IsSettingsSelected && RootFrame.CurrentSourcePageType == typeof(SettingsPage)
+			|| (selectedItem == MainPage && RootFrame.CurrentSourcePageType == typeof(MainPage))
+			|| (selectedItem == Filter && RootFrame.CurrentSourcePageType == typeof(MonitorPage))
+			|| (selectedItem == Statistics && RootFrame.CurrentSourcePageType == typeof(StatisticsPage))
+			|| (selectedItem == Log && RootFrame.CurrentSourcePageType == typeof(InvestLogPage))
+			) return;
+
+		if (App.OnGoingTask)
+		{
+			if (await ContinueTask()) return;
+		}
+
 		if (args.IsSettingsSelected)
 		{
-			if (RootFrame.CurrentSourcePageType != typeof(SettingsPage)) Navigate(typeof(SettingsPage));
+			Navigate(typeof(SettingsPage));
 		}
 		else
 		{
-			var selectedItem = args.SelectedItemContainer;
 			if (selectedItem == MainPage)
 			{
-				if (RootFrame.CurrentSourcePageType != typeof(MainPage))
-					Navigate(typeof(MainPage));
+				Navigate(typeof(MainPage));
 			}
 			else if (selectedItem == Filter)
 			{
-				if (RootFrame.CurrentSourcePageType != typeof(MonitorPage))
-					Navigate(typeof(MonitorPage));
+				Navigate(typeof(MonitorPage));
 			}
 			else if (selectedItem == Statistics)
 			{
-				if (RootFrame.CurrentSourcePageType != typeof(StatisticsPage))
-					Navigate(typeof(StatisticsPage));
+				Navigate(typeof(StatisticsPage));
 			}
 			else if (selectedItem == Log)
 			{
-				if (RootFrame.CurrentSourcePageType != typeof(InvestLogPage))
-					Navigate(typeof(InvestLogPage));
+				Navigate(typeof(InvestLogPage));
 			}
 		}
+	}
+
+	private async Task<bool> ContinueTask()
+	{
+		var dialog = new ContentDialog
+		{
+			XamlRoot = XamlRoot,
+			Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
+			Title = "确认",
+			PrimaryButtonText = "确认",
+			CloseButtonText = "取消",
+			DefaultButton = ContentDialogButton.Primary,
+			Content = "有正在进行的任务，确认离开吗？"
+		};
+		// show dialog
+		var result = await dialog.ShowAsync();
+
+		// return if non primary button clicked
+		return result != ContentDialogResult.Primary;
 	}
 
 	public void Navigate(
@@ -85,14 +113,19 @@ public sealed partial class NavigationRootPage
 		var args = new NavigationRootPageArgs
 		{
 			NavigationRootPage = this,
-			Parameter          = targetPageArguments
+			Parameter = targetPageArguments
 		};
 		RootFrame.Navigate(pageType, args, navigationTransitionInfo);
 	}
 
-	private void NavigationViewControl_OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
+	private async void NavigationViewControl_OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
 	{
 		if (!RootFrame.CanGoBack) return;
+
+		if (App.OnGoingTask)
+		{
+			if (await ContinueTask()) return;
+		}
 
 		RootFrame.GoBack();
 
@@ -142,5 +175,5 @@ public sealed partial class NavigationRootPage
 public class NavigationRootPageArgs
 {
 	public NavigationRootPage NavigationRootPage;
-	public object             Parameter;
+	public object Parameter;
 }

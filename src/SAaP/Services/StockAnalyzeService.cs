@@ -25,7 +25,7 @@ public class StockAnalyzeService : IStockAnalyzeService
 		var fetchStockDataService = App.GetService<IFetchStockDataService>();
 		var belong = await fetchStockDataService.TryGetBelongByCode(codeName);
 
-		var codeMain = belong == StockService.UsFlag ? codeName : StockService.CutStockCodeLen7ToLen6(codeName);
+		var codeMain = StockService.CutStockCodeLen7ToLen6(codeName);
 
 		// query original data recently
 		var originalData = await DbService.TakeOriginalDataFromFile(codeMain, belong, duration);

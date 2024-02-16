@@ -36,7 +36,7 @@ public class RestoreSettingsService : IRestoreSettingsService
 		             orderby s.CodeName
 		             select new FavoriteDetail
 		             {
-			             CodeName    = f.BelongTo + f.Code,
+			             CodeName    = f.Code,
 			             BelongTo    = f.BelongTo,
 			             CompanyName = s.CompanyName,
 			             GroupId     = f.Id,

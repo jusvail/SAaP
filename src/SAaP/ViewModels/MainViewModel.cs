@@ -342,6 +342,7 @@ public class MainViewModel : ObservableRecipient
 
 		SetCurrentStatus("保存历史查询数据。。。");
 		AnalysisStarted = true;
+		App.OnGoingTask = true;
 
 		// store this activity
 		await Task.Run(async () => { await _dbTransferService.StoreActivityDataToDb(DateTime.Now, CodeInput, string.Empty); });
@@ -392,6 +393,7 @@ public class MainViewModel : ObservableRecipient
 		await Task.Delay(1000);
 		var endTime = DateTime.Now;
 		AnalysisStarted = false;
+		App.OnGoingTask = false;
 		SetCurrentStatus("用时：" + (endTime - startTime).Seconds + "秒");
 	}
 
@@ -406,6 +408,7 @@ public class MainViewModel : ObservableRecipient
 		if (accuracyCodes == null) return;
 
 		AnalysisStarted = true;
+		App.OnGoingTask = true;
 
 		// add comma
 		var pyArg = StockService.FormatPyArgument(accuracyCodes);
@@ -456,6 +459,7 @@ public class MainViewModel : ObservableRecipient
 		await Task.Delay(1000);
 		var endTime = DateTime.Now;
 		AnalysisStarted = false;
+		App.OnGoingTask = false;
 		SetCurrentStatus("用时：" + (endTime - startTime).Seconds + "秒");
 	}
 

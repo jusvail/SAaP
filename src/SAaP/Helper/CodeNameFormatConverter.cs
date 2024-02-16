@@ -20,12 +20,14 @@ internal class CodeNameFormatConverter : IValueConverter
                         case StockService.ShFlag:
                             return StockService.Sh + val.Substring(1, val.Length - 1);
                         case StockService.SzFlag:
-                            return StockService.Sz + val.Substring(1, val.Length - 1);
+	                        return StockService.Sz + val.Substring(1, val.Length - 1);
                     }
                 }
                 break;
+            default:
+	            return val;
         }
-        return value;
+        return val;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)

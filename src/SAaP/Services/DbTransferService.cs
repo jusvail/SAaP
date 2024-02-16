@@ -105,7 +105,7 @@ public class DbTransferService : IDbTransferService
 					var stock = new Stock { CodeName = codeMain, BelongTo = belong };
 
 					// get company name
-					var companyName = belong == StockService.UsFlag ? codeMain : await StockService.FetchCompanyNameByCode(codeMain, stock.BelongTo);
+					var companyName = await StockService.FetchCompanyNameByCode(codeMain, stock.BelongTo);
 					stock.CompanyName = companyName;
 					stock.BelongTo = belong;
 
@@ -211,12 +211,12 @@ public class DbTransferService : IDbTransferService
 		// add if not exist in stock
 		if (!existInStock.Any())
 		{
-			var stock = new Stock { CodeName = codeMain, BelongTo = belong };
-
-			var companyName = await StockService.FetchCompanyNameByCode(codeMain, belong);
-
-			stock.BelongTo = belong;
-			stock.CompanyName = companyName;
+			var stock = new Stock
+			{
+				BelongTo = belong,
+				CompanyName = await StockService.FetchCompanyNameByCode(codeMain, belong),
+				CodeName = belong == StockService.UsFlag ? codeMain : codeMain + belong
+			};
 
 			await db.InsertAsync(stock);
 		}

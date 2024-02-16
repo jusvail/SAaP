@@ -123,9 +123,6 @@ public static class StockService
 		//if exist return
 		if (!string.IsNullOrEmpty(companyName)) return companyName;
 
-		// not exist in db so get from internet
-		if (belongTo < 0) return await FetchCompanyNameFromInternet(codeName);
-
 		// tx api => full request string
 		var api = WebServiceApi.GenerateTxQueryString(GetLocByFlag(belongTo), codeName);
 		// get result through http
